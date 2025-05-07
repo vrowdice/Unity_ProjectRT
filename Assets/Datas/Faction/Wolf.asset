@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a66c07c406ecff4d8a7a86a05fa29f7, type: 3}
+  m_Name: Wolf
+  m_EditorClassIdentifier: 
+  m_factionType: 0
+  m_name: Wolf
+  m_description: 
+  m_icon: {fileID: 0}
+  m_factionColor: {r: 0, g: 0, b: 0, a: 0}
+  m_startingWood: 100
+  m_startingMetal: 100
+  m_startingFood: 100
+  m_startingTech: 100
+  m_traitDescription: 
+  m_uniqueResearch:
+  - {fileID: 11400000, guid: ad0402f93f10c354fa3dee46042d1e8c, type: 2}
+  - {fileID: 11400000, guid: af4ef22f1e450484ab9265b2c63b2323, type: 2}
+  - {fileID: 11400000, guid: fd4abcbf5e0b0d543b73791eb67a9e4c, type: 2}

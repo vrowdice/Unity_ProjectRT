@@ -5,19 +5,32 @@ using UnityEngine;
 public class GameDataManager : MonoBehaviour
 {
     public List<FactionData> FactionData => m_factionDataList;
+    public Dictionary<FactionType, FactionData> FactionDataDict => m_factionDataDict;
 
     [SerializeField]
-    List<FactionData> m_factionDataList = new List<FactionData>();
+    private List<FactionData> m_factionDataList = new List<FactionData>();
 
-    // Start is called before the first frame update
-    void Start()
+    private Dictionary<FactionType, FactionData> m_factionDataDict = new Dictionary<FactionType, FactionData>();
+
+    void Awake()
     {
-        
+        InitializeFactionDataDict();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void InitializeFactionDataDict()
     {
-        
+        m_factionDataDict.Clear();
+
+        foreach (var faction in m_factionDataList)
+        {
+            if (!m_factionDataDict.ContainsKey(faction.m_factionType))
+            {
+                m_factionDataDict.Add(faction.m_factionType, faction);
+            }
+            else
+            {
+                Debug.LogWarning($"Duplicate faction type found: {faction.m_factionType}");
+            }
+        }
     }
 }
