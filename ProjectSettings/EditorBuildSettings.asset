@@ -6,6 +6,24 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 2cda990e2423bbf4892e6590ba056729
+    path: Assets/Scenes/Village/V_Main.unity
+    guid: dc1fb01b2414a9745a377a2a20f1e003
+  - enabled: 1
+    path: Assets/Scenes/Village/V_Tribe.unity
+    guid: 309f08b34de00a64789281e0410d1bef
+  - enabled: 1
+    path: Assets/Scenes/Village/V_Research.unity
+    guid: d61a86911119fba42bf3344be3335be5
+  - enabled: 1
+    path: Assets/Scenes/Village/V_Request.unity
+    guid: 48ef6c2a7d84eb141aa94937164afeb1
+  - enabled: 1
+    path: Assets/Scenes/Village/V_Building.unity
+    guid: 92942296e714f984180ab3c351f541c1
+  - enabled: 1
+    path: Assets/Scenes/Village/V_Barrack.unity
+    guid: 7c8e9c3344225f6428204d1e2bfb79d1
+  - enabled: 1
+    path: Assets/Scenes/Village/V_Information.unity
+    guid: 33f5edad7bdc78a418b25b2e0eb75dee
   m_configObjects: {}
