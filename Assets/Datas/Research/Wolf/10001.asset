@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64267ea355f27ed4ca3896a3d6e9ec6c, type: 3}
   m_Name: 10001
   m_EditorClassIdentifier: 
-  m_id: 
+  m_key: 
   m_name: wolf10001
   m_description: 
   m_cost: 0
@@ -21,4 +21,4 @@ MonoBehaviour:
   m_unlocks: []
   m_icon: {fileID: 0}
   m_isResearched: 0
-  m_factionType: 0
+  m_factionType: 1

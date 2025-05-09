@@ -21,4 +21,4 @@ MonoBehaviour:
   m_unlocks: []
   m_icon: {fileID: 0}
   m_isResearched: 0
-  m_factionType: 1
+  m_factionType: 2

@@ -12,15 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a66c07c406ecff4d8a7a86a05fa29f7, type: 3}
   m_Name: Cat
   m_EditorClassIdentifier: 
-  m_factionType: 2
+  m_factionType: 3
   m_name: Cat
   m_description: 
+  m_illustration: {fileID: 0}
   m_icon: {fileID: 0}
   m_factionColor: {r: 0, g: 0, b: 0, a: 0}
-  m_startingWood: 100
-  m_startingMetal: 100
-  m_startingFood: 100
-  m_startingTech: 100
   m_traitDescription: 
   m_uniqueResearch:
   - {fileID: 11400000, guid: c9688609cc671f146998908e0399f7c9, type: 2}

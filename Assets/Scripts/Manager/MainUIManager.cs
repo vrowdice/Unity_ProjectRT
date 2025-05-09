@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class MainUIManager : MonoBehaviour
 {
@@ -9,6 +11,17 @@ public class MainUIManager : MonoBehaviour
     [SerializeField]
     GameObject m_BackMainBtn = null;
 
+    [Header("Resource Panel Things")]
+    [SerializeField]
+    TextMeshProUGUI m_woodText = null;
+    [SerializeField]
+    TextMeshProUGUI m_metalText = null;
+    [SerializeField]
+    TextMeshProUGUI m_foodText = null;
+    [SerializeField]
+    TextMeshProUGUI m_techText = null;
+
+    private GameManager m_gameManager = null;
     private List<IUIPanel> m_iPanelList = new List<IUIPanel>();
     private Transform m_canvasTrans = null;
     private int m_nowPanelIndex = 0;
@@ -16,13 +29,25 @@ public class MainUIManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        FirstSetting();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+
+    void FirstSetting()
+    {
+        m_gameManager = GameManager.Instance;
         m_canvasTrans = gameObject.transform.Find("Canvas");
 
+        //패널 초기화
         foreach (GameObject item in m_panelList)
         {
             item.SetActive(false);
 
-            // Try to get the component that implements IUIPanel
             IUIPanel panel = item.GetComponent<IUIPanel>();
             if (panel != null)
             {
@@ -34,15 +59,49 @@ public class MainUIManager : MonoBehaviour
                 m_iPanelList.Add(null);
             }
         }
-
         m_panelList[0].SetActive(true);
+
+        //메인으로 돌아가기 버튼
         m_BackMainBtn.SetActive(false);
+
+        SetAllResourceText();
     }
 
-    // Update is called once per frame
-    void Update()
+    void SetAllResourceText()
     {
+        m_woodText.text = m_gameManager.Wood.ToString();
+        m_metalText.text = m_gameManager.Metal.ToString();
+        m_foodText.text = m_gameManager.Food.ToString();
+        m_techText.text = m_gameManager.Tech.ToString();
+    }
 
+    public bool TryConsume(ResourceType argType, int argAmount)
+    {
+        if(m_gameManager.TryConsumeResource(argType, argAmount) == true)
+        {
+            switch (argType)
+            {
+                case ResourceType.Wood:
+                    m_woodText.text = m_gameManager.Wood.ToString();
+                    return true;
+                case ResourceType.Metal:
+                    m_metalText.text = m_gameManager.Metal.ToString();
+                    return true;
+                case ResourceType.Food:
+                    m_foodText.text = m_gameManager.Food.ToString();
+                    return true;
+                case ResourceType.Tech:
+                    m_techText.text = m_gameManager.Tech.ToString();
+                    return true;
+                default:
+                    Debug.LogError(ExceptionMessages.ErrorNoSuchType);
+                    return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
     }
 
     /// <summary>

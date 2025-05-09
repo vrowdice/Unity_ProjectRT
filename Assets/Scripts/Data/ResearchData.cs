@@ -4,7 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewResearchData", menuName = "Research Data")]
 public class ResearchData : ScriptableObject
 {
-    public string m_id;
+    public string m_code;
     public string m_name;
     [TextArea] public string m_description;
 

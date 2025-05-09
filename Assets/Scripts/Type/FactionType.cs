@@ -1,5 +1,6 @@
 public enum FactionType
 {
+    None,
     Wolf,       // 늑대
     Owl,        // 부엉이
     Cat,        // 고양이

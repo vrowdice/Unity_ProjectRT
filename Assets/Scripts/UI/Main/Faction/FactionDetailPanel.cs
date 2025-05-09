@@ -44,8 +44,6 @@ public class FactionDetailPanel : MonoBehaviour
             Destroy(item.gameObject);
         }
 
-        gameObject.SetActive(true);
-
         m_illustrationImage.sprite = argFactionData.m_illustration;
         m_iconImage.sprite = argFactionData.m_icon;
 
@@ -57,5 +55,7 @@ public class FactionDetailPanel : MonoBehaviour
             Instantiate(m_factionResearchBtnPrefeb, m_uniqeResearchContentTrans).GetComponent<FactionResearchBtn>().
                 Setting(item.m_factionType, item.m_name, item.m_description);
         }
+
+        gameObject.SetActive(true);
     }
 }
