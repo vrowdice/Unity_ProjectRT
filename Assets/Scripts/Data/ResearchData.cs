@@ -15,6 +15,7 @@ public class ResearchData : ScriptableObject
     public List<string> m_unlocks;       // 해금되는 요소 ID 목록
 
     public Sprite m_icon;                // 연구 아이콘
+    public bool m_isLocked = false;
     public bool m_isResearched = false;
 
     public FactionType m_factionType; //추가: 해당 연구가 속한 팩션

@@ -21,16 +21,7 @@ public class ResearchPanel : MonoBehaviour, IUIPanel
     {
         m_gameDataManager = GameManager.Instance.GameDataManager;
 
-        foreach (Transform item in m_researchScrollViewContentTrans)
-        {
-            Destroy(item.gameObject);
-        }
-
-        foreach (KeyValuePair<string, ResearchData> item in m_gameDataManager.CommonResearchDataDict)
-        {
-            Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
-                Setting(item.Value.m_code, item.Value.m_name, item.Value.m_description);
-        }
+        SelectResearchPanel(0);
 
         gameObject.SetActive(true);
     }
@@ -38,5 +29,52 @@ public class ResearchPanel : MonoBehaviour, IUIPanel
     public void OnClose()
     {
 
+    }
+
+    /// <summary>
+    /// 연구 패널 선택
+    /// </summary>
+    /// <param name="argPanelIndex"></param>
+    /// 0 = 연구 가능
+    /// 1 = 잠긴
+    /// 2 = 연구된
+    public void SelectResearchPanel(int argPanelIndex)
+    {
+        foreach (Transform item in m_researchScrollViewContentTrans)
+        {
+            Destroy(item.gameObject);
+        }
+
+        foreach (KeyValuePair<string, ResearchData> item in m_gameDataManager.CommonResearchDataDict)
+        {
+            switch (argPanelIndex)
+            {
+                case 0:
+                    if (item.Value.m_isLocked == false && item.Value.m_isResearched == false)
+                    {
+                        Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
+                            Setting(item.Value.m_code, item.Value.m_name, item.Value.m_description);
+                    }
+                    break;
+                case 1:
+                    if (item.Value.m_isLocked == true)
+                    {
+                        Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
+                            Setting(item.Value.m_code, item.Value.m_name, item.Value.m_description);
+                    }
+                    break;
+                case 2:
+                    if (item.Value.m_isResearched == true)
+                    {
+                        Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
+                            Setting(item.Value.m_code, item.Value.m_name, item.Value.m_description);
+                    }
+                    break;
+                default:
+                    Debug.LogError(ExceptionMessages.ErrorInvalidResearchInfo);
+                    break;
+            }
+
+        }
     }
 }

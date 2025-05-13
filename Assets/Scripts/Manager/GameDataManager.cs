@@ -43,7 +43,6 @@ public class GameDataManager : MonoBehaviour
         {
             if (!m_commonResearchDataDict.ContainsKey(research.name))
             {
-                Debug.Log(research.name);
                 research.m_code = research.name;
                 m_commonResearchDataDict.Add(research.m_code, research);
             }
