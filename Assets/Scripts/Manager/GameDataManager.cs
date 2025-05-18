@@ -6,16 +6,16 @@ public class GameDataManager : MonoBehaviour
 {
     public List<FactionData> FactionData => m_factionDataList;
     public List<ResearchData> ResearchData => m_commonResearchDataList;
-    public Dictionary<FactionType, FactionData> FactionDataDict => m_factionDataDict;
-    public Dictionary<string, ResearchData> CommonResearchDataDict => m_commonResearchDataDict;
+    public Dictionary<FactionType, FactionEntry> FactionDataDict => m_factionDataDict;
+    public Dictionary<string, ResearchEntry> CommonResearchDataDict => m_commonResearchDataDict;
 
     [SerializeField]
     private List<FactionData> m_factionDataList = new List<FactionData>();
     [SerializeField]
     private List<ResearchData> m_commonResearchDataList = new List<ResearchData>();
 
-    private Dictionary<FactionType, FactionData> m_factionDataDict = new Dictionary<FactionType, FactionData>();
-    private Dictionary<string, ResearchData> m_commonResearchDataDict = new Dictionary<string, ResearchData>();
+    private Dictionary<FactionType, FactionEntry> m_factionDataDict = new Dictionary<FactionType, FactionEntry>();
+    private Dictionary<string, ResearchEntry> m_commonResearchDataDict = new Dictionary<string, ResearchEntry>();
 
     void Awake()
     {
@@ -31,7 +31,9 @@ public class GameDataManager : MonoBehaviour
         {
             if (!m_factionDataDict.ContainsKey(faction.m_factionType))
             {
-                m_factionDataDict.Add(faction.m_factionType, faction);
+                FactionEntry _entry = new FactionEntry(faction);
+
+                m_factionDataDict.Add(faction.m_factionType, _entry);
             }
             else
             {
@@ -43,8 +45,10 @@ public class GameDataManager : MonoBehaviour
         {
             if (!m_commonResearchDataDict.ContainsKey(research.name))
             {
+                ResearchEntry _entry = new ResearchEntry(research);
+
                 research.m_code = research.name;
-                m_commonResearchDataDict.Add(research.m_code, research);
+                m_commonResearchDataDict.Add(research.m_code, _entry);
             }
             else
             {

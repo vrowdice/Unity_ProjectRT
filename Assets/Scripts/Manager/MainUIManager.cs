@@ -11,7 +11,7 @@ public class MainUIManager : MonoBehaviour
     [SerializeField]
     GameObject m_BackMainBtn = null;
 
-    [Header("Resource Panel Things")]
+    [Header("Resource Panel Text")]
     [SerializeField]
     TextMeshProUGUI m_woodText = null;
     [SerializeField]
@@ -20,6 +20,12 @@ public class MainUIManager : MonoBehaviour
     TextMeshProUGUI m_foodText = null;
     [SerializeField]
     TextMeshProUGUI m_techText = null;
+
+    [Header("Game Info Text")]
+    [SerializeField]
+    TextMeshProUGUI m_dateText = null;
+    [SerializeField]
+    TextMeshProUGUI m_requestText = null;
 
     private GameManager m_gameManager = null;
     private List<IUIPanel> m_iPanelList = new List<IUIPanel>();
@@ -69,39 +75,52 @@ public class MainUIManager : MonoBehaviour
 
     void SetAllResourceText()
     {
-        m_woodText.text = m_gameManager.Wood.ToString();
-        m_metalText.text = m_gameManager.Metal.ToString();
-        m_foodText.text = m_gameManager.Food.ToString();
-        m_techText.text = m_gameManager.Tech.ToString();
+        SetResourceText(ResourceType.Wood);
+        SetResourceText(ResourceType.Metal);
+        SetResourceText(ResourceType.Food);
+        SetResourceText(ResourceType.Tech);
+    }
+
+    void SetResourceText(ResourceType type)
+    {
+        switch (type)
+        {
+            case ResourceType.Wood:
+                m_woodText.text = NumberFormatter.FormatNumber(m_gameManager.Wood);
+                break;
+            case ResourceType.Metal:
+                m_metalText.text = NumberFormatter.FormatNumber(m_gameManager.Metal);
+                break;
+            case ResourceType.Food:
+                m_foodText.text = NumberFormatter.FormatNumber(m_gameManager.Food);
+                break;
+            case ResourceType.Tech:
+                m_techText.text = NumberFormatter.FormatNumber(m_gameManager.Tech);
+                break;
+            default:
+                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
+                break;
+        }
+    }
+
+    public bool TryAdd(ResourceType argType, int argAmount)
+    {
+        if (m_gameManager.TryAddResource(argType, argAmount))
+        {
+            SetResourceText(argType);
+            return true;
+        }
+        return false;
     }
 
     public bool TryConsume(ResourceType argType, int argAmount)
     {
-        if(m_gameManager.TryConsumeResource(argType, argAmount) == true)
+        if (m_gameManager.TryConsumeResource(argType, argAmount))
         {
-            switch (argType)
-            {
-                case ResourceType.Wood:
-                    m_woodText.text = m_gameManager.Wood.ToString();
-                    return true;
-                case ResourceType.Metal:
-                    m_metalText.text = m_gameManager.Metal.ToString();
-                    return true;
-                case ResourceType.Food:
-                    m_foodText.text = m_gameManager.Food.ToString();
-                    return true;
-                case ResourceType.Tech:
-                    m_techText.text = m_gameManager.Tech.ToString();
-                    return true;
-                default:
-                    Debug.LogError(ExceptionMessages.ErrorNoSuchType);
-                    return false;
-            }
+            SetResourceText(argType);
+            return true;
         }
-        else
-        {
-            return false;
-        }
+        return false;
     }
 
     /// <summary>
@@ -136,5 +155,22 @@ public class MainUIManager : MonoBehaviour
         {
             m_BackMainBtn.SetActive(false);
         }
+    }
+
+    public void AddOneDate()
+    {
+        GameManager.Instance.AddDate(1);
+
+        m_dateText.text = GameManager.Instance.Date + " Days";
+    }
+
+    //--디버그용--
+    //릴리즈 시 주석처리 하거나 삭제할 것
+    public void AddResource1000()
+    {
+        TryAdd(ResourceType.Wood, 1000);
+        TryAdd(ResourceType.Metal, 1000);
+        TryAdd(ResourceType.Food, 1000);
+        TryAdd(ResourceType.Tech, 1000);
     }
 }

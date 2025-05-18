@@ -20,6 +20,5 @@ MonoBehaviour:
   m_prerequisites: []
   m_unlocks: []
   m_icon: {fileID: 0}
-  m_isLocked: 1
-  m_isResearched: 0
+  m_isFirstLocked: 1
   m_factionType: 0

@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     public int Metal { get; private set; }
     public int Food { get; private set; }
     public int Tech { get; private set; }
+    public int Date { get; private set; }
 
     [SerializeField]
     SceneLoadManager m_scenLoadManager = null;
@@ -52,107 +53,94 @@ public class GameManager : MonoBehaviour
     {
         m_mainUiManager = Instantiate(m_mainUiManagerPrefeb).GetComponent<MainUIManager>();
 
+        //저장이 생기면 지울 것
         Wood = 0;
         Metal = 0;
         Food = 0;
         Tech = 0;
     }
 
+    public void AddDate(int argAddDate)
+    {
+        if (argAddDate < 0)
+        {
+            Debug.LogError(ExceptionMessages.ErrorValueNotAllowed);
+            return;
+        }
+
+        Date += argAddDate;
+    }
+
+
     public bool TryConsumeResource(ResourceType argType, int argAmount)
     {
-        switch (argType)
+        if (argAmount < 0)
         {
-            case ResourceType.Wood:
-                return TryConsumeWood(argAmount);
-            case ResourceType.Metal:
-                return TryConsumeMetal(argAmount);
-            case ResourceType.Food:
-                return TryConsumeFood(argAmount);
-            case ResourceType.Tech:
-                return TryConsumeTech(argAmount);
-            default:
-                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
-                return false;
+            Debug.LogError(ExceptionMessages.ErrorNegativeValue);
+            return false;
         }
-    }
-    public bool TryConsumeWood(int argAmount)
-    {
-        if (Wood < argAmount)
+
+        int currentAmount = GetResourceAmount(argType);
+        if (currentAmount < argAmount)
             return false;
 
-        Wood -= argAmount;
+        SetResourceAmount(argType, currentAmount - argAmount);
         return true;
     }
-    public bool TryConsumeMetal(int argAmount)
-    {
-        if (Metal < argAmount)
-            return false;
 
-        Metal -= argAmount;
-        return true;
-    }
-    public bool TryConsumeFood(int argAmount)
-    {
-        if (Food < argAmount)
-            return false;
-
-        Food -= argAmount;
-        return true;
-    }
-    public bool TryConsumeTech(int argAmount)
-    {
-        if (Tech < argAmount)
-            return false;
-
-        Tech -= argAmount;
-        return true;
-    }
     public bool TryAddResource(ResourceType argType, int argAmount)
     {
         if (argAmount < 0)
         {
-            Debug.LogError("Cannot add a negative amount.");
+            Debug.LogError(ExceptionMessages.ErrorNegativeValue);
             return false;
         }
 
+        int currentAmount = GetResourceAmount(argType);
+        SetResourceAmount(argType, currentAmount + argAmount);
+        return true;
+    }
+
+    private int GetResourceAmount(ResourceType argType)
+    {
         switch (argType)
         {
             case ResourceType.Wood:
-                AddWood(argAmount);
-                return true;
+                return Wood;
             case ResourceType.Metal:
-                AddMetal(argAmount);
-                return true;
+                return Metal;
             case ResourceType.Food:
-                AddFood(argAmount);
-                return true;
+                return Food;
             case ResourceType.Tech:
-                AddTech(argAmount);
-                return true;
+                return Tech;
             default:
-                Debug.LogError("No Such Resource Type");
-                return false;
+                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
+                return 0;
         }
     }
-    public void AddWood(int argAmount)
+
+    private void SetResourceAmount(ResourceType argType, int newAmount)
     {
-        Wood += argAmount < 0 ? 0 : argAmount;
+        switch (argType)
+        {
+            case ResourceType.Wood:
+                Wood = newAmount;
+                break;
+            case ResourceType.Metal:
+                Metal = newAmount;
+                break;
+            case ResourceType.Food:
+                Food = newAmount;
+                break;
+            case ResourceType.Tech:
+                Tech = newAmount;
+                break;
+            default:
+                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
+                break;
+        }
     }
 
-    public void AddMetal(int argAmount)
-    {
-        Metal += argAmount < 0 ? 0 : argAmount;
-    }
-
-    public void AddFood(int argAmount)
-    {
-        Food += argAmount < 0 ? 0 : argAmount;
-    }
-
-    public void AddTech(int argAmount)
-    {
-        Tech += argAmount < 0 ? 0 : argAmount;
-    }
 
     /// <summary>
     /// 씬을 로드합니다

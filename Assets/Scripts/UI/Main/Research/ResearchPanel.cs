@@ -45,29 +45,29 @@ public class ResearchPanel : MonoBehaviour, IUIPanel
             Destroy(item.gameObject);
         }
 
-        foreach (KeyValuePair<string, ResearchData> item in m_gameDataManager.CommonResearchDataDict)
+        foreach (KeyValuePair<string, ResearchEntry> item in m_gameDataManager.CommonResearchDataDict)
         {
             switch (argPanelIndex)
             {
                 case 0:
-                    if (item.Value.m_isLocked == false && item.Value.m_isResearched == false)
+                    if (item.Value.m_state.m_isLocked == false && item.Value.m_state.m_isResearched == false)
                     {
                         Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
-                            Setting(item.Value.m_code, item.Value.m_name, item.Value.m_description);
+                            Setting(item.Value.m_data.m_code, item.Value.m_data.m_icon, item.Value.m_data.m_name, item.Value.m_data.m_description);
                     }
                     break;
                 case 1:
-                    if (item.Value.m_isLocked == true)
+                    if (item.Value.m_state.m_isLocked == true)
                     {
                         Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
-                            Setting(item.Value.m_code, item.Value.m_name, item.Value.m_description);
+                            Setting(item.Value.m_data.m_code, item.Value.m_data.m_icon, item.Value.m_data.m_name, item.Value.m_data.m_description);
                     }
                     break;
                 case 2:
-                    if (item.Value.m_isResearched == true)
+                    if (item.Value.m_state.m_isResearched == true)
                     {
                         Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
-                            Setting(item.Value.m_code, item.Value.m_name, item.Value.m_description);
+                            Setting(item.Value.m_data.m_code, item.Value.m_data.m_icon, item.Value.m_data.m_name, item.Value.m_data.m_description);
                     }
                     break;
                 default:

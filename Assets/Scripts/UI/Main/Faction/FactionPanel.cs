@@ -18,10 +18,10 @@ public class FactionPanel : MonoBehaviour, IUIPanel
     {
         m_gameDataManager = GameManager.Instance.GameDataManager;
 
-        foreach (KeyValuePair<FactionType, FactionData> item in m_gameDataManager.FactionDataDict)
+        foreach (KeyValuePair<FactionType, FactionEntry> item in m_gameDataManager.FactionDataDict)
         {
             Instantiate(m_factionInfoBtnPrefeb, m_factionScrollViewContentTrans).GetComponent<FactionInfoBtn>().
-                Setting(item.Value.m_factionType, item.Value.m_name, item.Value.m_icon, this);
+                Setting(item.Value.m_data.m_factionType, item.Value.m_data.m_name, item.Value.m_data.m_icon, this);
         }
     }
 

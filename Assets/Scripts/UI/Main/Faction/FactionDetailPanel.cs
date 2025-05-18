@@ -37,23 +37,23 @@ public class FactionDetailPanel : MonoBehaviour
         
     }
 
-    public void OnOpen(FactionData argFactionData)
+    public void OnOpen(FactionEntry argFactionEntry)
     {
         foreach (Transform item in m_uniqeResearchContentTrans)
         {
             Destroy(item.gameObject);
         }
 
-        m_illustrationImage.sprite = argFactionData.m_illustration;
-        m_iconImage.sprite = argFactionData.m_icon;
+        m_illustrationImage.sprite = argFactionEntry.m_data.m_illustration;
+        m_iconImage.sprite = argFactionEntry.m_data.m_icon;
 
-        m_nameTMP.text = argFactionData.m_name;
-        m_traitTMP.text = argFactionData.m_traitDescription;
+        m_nameTMP.text = argFactionEntry.m_data.m_name;
+        m_traitTMP.text = argFactionEntry.m_data.m_traitDescription;
 
-        foreach(ResearchData item in argFactionData.m_uniqueResearch)
+        foreach(ResearchData item in argFactionEntry.m_data.m_uniqueResearch)
         {
             Instantiate(m_factionResearchBtnPrefeb, m_uniqeResearchContentTrans).GetComponent<FactionResearchBtn>().
-                Setting(item.m_factionType, item.m_name, item.m_description);
+                Setting(item.m_factionType, item.m_icon, item.m_name, item.m_description);
         }
 
         gameObject.SetActive(true);
