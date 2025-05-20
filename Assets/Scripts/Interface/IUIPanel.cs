@@ -1,5 +1,5 @@
 public interface IUIPanel
 {
-    void OnOpen();
+    void OnOpen(GameDataManager argDataManager);
     void OnClose();
 }

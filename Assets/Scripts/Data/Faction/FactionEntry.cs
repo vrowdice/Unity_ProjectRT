@@ -8,7 +8,7 @@ public class FactionEntry
         this.m_data = argData;
         this.m_state = new FactionState
         {
-            m_friendliness = 0,
+            m_like = 0,
         };
     }
 }

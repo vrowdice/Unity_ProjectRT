@@ -15,11 +15,11 @@ public class FactionDetailPanel : MonoBehaviour
     Image m_iconImage = null;
 
     [SerializeField]
-    TextMeshProUGUI m_nameTMP = null;
+    TextMeshProUGUI m_nameText = null;
     [SerializeField]
-    TextMeshProUGUI m_friendlinessTMP = null;
+    TextMeshProUGUI m_friendlinessText = null;
     [SerializeField]
-    TextMeshProUGUI m_traitTMP = null;
+    TextMeshProUGUI m_traitText = null;
 
     [SerializeField]
     Transform m_uniqeResearchContentTrans = null;
@@ -47,8 +47,8 @@ public class FactionDetailPanel : MonoBehaviour
         m_illustrationImage.sprite = argFactionEntry.m_data.m_illustration;
         m_iconImage.sprite = argFactionEntry.m_data.m_icon;
 
-        m_nameTMP.text = argFactionEntry.m_data.m_name;
-        m_traitTMP.text = argFactionEntry.m_data.m_traitDescription;
+        m_nameText.text = argFactionEntry.m_data.m_name;
+        m_traitText.text = argFactionEntry.m_data.m_traitDescription;
 
         foreach(ResearchData item in argFactionEntry.m_data.m_uniqueResearch)
         {

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class BuildingPanel : MonoBehaviour, IUIPanel
 {
+    private GameDataManager m_gameDataManager = null;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -16,9 +18,10 @@ public class BuildingPanel : MonoBehaviour, IUIPanel
         
     }
 
-    public void OnOpen()
+    public void OnOpen(GameDataManager argDataManager)
     {
-
+        m_gameDataManager = argDataManager;
+        gameObject.SetActive(true);
     }
 
     public void OnClose()

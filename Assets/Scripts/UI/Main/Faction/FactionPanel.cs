@@ -30,9 +30,10 @@ public class FactionPanel : MonoBehaviour, IUIPanel
     {
         
     }
-    
-    public void OnOpen()
+
+    public void OnOpen(GameDataManager argDataManager)
     {
+        m_gameDataManager = argDataManager;
         gameObject.SetActive(true);
     }
 

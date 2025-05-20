@@ -1,4 +1,4 @@
 public class FactionState
 {
-    public int m_friendliness = 0;
+    public int m_like = 0;
 }

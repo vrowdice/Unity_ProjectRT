@@ -142,11 +142,6 @@ public class MainUIManager : MonoBehaviour
         }
         m_panelList[argPanelIndex].SetActive(true);
 
-        if(m_iPanelList[argPanelIndex] != null)
-        {
-            m_iPanelList[argPanelIndex].OnOpen();
-        }
-
         if (m_nowPanelIndex != 0)
         {
             m_BackMainBtn.SetActive(true);
@@ -154,6 +149,11 @@ public class MainUIManager : MonoBehaviour
         else
         {
             m_BackMainBtn.SetActive(false);
+        }
+
+        if (m_iPanelList[argPanelIndex] != null)
+        {
+            m_iPanelList[argPanelIndex].OnOpen(GameManager.Instance.GameDataManager);
         }
     }
 

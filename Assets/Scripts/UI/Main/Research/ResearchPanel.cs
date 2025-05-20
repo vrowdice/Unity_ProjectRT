@@ -17,13 +17,12 @@ public class ResearchPanel : MonoBehaviour, IUIPanel
         
     }
 
-    public void OnOpen()
+    public void OnOpen(GameDataManager argDataManager)
     {
-        m_gameDataManager = GameManager.Instance.GameDataManager;
-
-        SelectResearchPanel(0);
-
+        m_gameDataManager = argDataManager;
         gameObject.SetActive(true);
+
+        SelectResearchContent(0);
     }
 
     public void OnClose()
@@ -38,7 +37,7 @@ public class ResearchPanel : MonoBehaviour, IUIPanel
     /// 0 = 연구 가능
     /// 1 = 잠긴
     /// 2 = 연구된
-    public void SelectResearchPanel(int argPanelIndex)
+    public void SelectResearchContent(int argPanelIndex)
     {
         foreach (Transform item in m_researchScrollViewContentTrans)
         {
