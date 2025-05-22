@@ -107,7 +107,7 @@ public class GameManager : MonoBehaviour
         {
             case ResourceType.Wood:
                 return Wood;
-            case ResourceType.Metal:
+            case ResourceType.Iron:
                 return Metal;
             case ResourceType.Food:
                 return Food;
@@ -126,7 +126,7 @@ public class GameManager : MonoBehaviour
             case ResourceType.Wood:
                 Wood = newAmount;
                 break;
-            case ResourceType.Metal:
+            case ResourceType.Iron:
                 Metal = newAmount;
                 break;
             case ResourceType.Food:

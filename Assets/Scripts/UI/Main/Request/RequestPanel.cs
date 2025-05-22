@@ -40,14 +40,14 @@ public class RequestPanel : MonoBehaviour, IUIPanel
 
     public void ResetFactionLikeImage()
     {
-        if(m_factionLikeImageList.Count != m_gameDataManager.FactionDataDict.Count)
+        if(m_factionLikeImageList.Count != m_gameDataManager.FactionEntryDict.Count)
         {
             foreach (Transform item in m_factionLikeScrollViewContentTrans)
             {
                 Destroy(item.gameObject);
             }
 
-            foreach(KeyValuePair<FactionType, FactionEntry> item in m_gameDataManager.FactionDataDict)
+            foreach(KeyValuePair<FactionType, FactionEntry> item in m_gameDataManager.FactionEntryDict)
             {
                 FactionEntry _tmpEntry = item.Value;
 
@@ -69,7 +69,13 @@ public class RequestPanel : MonoBehaviour, IUIPanel
         {
             foreach(FactionLikeImage item in m_factionLikeImageList)
             {
-                item.SetLikeText(m_gameDataManager.FactionDataDict[item.m_factionType].m_state.m_like);
+                if (item.m_factionType == FactionType.None)
+                {
+                    Debug.LogError(ExceptionMessages.ErrorValueNotAllowed);
+                    continue;
+                }
+
+                item.SetLikeText(m_gameDataManager.FactionEntryDict[item.m_factionType].m_state.m_like);
             }
         }
     }
@@ -87,7 +93,7 @@ public class RequestPanel : MonoBehaviour, IUIPanel
             Destroy(item.gameObject);
         }
 
-        foreach (KeyValuePair<string, ResearchEntry> item in m_gameDataManager.CommonResearchDataDict)
+        foreach (KeyValuePair<string, ResearchEntry> item in m_gameDataManager.CommonResearchEntryDict)
         {
             switch (argPanelIndex)
             {

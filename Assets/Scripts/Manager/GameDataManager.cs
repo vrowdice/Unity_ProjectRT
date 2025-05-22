@@ -4,10 +4,18 @@ using UnityEngine;
 
 public class GameDataManager : MonoBehaviour
 {
+    [System.Serializable]
+    public struct ResourceIconMapping
+    {
+        public ResourceType resourceType;
+        public Sprite icon;
+    }
+
     public List<FactionData> FactionData => m_factionDataList;
     public List<ResearchData> ResearchData => m_commonResearchDataList;
-    public Dictionary<FactionType, FactionEntry> FactionDataDict => m_factionEntryDict;
-    public Dictionary<string, ResearchEntry> CommonResearchDataDict => m_commonResearchEntryDict;
+    public Dictionary<FactionType, FactionEntry> FactionEntryDict => m_factionEntryDict;
+    public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDict;
+    public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDict;
     public Dictionary<string, RequestData> RequestDataDict => m_requestDataDict;
 
     [SerializeField]
@@ -15,15 +23,23 @@ public class GameDataManager : MonoBehaviour
     [SerializeField]
     private List<ResearchData> m_commonResearchDataList = new List<ResearchData>();
     [SerializeField]
+    private List<BuildingData> m_buildingDataList = new List<BuildingData>();
+    [SerializeField]
     private List<RequestData> m_requestDataList = new List<RequestData>();
+    [SerializeField]
+    private List<ResourceIconMapping> m_resourceIconList = new();
 
     private Dictionary<FactionType, FactionEntry> m_factionEntryDict = new Dictionary<FactionType, FactionEntry>();
     private Dictionary<string, ResearchEntry> m_commonResearchEntryDict = new Dictionary<string, ResearchEntry>();
+    private Dictionary<string, BuildingEntry> m_buildingEntryDict = new Dictionary<string, BuildingEntry>();
     private Dictionary<string, RequestData> m_requestDataDict = new Dictionary<string, RequestData>();
+    private Dictionary<ResourceType, Sprite> m_resourceIconDict = new();
+
 
     void Awake()
     {
         InitializeDict();
+        InitializeResourceIcons();
     }
 
     private void InitializeDict()
@@ -59,8 +75,23 @@ public class GameDataManager : MonoBehaviour
                 Debug.LogError($"Duplicate research name found: {research.m_code}");
             }
         }
+        
+        foreach (BuildingData building in m_buildingDataList)
+        {
+            if (!m_buildingEntryDict.ContainsKey(building.name))
+            {
+                BuildingEntry _entry = new BuildingEntry(building);
 
-        foreach(RequestData item in m_requestDataList)
+                building.m_code = building.name;
+                m_buildingEntryDict.Add(building.m_code, _entry);
+            }
+            else
+            {
+                Debug.LogError($"Duplicate building name found: {building.name}");
+            }
+        }
+
+        foreach (RequestData item in m_requestDataList)
         {
             if (!m_requestDataDict.ContainsKey(item.name))
             {
@@ -73,4 +104,34 @@ public class GameDataManager : MonoBehaviour
             }
         }
     }
+
+    private void InitializeResourceIcons()
+    {
+        m_resourceIconDict.Clear();
+        foreach (var entry in m_resourceIconList)
+        {
+            if (!m_resourceIconDict.ContainsKey(entry.resourceType))
+            {
+                m_resourceIconDict.Add(entry.resourceType, entry.icon);
+            }
+            else
+            {
+                Debug.LogWarning($"Duplicate resource type icon mapping: {entry.resourceType}");
+            }
+        }
+    }
+
+    public Sprite GetResourceIcon(ResourceType type)
+    {
+        if (m_resourceIconDict.TryGetValue(type, out var icon))
+        {
+            return icon;
+        }
+        else
+        {
+            Debug.LogWarning($"Icon not found for resource type: {type}");
+            return null;
+        }
+    }
+
 }

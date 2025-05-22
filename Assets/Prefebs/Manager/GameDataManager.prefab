@@ -48,3 +48,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: af2e0922b602e6842b43955936269b4d, type: 2}
   - {fileID: 11400000, guid: c808c666ab4ea60448910d6458c1d7f9, type: 2}
   - {fileID: 11400000, guid: 325de04b9c745534e90ae5917ca7bee8, type: 2}
+  m_commonResearchDataList:
+  - {fileID: 11400000, guid: c9a620008e54cee49b25fcfebfeffe53, type: 2}
+  - {fileID: 11400000, guid: 13da7ab1ae7d5f7438bf272c962c635e, type: 2}
+  - {fileID: 11400000, guid: 9240ea37d47a67f4eb9617bfc19e8312, type: 2}
+  - {fileID: 11400000, guid: 97f7edf589ba8704c9bb09951403f18b, type: 2}
+  m_buildingDataList:
+  - {fileID: 11400000, guid: 0b055584a2992544ba32ec965dbfbfa0, type: 2}
+  - {fileID: 11400000, guid: 81504c7e17ac23f4aade8beda1e1e743, type: 2}
+  m_requestDataList: []

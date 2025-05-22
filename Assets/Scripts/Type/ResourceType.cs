@@ -1,7 +1,7 @@
 public enum ResourceType
 {
     Wood,
-    Metal,
+    Iron,
     Food,
     Tech
 }

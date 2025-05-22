@@ -76,7 +76,7 @@ public class MainUIManager : MonoBehaviour
     void SetAllResourceText()
     {
         SetResourceText(ResourceType.Wood);
-        SetResourceText(ResourceType.Metal);
+        SetResourceText(ResourceType.Iron);
         SetResourceText(ResourceType.Food);
         SetResourceText(ResourceType.Tech);
     }
@@ -88,7 +88,7 @@ public class MainUIManager : MonoBehaviour
             case ResourceType.Wood:
                 m_woodText.text = NumberFormatter.FormatNumber(m_gameManager.Wood);
                 break;
-            case ResourceType.Metal:
+            case ResourceType.Iron:
                 m_metalText.text = NumberFormatter.FormatNumber(m_gameManager.Metal);
                 break;
             case ResourceType.Food:
@@ -169,7 +169,7 @@ public class MainUIManager : MonoBehaviour
     public void AddResource1000()
     {
         TryAdd(ResourceType.Wood, 1000);
-        TryAdd(ResourceType.Metal, 1000);
+        TryAdd(ResourceType.Iron, 1000);
         TryAdd(ResourceType.Food, 1000);
         TryAdd(ResourceType.Tech, 1000);
     }

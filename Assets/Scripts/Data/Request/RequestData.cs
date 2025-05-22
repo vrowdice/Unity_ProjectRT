@@ -4,6 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewRequestData", menuName = "Request Data")]
 public class RequestData : ScriptableObject
 {
+    [HideInInspector]
     public string m_code;
     public string m_name;
     [TextArea] public string m_description;
@@ -13,9 +14,4 @@ public class RequestData : ScriptableObject
     public List<int> m_condition = new List<int>();
 
     public RequestType m_type;
-
-    public RequestData()
-    {
-
-    }
 }

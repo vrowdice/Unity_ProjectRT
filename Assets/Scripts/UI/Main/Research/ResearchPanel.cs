@@ -44,7 +44,7 @@ public class ResearchPanel : MonoBehaviour, IUIPanel
             Destroy(item.gameObject);
         }
 
-        foreach (KeyValuePair<string, ResearchEntry> item in m_gameDataManager.CommonResearchDataDict)
+        foreach (KeyValuePair<string, ResearchEntry> item in m_gameDataManager.CommonResearchEntryDict)
         {
             switch (argPanelIndex)
             {
