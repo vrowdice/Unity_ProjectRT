@@ -1,18 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class BuildingBtn : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    [SerializeField]
+    TextMeshProUGUI m_nameText = null;
+    [SerializeField]
+    Image m_image = null;
+
+    [SerializeField]
+    Transform m_addResourceContentTrans = null;
+    [SerializeField]
+    Transform m_requiredResourceContentTrans = null;
+
+    public void PlusBtnClick()
     {
-        
+
     }
 
-    // Update is called once per frame
-    void Update()
+    public void MinusBtnClick()
     {
-        
+
     }
 }
