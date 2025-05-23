@@ -14,7 +14,7 @@ public class FactionInfoBtn : MonoBehaviour
     private FactionType m_factionType;
     private FactionPanel m_factionPanel = null;
 
-    public void Setting(FactionType argFactionType, string argName, Sprite argSprite, FactionPanel argPanel)
+    public void Initialize(FactionType argFactionType, string argName, Sprite argSprite, FactionPanel argPanel)
     {
         m_factionType = argFactionType;
         m_nameText.text = argName;

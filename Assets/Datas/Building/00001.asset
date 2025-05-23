@@ -12,11 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb2828d35806c8d429f9c37aa1e896de, type: 3}
   m_Name: 00001
   m_EditorClassIdentifier: 
-  m_code: 
+  m_code: 00001
   m_name: WoodIron
   m_description: WoodIron Description
+  m_icon: {fileID: 0}
+  m_requireResourceList:
+  - m_type: 0
+    m_amount: 100
   m_productionList:
-  - resource: 0
-    amount: 100
-  - resource: 1
-    amount: 200
+  - m_type: 0
+    m_amount: 10
+  - m_type: 1
+    m_amount: 10

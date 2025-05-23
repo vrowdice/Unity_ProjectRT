@@ -17,7 +17,7 @@ public class ResearchPanel : MonoBehaviour, IUIPanel
         
     }
 
-    public void OnOpen(GameDataManager argDataManager)
+    public void OnOpen(GameDataManager argDataManager, MainUIManager argUIManager)
     {
         m_gameDataManager = argDataManager;
         gameObject.SetActive(true);
@@ -52,21 +52,21 @@ public class ResearchPanel : MonoBehaviour, IUIPanel
                     if (item.Value.m_state.m_isLocked == false && item.Value.m_state.m_isResearched == false)
                     {
                         Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
-                            Setting(item.Value.m_data.m_code, item.Value.m_data.m_icon, item.Value.m_data.m_name, item.Value.m_data.m_description);
+                            Initialize(item.Value.m_data.m_code, item.Value.m_data.m_icon, item.Value.m_data.m_name, item.Value.m_data.m_description);
                     }
                     break;
                 case 1:
                     if (item.Value.m_state.m_isLocked == true)
                     {
                         Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
-                            Setting(item.Value.m_data.m_code, item.Value.m_data.m_icon, item.Value.m_data.m_name, item.Value.m_data.m_description);
+                            Initialize(item.Value.m_data.m_code, item.Value.m_data.m_icon, item.Value.m_data.m_name, item.Value.m_data.m_description);
                     }
                     break;
                 case 2:
                     if (item.Value.m_state.m_isResearched == true)
                     {
                         Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
-                            Setting(item.Value.m_data.m_code, item.Value.m_data.m_icon, item.Value.m_data.m_name, item.Value.m_data.m_description);
+                            Initialize(item.Value.m_data.m_code, item.Value.m_data.m_icon, item.Value.m_data.m_name, item.Value.m_data.m_description);
                     }
                     break;
                 default:

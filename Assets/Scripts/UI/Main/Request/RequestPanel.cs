@@ -26,7 +26,7 @@ public class RequestPanel : MonoBehaviour, IUIPanel
         
     }
 
-    public void OnOpen(GameDataManager argDataManager)
+    public void OnOpen(GameDataManager argDataManager, MainUIManager argUIManager)
     {
         m_gameDataManager = argDataManager;
         gameObject.SetActive(true);
@@ -62,7 +62,7 @@ public class RequestPanel : MonoBehaviour, IUIPanel
 
                 m_factionLikeImageList.Add(_tmp);
 
-                _tmp.Setting(_tmpEntry.m_data.m_factionType, _tmpEntry.m_data.m_icon, _tmpEntry.m_data.m_name, _tmpEntry.m_state.m_like);
+                _tmp.Initialize(_tmpEntry.m_data.m_factionType, _tmpEntry.m_data.m_icon, _tmpEntry.m_data.m_name, _tmpEntry.m_state.m_like);
             }
         }
         else

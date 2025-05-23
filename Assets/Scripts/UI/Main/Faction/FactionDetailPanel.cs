@@ -53,7 +53,7 @@ public class FactionDetailPanel : MonoBehaviour
         foreach(ResearchData item in argFactionEntry.m_data.m_uniqueResearch)
         {
             Instantiate(m_factionResearchBtnPrefeb, m_uniqeResearchContentTrans).GetComponent<FactionResearchBtn>().
-                Setting(item.m_factionType, item.m_icon, item.m_name, item.m_description);
+                Initialize(item.m_factionType, item.m_icon, item.m_name, item.m_description);
         }
 
         gameObject.SetActive(true);

@@ -16,7 +16,7 @@ public class CommonResearchBtn : MonoBehaviour
     private string m_researchCode;
     private FactionPanel m_factionPanel = null;
 
-    public void Setting(string argResearchCode, Sprite argIcon, string argName, string argExp)
+    public void Initialize(string argResearchCode, Sprite argIcon, string argName, string argExp)
     {
         m_researchCode = argResearchCode;
         m_iconImage.sprite = argIcon;

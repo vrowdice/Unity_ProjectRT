@@ -1,6 +1,6 @@
 public static class NumberFormatter
 {
-    public static string FormatNumber(int number)
+    public static string FormatNumber(long number)
     {
         if (number >= 1_000_000_000)
             return (number / 1_000_000_000f).ToString("0.#") + "B";

@@ -5,7 +5,7 @@ using UnityEngine;
 public class GameDataManager : MonoBehaviour
 {
     [System.Serializable]
-    public struct ResourceIconMapping
+    public struct ResourceIcon
     {
         public ResourceType resourceType;
         public Sprite icon;
@@ -18,6 +18,7 @@ public class GameDataManager : MonoBehaviour
     public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDict;
     public Dictionary<string, RequestData> RequestDataDict => m_requestDataDict;
 
+    [Header("Game Data")]
     [SerializeField]
     private List<FactionData> m_factionDataList = new List<FactionData>();
     [SerializeField]
@@ -26,8 +27,11 @@ public class GameDataManager : MonoBehaviour
     private List<BuildingData> m_buildingDataList = new List<BuildingData>();
     [SerializeField]
     private List<RequestData> m_requestDataList = new List<RequestData>();
+
+    [Header("Common Data")]
     [SerializeField]
-    private List<ResourceIconMapping> m_resourceIconList = new();
+    private List<ResourceIcon> m_resourceIconList = new();
+
 
     private Dictionary<FactionType, FactionEntry> m_factionEntryDict = new Dictionary<FactionType, FactionEntry>();
     private Dictionary<string, ResearchEntry> m_commonResearchEntryDict = new Dictionary<string, ResearchEntry>();

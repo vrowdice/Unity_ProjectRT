@@ -56,4 +56,15 @@ MonoBehaviour:
   m_buildingDataList:
   - {fileID: 11400000, guid: 0b055584a2992544ba32ec965dbfbfa0, type: 2}
   - {fileID: 11400000, guid: 81504c7e17ac23f4aade8beda1e1e743, type: 2}
-  m_requestDataList: []
+  m_requestDataList:
+  - {fileID: 11400000, guid: c99f43c88dcf8f9488bf0b5115602dd8, type: 2}
+  - {fileID: 11400000, guid: a833dda88fbe02246838fde4af5e208d, type: 2}
+  m_resourceIconList:
+  - resourceType: 0
+    icon: {fileID: 21300000, guid: 5f28c46bd4228c44faf7c3b513551404, type: 3}
+  - resourceType: 1
+    icon: {fileID: 21300000, guid: f396116755d6a8e47b1b522d3b255dfe, type: 3}
+  - resourceType: 2
+    icon: {fileID: 21300000, guid: 84fcdb853e18f5245bed69e665468cfa, type: 3}
+  - resourceType: 3
+    icon: {fileID: 21300000, guid: 901f3cbedc978eb4485d9c9afeb0c9b7, type: 3}

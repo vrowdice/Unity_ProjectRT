@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class MainUIManager : MonoBehaviour
+public class MainUIManager : MonoBehaviour, IUIManager
 {
     [SerializeField]
     List<GameObject> m_panelList = new List<GameObject>();
@@ -15,9 +15,15 @@ public class MainUIManager : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_woodText = null;
     [SerializeField]
+    TextMeshProUGUI m_AddWoodText = null;
+    [SerializeField]
     TextMeshProUGUI m_metalText = null;
     [SerializeField]
+    TextMeshProUGUI m_AddMetalText = null;
+    [SerializeField]
     TextMeshProUGUI m_foodText = null;
+    [SerializeField]
+    TextMeshProUGUI m_AddFoodText = null;
     [SerializeField]
     TextMeshProUGUI m_techText = null;
 
@@ -27,10 +33,17 @@ public class MainUIManager : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_requestText = null;
 
+    [Header("Common UI")]
+    [SerializeField]
+    GameObject m_resourceIconTextPrefeb = null;
+
     private GameManager m_gameManager = null;
     private List<IUIPanel> m_iPanelList = new List<IUIPanel>();
     private Transform m_canvasTrans = null;
     private int m_nowPanelIndex = 0;
+
+    public GameObject ResourceIconTextPrefeb { get => m_resourceIconTextPrefeb; }
+    public Transform CanvasTrans => m_canvasTrans;
 
     // Start is called before the first frame update
     void Start()
@@ -81,27 +94,31 @@ public class MainUIManager : MonoBehaviour
         SetResourceText(ResourceType.Tech);
     }
 
-    void SetResourceText(ResourceType type)
+    void SetResourceText(ResourceType argType)
     {
-        switch (type)
+        long resourceAmount = m_gameManager.GetResource(argType);
+        string formattedAmount = NumberFormatter.FormatNumber(resourceAmount);
+
+        switch (argType)
         {
             case ResourceType.Wood:
-                m_woodText.text = NumberFormatter.FormatNumber(m_gameManager.Wood);
+                m_woodText.text = formattedAmount;
                 break;
             case ResourceType.Iron:
-                m_metalText.text = NumberFormatter.FormatNumber(m_gameManager.Metal);
+                m_metalText.text = formattedAmount;
                 break;
             case ResourceType.Food:
-                m_foodText.text = NumberFormatter.FormatNumber(m_gameManager.Food);
+                m_foodText.text = formattedAmount;
                 break;
             case ResourceType.Tech:
-                m_techText.text = NumberFormatter.FormatNumber(m_gameManager.Tech);
+                m_techText.text = formattedAmount;
                 break;
             default:
                 Debug.LogError(ExceptionMessages.ErrorNoSuchType);
                 break;
         }
     }
+
 
     public bool TryAdd(ResourceType argType, int argAmount)
     {
@@ -153,7 +170,7 @@ public class MainUIManager : MonoBehaviour
 
         if (m_iPanelList[argPanelIndex] != null)
         {
-            m_iPanelList[argPanelIndex].OnOpen(GameManager.Instance.GameDataManager);
+            m_iPanelList[argPanelIndex].OnOpen(GameManager.Instance.GameDataManager, this);
         }
     }
 

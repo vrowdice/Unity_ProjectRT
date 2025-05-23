@@ -1,41 +1,40 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
     // Singleton instance
     public static GameManager Instance { get; private set; }
     public GameDataManager GameDataManager => m_gameDataManager;
-    public MainUIManager MainUiManager => m_mainUiManager;
-    public int Wood { get; private set; }
-    public int Metal { get; private set; }
-    public int Food { get; private set; }
-    public int Tech { get; private set; }
-    public int Date { get; private set; }
+
+    public long Date { get; private set; }
 
     [SerializeField]
-    SceneLoadManager m_scenLoadManager = null;
+    private SceneLoadManager m_scenLoadManager = null;
     [SerializeField]
-    GameDataManager m_gameDataManager = null;
+    private GameDataManager m_gameDataManager = null;
     [SerializeField]
-    GameObject m_mainUiManagerPrefeb = null;
+    private GameObject m_mainUiManagerPrefeb = null;
+    [SerializeField]
+    private GameObject m_warningPanelPrefeb = null;
 
+    private IUIManager m_nowUIManager = null;
 
-    private MainUIManager m_mainUiManager = null;
-
+    private Dictionary<ResourceType, long> m_resources = new();
+    private Dictionary<ResourceType, long> m_dayAddResources = new();
 
     void Awake()
     {
-        // Singleton setup
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Keep this object across scenes
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
-            Destroy(gameObject); // Destroy duplicate
+            Destroy(gameObject);
         }
     }
 
@@ -44,35 +43,38 @@ public class GameManager : MonoBehaviour
         FirstSetting();
     }
 
-    void Update()
-    {
-        // Update logic if needed
-    }
-
     void FirstSetting()
     {
-        m_mainUiManager = Instantiate(m_mainUiManagerPrefeb).GetComponent<MainUIManager>();
+        m_nowUIManager = Instantiate(m_mainUiManagerPrefeb).GetComponent<MainUIManager>();
 
-        //저장이 생기면 지울 것
-        Wood = 0;
-        Metal = 0;
-        Food = 0;
-        Tech = 0;
+        // Initialize resource dictionaries
+        foreach (ResourceType argType in System.Enum.GetValues(typeof(ResourceType)))
+        {
+            m_resources[argType] = 0;
+            m_dayAddResources[argType] = 0;
+        }
+
+        
+
+        AddDate(0);
     }
 
     public void AddDate(int argAddDate)
     {
         if (argAddDate < 0)
         {
+            Date = 0;
             Debug.LogError(ExceptionMessages.ErrorValueNotAllowed);
             return;
         }
 
+        GetBuildingDateResource();
+        GetDayResource(argAddDate);
+
         Date += argAddDate;
     }
 
-
-    public bool TryConsumeResource(ResourceType argType, int argAmount)
+    public bool TryConsumeResource(ResourceType argType, long argAmount)
     {
         if (argAmount < 0)
         {
@@ -80,15 +82,20 @@ public class GameManager : MonoBehaviour
             return false;
         }
 
-        int currentAmount = GetResourceAmount(argType);
-        if (currentAmount < argAmount)
-            return false;
+        if (m_resources.TryGetValue(argType, out long currentAmount))
+        {
+            if (currentAmount < argAmount)
+                return false;
 
-        SetResourceAmount(argType, currentAmount - argAmount);
-        return true;
+            m_resources[argType] = currentAmount - argAmount;
+            return true;
+        }
+
+        Debug.LogError(ExceptionMessages.ErrorNoSuchType);
+        return false;
     }
 
-    public bool TryAddResource(ResourceType argType, int argAmount)
+    public bool TryAddResource(ResourceType argType, long argAmount)
     {
         if (argAmount < 0)
         {
@@ -96,58 +103,83 @@ public class GameManager : MonoBehaviour
             return false;
         }
 
-        int currentAmount = GetResourceAmount(argType);
-        SetResourceAmount(argType, currentAmount + argAmount);
-        return true;
+        if (m_resources.ContainsKey(argType))
+        {
+            m_resources[argType] += argAmount;
+            return true;
+        }
+
+        Debug.LogError(ExceptionMessages.ErrorNoSuchType);
+        return false;
     }
 
-    private int GetResourceAmount(ResourceType argType)
+    public void GetDayResource(int argDay)
     {
-        switch (argType)
+        foreach (KeyValuePair<ResourceType, long> kvp in m_dayAddResources)
         {
-            case ResourceType.Wood:
-                return Wood;
-            case ResourceType.Iron:
-                return Metal;
-            case ResourceType.Food:
-                return Food;
-            case ResourceType.Tech:
-                return Tech;
-            default:
-                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
-                return 0;
+            TryAddResource(kvp.Key, kvp.Value);
         }
     }
 
-    private void SetResourceAmount(ResourceType argType, int newAmount)
+    public void GetBuildingDateResource()
     {
-        switch (argType)
+        // Reset day add resource dictionary
+        List<ResourceType> keyList = new List<ResourceType>(m_dayAddResources.Keys);
+        foreach (ResourceType key in keyList)
         {
-            case ResourceType.Wood:
-                Wood = newAmount;
-                break;
-            case ResourceType.Iron:
-                Metal = newAmount;
-                break;
-            case ResourceType.Food:
-                Food = newAmount;
-                break;
-            case ResourceType.Tech:
-                Tech = newAmount;
-                break;
-            default:
-                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
-                break;
+            m_dayAddResources[key] = 0;
+        }
+
+        foreach (KeyValuePair<string, BuildingEntry> kvp in GameDataManager.BuildingEntryDict)
+        {
+            kvp.Value.ApplyProduction();
+
+            foreach (ResourceAmount argProduction in kvp.Value.m_state.m_calculatedProductionList)
+            {
+                if (m_dayAddResources.ContainsKey(argProduction.m_type))
+                {
+                    m_dayAddResources[argProduction.m_type] += argProduction.m_amount;
+                }
+                else
+                {
+                    Debug.LogError(ExceptionMessages.ErrorNoSuchType);
+                }
+            }
         }
     }
-
 
     /// <summary>
     /// 씬을 로드합니다
     /// </summary>
-    /// <param name="argScenName">씬 이름</param>
-    public void LoadScene(string argScenName)
+    /// <param name="argSceneName">씬 이름</param>
+    public void LoadScene(string argSceneName)
     {
-        m_scenLoadManager.LoadScene(argScenName);
+        m_scenLoadManager.LoadScene(argSceneName);
+    }
+
+    /// <summary>
+    /// 현재 리소스 양을 가져옵니다
+    /// </summary>
+    public long GetResource(ResourceType argType)
+    {
+        return m_resources.TryGetValue(argType, out long value) ? value : 0;
+    }
+
+    /// <summary>
+    /// 하루 자원 증가량을 가져옵니다
+    /// </summary>
+    public long GetDayAddResource(ResourceType argType)
+    {
+        return m_dayAddResources.TryGetValue(argType, out long value) ? value : 0;
+    }
+
+    /// <summary>
+    /// 경고
+    /// </summary>
+    /// <param name="argWarnStr">경고 문자열</param>
+    public void Warning(string argWarnStr)
+    {
+        GameObject _obj = Instantiate(m_warningPanelPrefeb, m_nowUIManager.CanvasTrans);
+        _obj.transform.Find("Text").gameObject.GetComponent<Text>().text = argWarnStr;
     }
 }

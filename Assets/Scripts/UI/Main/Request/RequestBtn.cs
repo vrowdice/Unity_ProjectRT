@@ -17,7 +17,7 @@ public class RequestBtn : MonoBehaviour
     public string m_code = "00001";
     public RequestPanel m_requestPanel = null;
 
-    public void Setting(RequestPanel argPanel, string argCode, Sprite argIcon, string argName, string argExp)
+    public void Initialize(RequestPanel argPanel, string argCode, Sprite argIcon, string argName, string argExp)
     {
         m_requestPanel = argPanel;
         m_code = argCode;

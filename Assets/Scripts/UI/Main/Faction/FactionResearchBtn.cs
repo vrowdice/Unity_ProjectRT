@@ -16,7 +16,7 @@ public class FactionResearchBtn : MonoBehaviour
     private FactionType m_factionType;
     private FactionPanel m_factionPanel = null;
 
-    public void Setting(FactionType argFactionType, Sprite argIcon, string argName, string argExp)
+    public void Initialize(FactionType argFactionType, Sprite argIcon, string argName, string argExp)
     {
         m_factionType = argFactionType;
         m_iconImage.sprite = argIcon;

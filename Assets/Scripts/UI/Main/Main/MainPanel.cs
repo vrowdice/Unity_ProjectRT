@@ -18,7 +18,7 @@ public class MainPanel : MonoBehaviour, IUIPanel
         
     }
 
-    public void OnOpen(GameDataManager argDataManager)
+    public void OnOpen(GameDataManager argDataManager, MainUIManager argUIManager)
     {
         m_gameDataManager = argDataManager;
         gameObject.SetActive(true);

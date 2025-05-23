@@ -21,7 +21,7 @@ public class FactionPanel : MonoBehaviour, IUIPanel
         foreach (KeyValuePair<FactionType, FactionEntry> item in m_gameDataManager.FactionEntryDict)
         {
             Instantiate(m_factionInfoBtnPrefeb, m_factionScrollViewContentTrans).GetComponent<FactionInfoBtn>().
-                Setting(item.Value.m_data.m_factionType, item.Value.m_data.m_name, item.Value.m_data.m_icon, this);
+                Initialize(item.Value.m_data.m_factionType, item.Value.m_data.m_name, item.Value.m_data.m_icon, this);
         }
     }
 
@@ -31,7 +31,7 @@ public class FactionPanel : MonoBehaviour, IUIPanel
         
     }
 
-    public void OnOpen(GameDataManager argDataManager)
+    public void OnOpen(GameDataManager argDataManager, MainUIManager argUIManager)
     {
         m_gameDataManager = argDataManager;
         gameObject.SetActive(true);

@@ -15,7 +15,7 @@ public class FactionLikeImage : MonoBehaviour
 
     public FactionType m_factionType = FactionType.None;
 
-    public void Setting(FactionType argFactionType, Sprite argSprite, string argName, int arglike)
+    public void Initialize(FactionType argFactionType, Sprite argSprite, string argName, int arglike)
     {
         m_factionType = argFactionType;
         m_image.sprite = argSprite;
