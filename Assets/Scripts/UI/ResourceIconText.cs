@@ -14,7 +14,9 @@ public class ResourceIconText : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_changeText = null;
 
-    public void Initialize(ResourceType argResourceType, long argBaseAmount, long? argChangeAmount = null)
+    //각각 초기화 필요
+    //해당 함수 선행 실행 후 변경 택스트 실행
+    public void InitializeMainText(ResourceType argResourceType, long argBaseAmount)
     {
         if (m_icon != null)
             m_icon.sprite = GameManager.Instance.GameDataManager.GetResourceIcon(argResourceType);
@@ -24,22 +26,20 @@ public class ResourceIconText : MonoBehaviour
             m_text.text = NumberFormatter.FormatNumber(argBaseAmount);
             m_text.color = Color.black;
         }
-        
-        if (m_changeText != null)
-        {
-            if (argChangeAmount.HasValue && argChangeAmount.Value != 0)
-            {
-                long change = argChangeAmount.Value;
-                m_changeText.text = (change > 0 ? "+" : "") + change;
-                m_changeText.color = change > 0 ? Color.green : Color.red;
-                m_changeText.gameObject.SetActive(true);
-            }
-            else
-            {
-                m_changeText.gameObject.SetActive(false);
-            }
-        }
+
+        m_changeText.gameObject.SetActive(false);
     }
 
+    public void InitializeChangeText(long argChangeAmount, bool argIsShowColor)
+    {
+        long change = argChangeAmount;
+        m_changeText.text = (change > 0 ? "+" : "") + change;
 
+        if (argIsShowColor)
+            m_changeText.color = change > 0 ? Color.green : Color.red;
+        else
+            m_changeText.color = Color.black;
+
+        m_changeText.gameObject.SetActive(true);
+    }
 }

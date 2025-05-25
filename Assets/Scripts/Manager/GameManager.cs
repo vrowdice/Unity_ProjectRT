@@ -16,14 +16,12 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameDataManager m_gameDataManager = null;
     [SerializeField]
-    private GameObject m_mainUiManagerPrefeb = null;
-    [SerializeField]
     private GameObject m_warningPanelPrefeb = null;
 
     private IUIManager m_nowUIManager = null;
 
-    private Dictionary<ResourceType, long> m_resources = new();
-    private Dictionary<ResourceType, long> m_dayAddResources = new();
+    private Dictionary<ResourceType, long> m_resourcesDict = new();
+    private Dictionary<ResourceType, long> m_producedResourcesDict = new();
 
     void Awake()
     {
@@ -45,16 +43,40 @@ public class GameManager : MonoBehaviour
 
     void FirstSetting()
     {
-        m_nowUIManager = Instantiate(m_mainUiManagerPrefeb).GetComponent<MainUIManager>();
+        // Find the Canvas in the current scene
+        Canvas canvas = FindObjectOfType<Canvas>();
+
+        if (canvas != null)
+        {
+            // Try to get the IUIManager component directly from the Canvas
+            m_nowUIManager = canvas.GetComponent<IUIManager>();
+
+            if (m_nowUIManager == null)
+            {
+                // If not directly on the Canvas, search in its children
+                m_nowUIManager = canvas.GetComponentInChildren<IUIManager>();
+            }
+
+            if (m_nowUIManager != null)
+            {
+                m_nowUIManager.Initialize();
+            }
+            else
+            {
+                Debug.LogError("No IUIManager found on the Canvas or its children!");
+            }
+        }
+        else
+        {
+            Debug.LogError("No Canvas found in the scene!");
+        }
 
         // Initialize resource dictionaries
         foreach (ResourceType argType in System.Enum.GetValues(typeof(ResourceType)))
         {
-            m_resources[argType] = 0;
-            m_dayAddResources[argType] = 0;
+            m_resourcesDict[argType] = 0;
+            m_producedResourcesDict[argType] = 0;
         }
-
-        
 
         AddDate(0);
     }
@@ -74,6 +96,65 @@ public class GameManager : MonoBehaviour
         Date += argAddDate;
     }
 
+    public bool TryConsumeAllResource(Dictionary<ResourceType, long> argResourceDict)
+    {
+        foreach (KeyValuePair<ResourceType, long> item in argResourceDict)
+        {
+            if (item.Value < 0)
+            {
+                Debug.Log(item.Value);
+                Debug.LogError(ExceptionMessages.ErrorNegativeValue);
+                return false;
+            }
+
+            if (!m_resourcesDict.ContainsKey(item.Key))
+            {
+                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
+                return false;
+            }
+
+            if (m_resourcesDict[item.Key] < item.Value)
+            {
+                return false;
+            }
+        }
+
+        foreach (KeyValuePair<ResourceType, long> item in argResourceDict)
+        {
+            m_resourcesDict[item.Key] -= item.Value;
+        }
+
+        m_nowUIManager.SetAllResourceText();
+        return true;
+    }
+
+    public bool TryAddAllResource(Dictionary<ResourceType, long> argResourceDict)
+    {
+        foreach (KeyValuePair<ResourceType, long> item in argResourceDict)
+        {
+            if (item.Value < 0)
+            {
+                Debug.LogError(ExceptionMessages.ErrorNegativeValue);
+                return false;
+            }
+
+            if (!m_resourcesDict.ContainsKey(item.Key))
+            {
+                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
+                return false;
+            }
+        }
+
+        foreach (KeyValuePair<ResourceType, long> item in argResourceDict)
+        {
+            m_resourcesDict[item.Key] += item.Value;
+        }
+
+        m_nowUIManager.SetAllResourceText();
+        return true;
+    }
+
+
     public bool TryConsumeResource(ResourceType argType, long argAmount)
     {
         if (argAmount < 0)
@@ -82,12 +163,13 @@ public class GameManager : MonoBehaviour
             return false;
         }
 
-        if (m_resources.TryGetValue(argType, out long currentAmount))
+        if (m_resourcesDict.TryGetValue(argType, out long currentAmount))
         {
             if (currentAmount < argAmount)
                 return false;
 
-            m_resources[argType] = currentAmount - argAmount;
+            m_resourcesDict[argType] = currentAmount - argAmount;
+            m_nowUIManager.SetAllResourceText();
             return true;
         }
 
@@ -103,9 +185,10 @@ public class GameManager : MonoBehaviour
             return false;
         }
 
-        if (m_resources.ContainsKey(argType))
+        if (m_resourcesDict.ContainsKey(argType))
         {
-            m_resources[argType] += argAmount;
+            m_resourcesDict[argType] += argAmount;
+            m_nowUIManager.SetAllResourceText();
             return true;
         }
 
@@ -115,7 +198,7 @@ public class GameManager : MonoBehaviour
 
     public void GetDayResource(int argDay)
     {
-        foreach (KeyValuePair<ResourceType, long> kvp in m_dayAddResources)
+        foreach (KeyValuePair<ResourceType, long> kvp in m_producedResourcesDict)
         {
             TryAddResource(kvp.Key, kvp.Value);
         }
@@ -124,10 +207,10 @@ public class GameManager : MonoBehaviour
     public void GetBuildingDateResource()
     {
         // Reset day add resource dictionary
-        List<ResourceType> keyList = new List<ResourceType>(m_dayAddResources.Keys);
+        List<ResourceType> keyList = new List<ResourceType>(m_producedResourcesDict.Keys);
         foreach (ResourceType key in keyList)
         {
-            m_dayAddResources[key] = 0;
+            m_producedResourcesDict[key] = 0;
         }
 
         foreach (KeyValuePair<string, BuildingEntry> kvp in GameDataManager.BuildingEntryDict)
@@ -136,9 +219,9 @@ public class GameManager : MonoBehaviour
 
             foreach (ResourceAmount argProduction in kvp.Value.m_state.m_calculatedProductionList)
             {
-                if (m_dayAddResources.ContainsKey(argProduction.m_type))
+                if (m_producedResourcesDict.ContainsKey(argProduction.m_type))
                 {
-                    m_dayAddResources[argProduction.m_type] += argProduction.m_amount;
+                    m_producedResourcesDict[argProduction.m_type] += argProduction.m_amount;
                 }
                 else
                 {
@@ -162,7 +245,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public long GetResource(ResourceType argType)
     {
-        return m_resources.TryGetValue(argType, out long value) ? value : 0;
+        return m_resourcesDict.TryGetValue(argType, out long value) ? value : 0;
     }
 
     /// <summary>
@@ -170,7 +253,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public long GetDayAddResource(ResourceType argType)
     {
-        return m_dayAddResources.TryGetValue(argType, out long value) ? value : 0;
+        return m_producedResourcesDict.TryGetValue(argType, out long value) ? value : 0;
     }
 
     /// <summary>

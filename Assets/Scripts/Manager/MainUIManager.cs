@@ -15,17 +15,19 @@ public class MainUIManager : MonoBehaviour, IUIManager
     [SerializeField]
     TextMeshProUGUI m_woodText = null;
     [SerializeField]
-    TextMeshProUGUI m_AddWoodText = null;
+    TextMeshProUGUI m_addWoodText = null;
     [SerializeField]
     TextMeshProUGUI m_metalText = null;
     [SerializeField]
-    TextMeshProUGUI m_AddMetalText = null;
+    TextMeshProUGUI m_addMetalText = null;
     [SerializeField]
     TextMeshProUGUI m_foodText = null;
     [SerializeField]
-    TextMeshProUGUI m_AddFoodText = null;
+    TextMeshProUGUI m_addFoodText = null;
     [SerializeField]
     TextMeshProUGUI m_techText = null;
+    [SerializeField]
+    TextMeshProUGUI m_addTechText = null;
 
     [Header("Game Info Text")]
     [SerializeField]
@@ -45,22 +47,10 @@ public class MainUIManager : MonoBehaviour, IUIManager
     public GameObject ResourceIconTextPrefeb { get => m_resourceIconTextPrefeb; }
     public Transform CanvasTrans => m_canvasTrans;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        FirstSetting();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    void FirstSetting()
+    public void Initialize()
     {
         m_gameManager = GameManager.Instance;
-        m_canvasTrans = gameObject.transform.Find("Canvas");
+        m_canvasTrans = transform;
 
         //패널 초기화
         foreach (GameObject item in m_panelList)
@@ -80,18 +70,22 @@ public class MainUIManager : MonoBehaviour, IUIManager
         }
         m_panelList[0].SetActive(true);
 
-        //메인으로 돌아가기 버튼
         m_BackMainBtn.SetActive(false);
 
         SetAllResourceText();
     }
 
-    void SetAllResourceText()
+    public void SetAllResourceText()
     {
         SetResourceText(ResourceType.Wood);
         SetResourceText(ResourceType.Iron);
         SetResourceText(ResourceType.Food);
         SetResourceText(ResourceType.Tech);
+
+        SetAddResourceText(ResourceType.Wood);
+        SetAddResourceText(ResourceType.Iron);
+        SetAddResourceText(ResourceType.Food);
+        SetAddResourceText(ResourceType.Tech);
     }
 
     void SetResourceText(ResourceType argType)
@@ -119,6 +113,30 @@ public class MainUIManager : MonoBehaviour, IUIManager
         }
     }
 
+    void SetAddResourceText(ResourceType argType)
+    {
+        long resourceAmount = m_gameManager.GetDayAddResource(argType);
+        string formattedAmount = NumberFormatter.FormatNumber(resourceAmount);
+
+        switch (argType)
+        {
+            case ResourceType.Wood:
+                m_addWoodText.text = formattedAmount;
+                break;
+            case ResourceType.Iron:
+                m_addMetalText.text = formattedAmount;
+                break;
+            case ResourceType.Food:
+                m_addFoodText.text = formattedAmount;
+                break;
+            case ResourceType.Tech:
+                m_addTechText.text = formattedAmount;
+                break;
+            default:
+                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
+                break;
+        }
+    }
 
     public bool TryAdd(ResourceType argType, int argAmount)
     {
