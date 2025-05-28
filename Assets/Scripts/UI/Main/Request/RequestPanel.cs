@@ -113,6 +113,6 @@ public class RequestPanel : MonoBehaviour, IUIPanel
 
     public void OpenRequestDetailPanel(string argRequestCode)
     {
-        m_requestDetailPanel.OnOpen(m_gameDataManager.RequestDataDict[argRequestCode]);
+        m_requestDetailPanel.OnOpen();
     }
 }

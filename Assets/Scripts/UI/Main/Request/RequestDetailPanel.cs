@@ -26,10 +26,8 @@ public class RequestDetailPanel : MonoBehaviour
 
     }
 
-    public void OnOpen(RequestData argRequestData)
+    public void OnOpen()
     {
-        m_titleText.text = argRequestData.m_name;
-        m_descriptionText.text = argRequestData.m_description;
         m_conditionText.text = "";
 
         gameObject.SetActive(true);

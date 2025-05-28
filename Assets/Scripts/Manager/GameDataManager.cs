@@ -16,7 +16,7 @@ public class GameDataManager : MonoBehaviour
     public Dictionary<FactionType, FactionEntry> FactionEntryDict => m_factionEntryDict;
     public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDict;
     public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDict;
-    public Dictionary<string, RequestData> RequestDataDict => m_requestDataDict;
+    public GameBalanceData GameBalanceData => m_gameBalanceData;
 
     [Header("Game Data")]
     [SerializeField]
@@ -25,18 +25,16 @@ public class GameDataManager : MonoBehaviour
     private List<ResearchData> m_commonResearchDataList = new List<ResearchData>();
     [SerializeField]
     private List<BuildingData> m_buildingDataList = new List<BuildingData>();
-    [SerializeField]
-    private List<RequestData> m_requestDataList = new List<RequestData>();
 
     [Header("Common Data")]
     [SerializeField]
     private List<ResourceIcon> m_resourceIconList = new();
-
+    [SerializeField]
+    private GameBalanceData m_gameBalanceData;
 
     private Dictionary<FactionType, FactionEntry> m_factionEntryDict = new Dictionary<FactionType, FactionEntry>();
     private Dictionary<string, ResearchEntry> m_commonResearchEntryDict = new Dictionary<string, ResearchEntry>();
     private Dictionary<string, BuildingEntry> m_buildingEntryDict = new Dictionary<string, BuildingEntry>();
-    private Dictionary<string, RequestData> m_requestDataDict = new Dictionary<string, RequestData>();
     private Dictionary<ResourceType, Sprite> m_resourceIconDict = new();
 
 
@@ -92,19 +90,6 @@ public class GameDataManager : MonoBehaviour
             else
             {
                 Debug.LogError($"Duplicate building name found: {building.name}");
-            }
-        }
-
-        foreach (RequestData item in m_requestDataList)
-        {
-            if (!m_requestDataDict.ContainsKey(item.name))
-            {
-                item.m_code = item.name;
-                m_requestDataDict.Add(item.m_code, item);
-            }
-            else
-            {
-                Debug.LogError($"Duplicate research name found: {item.m_code}");
             }
         }
     }

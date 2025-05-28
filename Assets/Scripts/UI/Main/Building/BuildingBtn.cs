@@ -84,19 +84,7 @@ public class BuildingBtn : MonoBehaviour
     // 예상 필요 리소스를 반환
     public List<ResourceAmount> GetRequiredResources()
     {
-        int _totalCount = m_buildingCountState;
-        if (_totalCount <= 0)
-            _totalCount = 0;
-
-        List<ResourceAmount> required = new List<ResourceAmount>();
-
-        foreach (ResourceAmount baseItem in m_buildingEntry.m_data.m_requireResourceList)
-        {
-            long totalAmount = baseItem.m_amount * _totalCount;
-            required.Add(new ResourceAmount(baseItem.m_type, totalAmount));
-        }
-
-        return required;
+        return CurrentRequiredResources;
     }
 
     public void PlusBtnClick()
@@ -153,22 +141,35 @@ public class BuildingBtn : MonoBehaviour
         foreach (ResourceAmount baseItem in m_buildingEntry.m_data.m_requireResourceList)
         {
             long baseAmount = baseItem.m_amount;
-            long totalAmount = baseItem.m_amount * m_buildingCountState;
+            long totalAmount;
+
+            if (m_buildingCountState < 0)
+            {
+                long refundedAmount = (long)(baseItem.m_amount * Mathf.Abs(m_buildingCountState) * m_buildingPanel.GameDataManager.GameBalanceData.m_buildingRefundRate);
+                totalAmount = -refundedAmount;
+            }
+            else
+            {
+                totalAmount = baseItem.m_amount * m_buildingCountState;
+            }
 
             CurrentRequiredResources.Add(new ResourceAmount(baseItem.m_type, totalAmount));
 
             GameObject obj = Instantiate(m_buildingPanel.MainUIManager.ResourceIconTextPrefeb, m_requiredResourceContentTrans);
             obj.GetComponent<ResourceIconText>().InitializeMainText(baseItem.m_type, baseAmount);
 
-            if(m_buildingCount == totalAmount)
-            {
-                obj.GetComponent<ResourceIconText>().InitializeChangeText(-totalAmount, false);
-            }
-            else
+            if (totalAmount < 0)
             {
                 obj.GetComponent<ResourceIconText>().InitializeChangeText(-totalAmount, true);
             }
-            
+            else if (totalAmount > 0)
+            {
+                obj.GetComponent<ResourceIconText>().InitializeChangeText(-totalAmount, true);
+            }
+            else
+            {
+                obj.GetComponent<ResourceIconText>().InitializeChangeText(0, false);
+            }
         }
     }
 

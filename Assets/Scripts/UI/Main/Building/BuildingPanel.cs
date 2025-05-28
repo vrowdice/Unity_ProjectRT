@@ -20,6 +20,7 @@ public class BuildingPanel : MonoBehaviour, IUIPanel
     private Dictionary<ResourceType, long> m_requireResourcesDict = new();
     private Dictionary<ResourceType, long> m_producedResourcesDict = new();
 
+    public GameDataManager GameDataManager => m_gameDataManager;
     public MainUIManager MainUIManager => m_mainUIManager;
 
     // Start is called before the first frame update
@@ -74,35 +75,14 @@ public class BuildingPanel : MonoBehaviour, IUIPanel
 
     }
 
-    public void ResetState()
+    public void OnClickResetButton()
     {
-        foreach (BuildingBtn item in m_bulidingBtnList)
-        {
-            item.Initialize();
-        }
-
-        m_requireResourcesDict = new();
-        m_producedResourcesDict = new();
-
-        UpdateChangeInfoUI();
+        GameManager.Instance.ShowConfirmDialog(ConfirmDialogMessage.ResetState, ResetState);
     }
 
-    public void ApplyState()
+    public void OnClickApplyButton()
     {
-        if (!GameManager.Instance.TryConsumeAllResource(m_requireResourcesDict))
-        {
-            GameManager.Instance.Warning(WarningMessages.WarningNotEnoughResource);
-            return;
-        }
-
-        foreach (BuildingBtn item in m_bulidingBtnList)
-        {
-            m_gameDataManager.BuildingEntryDict[item.Code].m_state.m_amount = item.GetTotalCount();
-        }
-
-        ResetState();
-        GameManager.Instance.GetBuildingDateResource();
-        MainUIManager.SetAllResourceText();
+        GameManager.Instance.ShowConfirmDialog(ConfirmDialogMessage.ApplyState, ApplyState);
     }
 
     public void OnBuildingBtnChanged(string argCode)
@@ -122,11 +102,42 @@ public class BuildingPanel : MonoBehaviour, IUIPanel
 
             foreach (ResourceAmount item2 in item.GetRequiredResources())
             {
-                m_requireResourcesDict[item2.m_type] += item2.m_amount;
+                m_requireResourcesDict[item2.m_type] -= item2.m_amount;
             }
         }
 
         UpdateChangeInfoUI();
+    }
+
+    void ResetState()
+    {
+        foreach (BuildingBtn item in m_bulidingBtnList)
+        {
+            item.Initialize();
+        }
+        
+        m_producedResourcesDict = new();
+        m_requireResourcesDict = new();
+
+        UpdateChangeInfoUI();
+    }
+
+    void ApplyState()
+    {
+        if (!GameManager.Instance.TryChangeAllResources(m_requireResourcesDict))
+        {
+            GameManager.Instance.Warning(WarningMessages.WarningNotEnoughResource);
+            return;
+        }
+
+        foreach (BuildingBtn item in m_bulidingBtnList)
+        {
+            m_gameDataManager.BuildingEntryDict[item.Code].m_state.m_amount = item.GetTotalCount();
+        }
+
+        ResetState();
+        GameManager.Instance.GetBuildingDateResource();
+        MainUIManager.SetAllResourceText();
     }
 
     private void UpdateChangeInfoUI()

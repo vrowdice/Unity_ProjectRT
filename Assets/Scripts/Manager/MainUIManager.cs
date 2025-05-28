@@ -121,16 +121,16 @@ public class MainUIManager : MonoBehaviour, IUIManager
         switch (argType)
         {
             case ResourceType.Wood:
-                m_addWoodText.text = formattedAmount;
+                m_addWoodText.text = "+ " + formattedAmount;
                 break;
             case ResourceType.Iron:
-                m_addMetalText.text = formattedAmount;
+                m_addMetalText.text = "+ " + formattedAmount;
                 break;
             case ResourceType.Food:
-                m_addFoodText.text = formattedAmount;
+                m_addFoodText.text = "+ " + formattedAmount;
                 break;
             case ResourceType.Tech:
-                m_addTechText.text = formattedAmount;
+                m_addTechText.text = "+ " + formattedAmount;
                 break;
             default:
                 Debug.LogError(ExceptionMessages.ErrorNoSuchType);
@@ -140,7 +140,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
 
     public bool TryAdd(ResourceType argType, int argAmount)
     {
-        if (m_gameManager.TryAddResource(argType, argAmount))
+        if (m_gameManager.TryChangeResource(argType, argAmount))
         {
             SetResourceText(argType);
             return true;
@@ -150,7 +150,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
 
     public bool TryConsume(ResourceType argType, int argAmount)
     {
-        if (m_gameManager.TryConsumeResource(argType, argAmount))
+        if (m_gameManager.TryChangeResource(argType, argAmount))
         {
             SetResourceText(argType);
             return true;
