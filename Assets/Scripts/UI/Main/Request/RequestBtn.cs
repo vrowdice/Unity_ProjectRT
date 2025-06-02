@@ -19,9 +19,8 @@ public class RequestBtn : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_completeConditionText = null;
 
-    //의뢰 계획이 확실히 되면 프리베잇으로 바꿀것
-    public string m_code = "00001";
-    public RequestPanel m_requestPanel = null;
+    string m_code = "00001";
+    RequestPanel m_requestPanel = null;
 
     public void Initialize(RequestPanel argPanel, string argCode, Sprite argClientImage, string argName, string argExp)
     {

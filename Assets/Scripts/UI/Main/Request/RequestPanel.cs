@@ -14,6 +14,9 @@ public class RequestPanel : MonoBehaviour, IUIPanel
     private GameDataManager m_gameDataManager = null;
     private List<FactionLikeImage> m_factionLikeImageList = new List<FactionLikeImage>();
 
+    private List<RequestPanel> m_acceptableRequestPanelList = new List<RequestPanel>();
+    private List<RequestPanel> m_inProgressRequestPanelList = new List<RequestPanel>();
+
     // Start is called before the first frame update
     void Start()
     {

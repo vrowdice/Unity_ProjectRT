@@ -6,11 +6,6 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance { get; private set; }
-    public GameDataManager GameDataManager => m_gameDataManager;
-
-    public long Date { get; private set; }
-
     [SerializeField]
     private SceneLoadManager m_scenLoadManager = null;
     [SerializeField]
@@ -19,6 +14,13 @@ public class GameManager : MonoBehaviour
     private GameObject m_warningPanelPrefeb = null;
     [SerializeField]
     private GameObject m_confirmDialogPrefab = null;
+
+    public static GameManager Instance { get; private set; }
+    public GameDataManager GameDataManager => m_gameDataManager;
+
+    public long Date { get; private set; }
+    public long WealthToken { get; private set; }
+    public long ExchangeToken { get; private set; }
 
     private IUIManager m_nowUIManager = null;
 

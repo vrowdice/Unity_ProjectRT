@@ -348,9 +348,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb359b9fc6f62014faae84a76d1071b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_iconImage: {fileID: 3323214936880545420}
+  m_clientImage: {fileID: 3323214936880545420}
+  m_typeImage: {fileID: 620055990639788880}
   m_nameText: {fileID: 3286202424291833351}
   m_expText: {fileID: 8667001306899584211}
+  m_completeRewardText: {fileID: 4618014128745590075}
+  m_completeConditionText: {fileID: 7490517364930335183}
   m_code: 00001
   m_requestPanel: {fileID: 0}
 --- !u!1 &3808241265695841642

@@ -11,13 +11,6 @@ public class GameDataManager : MonoBehaviour
         public Sprite icon;
     }
 
-    public List<FactionData> FactionData => m_factionDataList;
-    public List<ResearchData> ResearchData => m_commonResearchDataList;
-    public Dictionary<FactionType, FactionEntry> FactionEntryDict => m_factionEntryDict;
-    public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDict;
-    public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDict;
-    public GameBalanceData GameBalanceData => m_gameBalanceData;
-
     [Header("Game Data")]
     [SerializeField]
     private List<FactionData> m_factionDataList = new List<FactionData>();
@@ -37,6 +30,15 @@ public class GameDataManager : MonoBehaviour
     private Dictionary<string, BuildingEntry> m_buildingEntryDict = new Dictionary<string, BuildingEntry>();
     private Dictionary<ResourceType, Sprite> m_resourceIconDict = new();
 
+    private List<RequestState> m_acceptableRequestList = new List<RequestState>();
+    private List<RequestState> m_inProgressRequestList = new List<RequestState>();
+
+    public List<FactionData> FactionData => m_factionDataList;
+    public List<ResearchData> ResearchData => m_commonResearchDataList;
+    public Dictionary<FactionType, FactionEntry> FactionEntryDict => m_factionEntryDict;
+    public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDict;
+    public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDict;
+    public GameBalanceData GameBalanceData => m_gameBalanceData;
 
     void Awake()
     {
@@ -108,6 +110,11 @@ public class GameDataManager : MonoBehaviour
                 Debug.LogWarning($"Duplicate resource type icon mapping: {entry.resourceType}");
             }
         }
+    }
+
+    private void GetRandomRequest()
+    {
+
     }
 
     public Sprite GetResourceIcon(ResourceType type)

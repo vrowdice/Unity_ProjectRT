@@ -13,5 +13,18 @@ MonoBehaviour:
   m_Name: GameBalanceData
   m_EditorClassIdentifier: 
   m_buildingRefundRate: 0.8
-  m_resourceGainMultiplier: 1
-  m_buildingUpgradeCostMultiplier: 1
+  m_balanceTypeMulList:
+  - m_royalRank: 0
+    m_mul: 1.1
+  - m_royalRank: 1
+    m_mul: 1.2
+  - m_royalRank: 2
+    m_mul: 1.3
+  - m_royalRank: 3
+    m_mul: 1.5
+  - m_royalRank: 4
+    m_mul: 1.7
+  - m_royalRank: 5
+    m_mul: 1.9
+  - m_royalRank: 6
+    m_mul: 2.2
