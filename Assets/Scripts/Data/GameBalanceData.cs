@@ -6,56 +6,54 @@ using UnityEngine;
 public class GameBalanceData : ScriptableObject
 {
     [System.Serializable]
-    public class BalanceTypeMul
+    public class BalanceTypeBalance
     {
-        public BalanceType m_royalRank; // Corrected to RoyalRank
+        public BalanceType m_royalRank;
         public float m_mul;
 
-        // Constructor for easy initialization
-        public BalanceTypeMul(BalanceType rank, float mulValue)
+        public BalanceTypeBalance(BalanceType rank, float mulValue)
         {
             m_royalRank = rank;
             m_mul = mulValue;
         }
     }
 
+    [System.Serializable]
+    public class RequestTypeBalance
+    {
+        public RequestType m_type;
+        public int m_randomResourceTypeCount;
+        public int m_randomMinResourceAmountMul;
+        public int m_randomMaxResourceAmountMul;
+        public float m_likeMul;
+        public float m_wealthTokenMul;
+        public float m_exchangeTokenMul;
+
+        public RequestTypeBalance(
+            RequestType type,
+            int randomResourceTypeCount,
+            int randomMinResourceAmountMul,
+            int randomMaxResourceAmountMul,
+            float likeMul,
+            float wealthTokenMul,
+            float exchangeTokenMul)
+        {
+            m_type = type;
+            m_randomResourceTypeCount = randomResourceTypeCount;
+            m_randomMinResourceAmountMul = randomMinResourceAmountMul;
+            m_randomMaxResourceAmountMul = randomMaxResourceAmountMul;
+            m_likeMul = likeMul;
+            m_wealthTokenMul = wealthTokenMul;
+            m_exchangeTokenMul = exchangeTokenMul;
+        }
+    }
+
     [Range(0f, 1f)]
     public float m_buildingRefundRate = 0.8f; // 80% refund
 
-    public List<BalanceTypeMul> m_balanceTypeMulList = new List<BalanceTypeMul>();
+    public List<BalanceTypeBalance> m_balanceTypeMulList = new List<BalanceTypeBalance>();
+
+    public List<RequestTypeBalance> m_requestTypeBalanceList = new List<RequestTypeBalance>();
 
     public int m_maxRequest = 5;
-
-    // Add more global balancing fields as needed
-
-    // Method to initialize the list (called by the custom editor)
-    public void InitializeBalanceTypeMulList()
-    {
-        // Only initialize if the list is empty or significantly out of sync
-        // This prevents overwriting manually set values
-        if (m_balanceTypeMulList == null || m_balanceTypeMulList.Count == 0 || m_balanceTypeMulList.Count != BalanceType.GetValues(typeof(BalanceType)).Length)
-        {
-            m_balanceTypeMulList = new List<BalanceTypeMul>(); // Ensure it's not null and cleared
-
-            foreach (BalanceType rank in BalanceType.GetValues(typeof(BalanceType)))
-            {
-                // Check if this rank already exists to avoid duplicates if re-initializing
-                if (!m_balanceTypeMulList.Exists(item => item.m_royalRank == rank))
-                {
-                    m_balanceTypeMulList.Add(new BalanceTypeMul(rank, 1.0f));
-                }
-            }
-        }
-        else
-        {
-            // Optional: If the list isn't empty, check for missing ranks and add them
-            foreach (BalanceType rank in BalanceType.GetValues(typeof(BalanceType)))
-            {
-                if (!m_balanceTypeMulList.Exists(item => item.m_royalRank == rank))
-                {
-                    m_balanceTypeMulList.Add(new BalanceTypeMul(rank, 1.0f));
-                }
-            }
-        }
-    }
 }

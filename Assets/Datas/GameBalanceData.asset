@@ -28,3 +28,40 @@ MonoBehaviour:
     m_mul: 1.9
   - m_royalRank: 6
     m_mul: 2.2
+  m_requestTypeBalanceList:
+  - m_type: 0
+    m_randomResourceTypeCount: 2
+    m_randomMinResourceAmountMul: 15
+    m_randomMaxResourceAmountMul: 30
+    m_likeMul: 0
+    m_wealthTokenMul: 0
+    m_exchangeTokenMul: 1
+  - m_type: 1
+    m_randomResourceTypeCount: 3
+    m_randomMinResourceAmountMul: 10
+    m_randomMaxResourceAmountMul: 20
+    m_likeMul: 20
+    m_wealthTokenMul: 0
+    m_exchangeTokenMul: 2
+  - m_type: 2
+    m_randomResourceTypeCount: 3
+    m_randomMinResourceAmountMul: 10
+    m_randomMaxResourceAmountMul: 20
+    m_likeMul: 15
+    m_wealthTokenMul: 0
+    m_exchangeTokenMul: 2
+  - m_type: 3
+    m_randomResourceTypeCount: 2
+    m_randomMinResourceAmountMul: 5
+    m_randomMaxResourceAmountMul: 10
+    m_likeMul: 30
+    m_wealthTokenMul: 0
+    m_exchangeTokenMul: 0
+  - m_type: 4
+    m_randomResourceTypeCount: 3
+    m_randomMinResourceAmountMul: 3
+    m_randomMaxResourceAmountMul: 8
+    m_likeMul: 5
+    m_wealthTokenMul: 2
+    m_exchangeTokenMul: 0
+  m_maxRequest: 5

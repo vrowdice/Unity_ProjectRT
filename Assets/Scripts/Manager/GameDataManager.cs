@@ -7,8 +7,14 @@ public class GameDataManager : MonoBehaviour
     [System.Serializable]
     public struct ResourceIcon
     {
-        public ResourceType resourceType;
-        public Sprite icon;
+        public ResourceType m_type;
+        public Sprite m_icon;
+    }
+    [System.Serializable]
+    public struct RequestIcon
+    {
+        public RequestType m_type;
+        public Sprite m_icon;
     }
 
     [Header("Game Data")]
@@ -23,12 +29,15 @@ public class GameDataManager : MonoBehaviour
     [SerializeField]
     private List<ResourceIcon> m_resourceIconList = new();
     [SerializeField]
+    private List<RequestIcon> m_requestIconList = new();
+    [SerializeField]
     private GameBalanceData m_gameBalanceData;
 
     private Dictionary<FactionType, FactionEntry> m_factionEntryDict = new Dictionary<FactionType, FactionEntry>();
     private Dictionary<string, ResearchEntry> m_commonResearchEntryDict = new Dictionary<string, ResearchEntry>();
     private Dictionary<string, BuildingEntry> m_buildingEntryDict = new Dictionary<string, BuildingEntry>();
     private Dictionary<ResourceType, Sprite> m_resourceIconDict = new();
+    private Dictionary<RequestType, Sprite> m_requestIconDict = new();
 
     private List<RequestState> m_acceptableRequestList = new List<RequestState>();
     private List<RequestState> m_inProgressRequestList = new List<RequestState>();
@@ -43,7 +52,7 @@ public class GameDataManager : MonoBehaviour
     void Awake()
     {
         InitializeDict();
-        InitializeResourceIcons();
+        InitializeIcons();
     }
 
     private void InitializeDict()
@@ -61,7 +70,7 @@ public class GameDataManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError($"Duplicate faction type found: {faction.m_factionType}");
+                Debug.LogError(ExceptionMessages.ErrorNoSuchType + faction.m_factionType);
             }
         }
 
@@ -76,7 +85,7 @@ public class GameDataManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError($"Duplicate research name found: {research.m_code}");
+                Debug.LogError(ExceptionMessages.ErrorValueNotAllowed + research.m_code);
             }
         }
         
@@ -91,23 +100,38 @@ public class GameDataManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError($"Duplicate building name found: {building.name}");
+                Debug.LogError(ExceptionMessages.ErrorValueNotAllowed + building.name);
             }
         }
     }
 
-    private void InitializeResourceIcons()
+    private void InitializeIcons()
     {
         m_resourceIconDict.Clear();
         foreach (var entry in m_resourceIconList)
         {
-            if (!m_resourceIconDict.ContainsKey(entry.resourceType))
+            if (!m_resourceIconDict.ContainsKey(entry.m_type))
             {
-                m_resourceIconDict.Add(entry.resourceType, entry.icon);
+                m_resourceIconDict.Add(entry.m_type, entry.m_icon);
             }
             else
             {
-                Debug.LogWarning($"Duplicate resource type icon mapping: {entry.resourceType}");
+                Debug.LogWarning(ExceptionMessages.ErrorNoSuchType + entry.m_type);
+            }
+        }
+
+        m_requestIconDict.Clear();
+        {
+            foreach (var entry in m_requestIconList)
+            {
+                if (!m_requestIconDict.ContainsKey(entry.m_type))
+                {
+                    m_requestIconDict.Add(entry.m_type, entry.m_icon);
+                }
+                else
+                {
+                    Debug.LogWarning(ExceptionMessages.ErrorNoSuchType + entry.m_type);
+                }
             }
         }
     }
@@ -125,7 +149,20 @@ public class GameDataManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"Icon not found for resource type: {type}");
+            Debug.LogWarning(ExceptionMessages.ErrorNoSuchType);
+            return null;
+        }
+    }
+
+    public Sprite GetRequestIcon(RequestType type)
+    {
+        if (m_requestIconDict.TryGetValue(type, out var icon))
+        {
+            return icon;
+        }
+        else
+        {
+            Debug.LogWarning(ExceptionMessages.ErrorNoSuchType);
             return null;
         }
     }
