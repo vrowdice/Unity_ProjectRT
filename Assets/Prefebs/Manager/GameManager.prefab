@@ -71,16 +71,20 @@ PrefabInstance:
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
-      propertyPath: m_requestIconList.Array.data[2].m_type
+      propertyPath: m_requestIconList.Array.data[1].m_type
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
-      propertyPath: m_requestIconList.Array.data[3].m_type
+      propertyPath: m_requestIconList.Array.data[2].m_type
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
-      propertyPath: m_requestIconList.Array.data[4].m_type
+      propertyPath: m_requestIconList.Array.data[3].m_type
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_requestIconList.Array.data[4].m_type
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
       propertyPath: m_resourceIconList.Array.data[0].m_icon
