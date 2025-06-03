@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
     public GameDataManager GameDataManager => m_gameDataManager;
 
-    public long Date { get; private set; }
+    public int Date { get; private set; }
     public long WealthToken { get; private set; }
     public long ExchangeToken { get; private set; }
 
@@ -78,8 +78,6 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogError("No Canvas found in the scene!");
         }
-
-        AddDate(0);
     }
 
     public void AddDate(int argAddDate)
@@ -91,10 +89,23 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        if(GameDataManager.GameBalanceEntry.m_data.m_maxDate <= Date)
+        {
+            Date = GameDataManager.GameBalanceEntry.m_data.m_maxDate;
+        }
+
         GetBuildingDateResource();
         GetDayResource(argAddDate);
 
         Date += argAddDate;
+
+        GameBalanceEntry _balanceEntry = m_gameDataManager.GameBalanceEntry;
+
+        _balanceEntry.m_state.m_dateMul = 1.0f + Mathf.Pow(_balanceEntry.m_data.m_dateBalanceMul, Date);
+        if (Date % _balanceEntry.m_data.m_makeRequestDate == 0)
+        {
+            m_gameDataManager.MakeRandomRequest();
+        }
     }
 
     public bool TryChangeAllResources(Dictionary<ResourceType, long> argResourceChanges)

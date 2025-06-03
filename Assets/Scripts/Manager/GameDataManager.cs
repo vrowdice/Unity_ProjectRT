@@ -42,17 +42,18 @@ public class GameDataManager : MonoBehaviour
     private List<RequestState> m_acceptableRequestList = new List<RequestState>();
     private List<RequestState> m_inProgressRequestList = new List<RequestState>();
 
-    public List<FactionData> FactionData => m_factionDataList;
-    public List<ResearchData> ResearchData => m_commonResearchDataList;
+    private GameBalanceEntry m_gameBalanceEntry;
+
     public Dictionary<FactionType, FactionEntry> FactionEntryDict => m_factionEntryDict;
     public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDict;
     public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDict;
-    public GameBalanceData GameBalanceData => m_gameBalanceData;
+    public GameBalanceEntry GameBalanceEntry => m_gameBalanceEntry;
 
     void Awake()
     {
         InitializeDict();
         InitializeIcons();
+        InitializeBalanceEntry();
     }
 
     private void InitializeDict()
@@ -105,6 +106,17 @@ public class GameDataManager : MonoBehaviour
         }
     }
 
+    private void InitializeBalanceEntry()
+    {
+        m_gameBalanceData.InitializeDict();
+
+        m_gameBalanceEntry = new GameBalanceEntry(m_gameBalanceData, new GameBalanceState());
+
+        GameBalanceEntry.m_state.m_mainMul = GameBalanceEntry.m_data.GetBalanceTypeBalance(
+            GameBalanceEntry.m_data.m_firstBalanceType).m_mul;
+        GameBalanceEntry.m_state.m_dateMul = 1.0f;
+    }
+
     private void InitializeIcons()
     {
         m_resourceIconDict.Clear();
@@ -136,9 +148,104 @@ public class GameDataManager : MonoBehaviour
         }
     }
 
-    private void GetRandomRequest()
+    private RequestType GetRandomRequestType()
     {
+        System.Array requestTypes = System.Enum.GetValues(typeof(RequestType));
+        return (RequestType)requestTypes.GetValue(Random.Range(0, requestTypes.Length));
+    }
 
+    private FactionType RandomFactionType(List<FactionType> argFactionTypeList)
+    {
+        if (argFactionTypeList == null || argFactionTypeList.Count == 0)
+        {
+            return FactionType.None;
+        }
+        int randomIndex = Random.Range(0, argFactionTypeList.Count);
+
+        if(GetFactionEntry(argFactionTypeList[randomIndex]).m_state.m_have == false)
+        {
+            return FactionType.None;
+        }
+
+        return argFactionTypeList[randomIndex];
+    }
+
+
+    public void MakeRandomRequest()
+    {
+        List<FactionType> _factionTypes = new List<FactionType>(FactionEntryDict.Keys);
+
+        for (int i = 0; i < GameBalanceEntry.m_data.m_maxRequest; i++)
+        {
+            FactionType _type = RandomFactionType(_factionTypes);
+
+            int _like = 0;
+            if(GetFactionEntry(_type) == null)
+            {
+                _like = 0;
+            }
+            else
+            {
+                _like = GetFactionEntry(_type).m_state.m_like;
+            }
+
+            m_acceptableRequestList.Add(new RequestState(
+                GameManager.Instance.Date,
+                _like,
+                GetRandomRequestType(),
+                _type,
+                GameBalanceEntry));
+
+            _factionTypes.Remove(_type);
+        }
+    }
+
+    public FactionEntry GetFactionEntry(FactionType argType)
+    {
+        if (argType == FactionType.None)
+        {
+            return null;
+        }
+
+        if (m_factionEntryDict != null && m_factionEntryDict.TryGetValue(argType, out FactionEntry entry))
+        {
+            return entry;
+        }
+
+        Debug.LogWarning($"{ExceptionMessages.ErrorNoSuchType}: FactionType - {argType}");
+        return null;
+    }
+
+    public ResearchEntry GetCommonResearchEntry(string argKey)
+    {
+        if (string.IsNullOrEmpty(argKey))
+        {
+            return null;
+        }
+
+        if (m_commonResearchEntryDict != null && m_commonResearchEntryDict.TryGetValue(argKey, out ResearchEntry entry))
+        {
+            return entry;
+        }
+
+        Debug.LogWarning($"{ExceptionMessages.ErrorNoSuchType}: CommonResearch - {argKey}");
+        return null;
+    }
+
+    public BuildingEntry GetBuildingEntry(string argKey)
+    {
+        if (string.IsNullOrEmpty(argKey))
+        {
+            return null;
+        }
+
+        if (m_buildingEntryDict != null && m_buildingEntryDict.TryGetValue(argKey, out BuildingEntry entry))
+        {
+            return entry;
+        }
+
+        Debug.LogWarning($"{ExceptionMessages.ErrorNoSuchType}: Building - {argKey}");
+        return null;
     }
 
     public Sprite GetResourceIcon(ResourceType type)

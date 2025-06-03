@@ -145,7 +145,7 @@ public class BuildingBtn : MonoBehaviour
 
             if (m_buildingCountState < 0)
             {
-                long refundedAmount = (long)(baseItem.m_amount * Mathf.Abs(m_buildingCountState) * m_buildingPanel.GameDataManager.GameBalanceData.m_buildingRefundRate);
+                long refundedAmount = (long)(baseItem.m_amount * Mathf.Abs(m_buildingCountState) * m_buildingPanel.GameDataManager.GameBalanceEntry.m_data.m_buildingRefundRate);
                 totalAmount = -refundedAmount;
             }
             else

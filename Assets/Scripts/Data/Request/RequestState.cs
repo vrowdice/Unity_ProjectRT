@@ -11,58 +11,21 @@ public class RequestState
     public int m_wealthToken = 0;
     public int m_exchangeToken = 0;
 
-    public RequestState(List<FactionType> availableFactionTypes, long minResourceAmount, long maxResourceAmount)
+    public RequestState(int argDate, int argNowLike, RequestType argRequestType, FactionType argfactionType, GameBalanceEntry argGameBalanceEntry)
     {
-        // 1. Randomly select a RequestType
-        m_requestType = GetRandomRequestType();
+        m_requestType = argRequestType;
+        m_factionType = argfactionType;
 
-        // 2. Select a FactionType from the provided list
-        if (availableFactionTypes != null && availableFactionTypes.Count > 0)
-        {
-            m_factionType = availableFactionTypes[Random.Range(0, availableFactionTypes.Count)];
-        }
-        else
-        {
-            Debug.LogWarning("No available faction types provided. Assigning a default FactionType.");
-            m_factionType = FactionType.None;
-        }
+        m_resourceReward = argGameBalanceEntry.CalRequestResources(m_requestType);
+        m_factionAddLike = argGameBalanceEntry.CalRequestFactionLike(argNowLike, m_requestType);
+        m_wealthToken = argGameBalanceEntry.CalRequestWealthToken(argDate, m_requestType);
+        m_exchangeToken = argGameBalanceEntry.CalRequestExchangeToken(argDate, m_requestType);
 
-        // 3. Generate two unique ResourceAmount rewards
-        m_resourceReward = GenerateUniqueResourceRewards(2, minResourceAmount, maxResourceAmount);
-    }
-
-    private RequestType GetRandomRequestType()
-    {
-        System.Array requestTypes = System.Enum.GetValues(typeof(RequestType));
-        return (RequestType)requestTypes.GetValue(Random.Range(0, requestTypes.Length));
-    }
-
-    private List<ResourceAmount> GenerateUniqueResourceRewards(int count, long minAmount, long maxAmount)
-    {
-        List<ResourceAmount> rewards = new List<ResourceAmount>();
-        List<ResourceType> availableResourceTypes = new List<ResourceType>(System.Enum.GetValues(typeof(ResourceType)) as ResourceType[]);
-
-        if (availableResourceTypes.Count < count)
-        {
-            Debug.LogWarning("Not enough unique resource types to generate the requested count of rewards. Generating fewer rewards.");
-            count = availableResourceTypes.Count;
-        }
-
-        for (int i = 0; i < count; i++)
-        {
-            if (availableResourceTypes.Count == 0)
-            {
-                break; // No more unique resource types to choose from
-            }
-
-            int randomIndex = Random.Range(0, availableResourceTypes.Count);
-            ResourceType selectedType = availableResourceTypes[randomIndex];
-            long randomAmount = Random.Range((int)minAmount, (int)maxAmount + 1); // Cast to int for Random.Range, then back to long
-
-            rewards.Add(new ResourceAmount(selectedType, randomAmount));
-            availableResourceTypes.RemoveAt(randomIndex); // Remove to ensure uniqueness
-        }
-
-        return rewards;
+        Debug.Log($"[Request Init] m_requestType: {m_requestType}");
+        Debug.Log($"[Request Init] m_factionType: {m_factionType}");
+        Debug.Log($"[Request Init] m_resourceReward: {m_resourceReward}");
+        Debug.Log($"[Request Init] m_factionAddLike: {m_factionAddLike}");
+        Debug.Log($"[Request Init] m_wealthToken: {m_wealthToken}");
+        Debug.Log($"[Request Init] m_exchangeToken: {m_exchangeToken}");
     }
 }

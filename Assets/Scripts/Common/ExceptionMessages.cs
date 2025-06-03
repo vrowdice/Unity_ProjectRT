@@ -5,4 +5,5 @@ public class ExceptionMessages
     public const string ErrorNegativeValue = "Value cannot be less than zero";
     public const string ErrorValueNotAllowed = "This value is not allowed";
     public const string ErrorNullNotAllowed = "Null value is not allowed";
+    public const string ErrorDuplicateEntryNotAllowed = "Duplicate entry is not allowed";
 }
