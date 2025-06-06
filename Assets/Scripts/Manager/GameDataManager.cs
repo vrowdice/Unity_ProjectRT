@@ -47,6 +47,8 @@ public class GameDataManager : MonoBehaviour
     public Dictionary<FactionType, FactionEntry> FactionEntryDict => m_factionEntryDict;
     public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDict;
     public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDict;
+    public List<RequestState> AcceptableRequestList => m_acceptableRequestList;
+    public List<RequestState> InProgressRequestList => m_inProgressRequestList;
     public GameBalanceEntry GameBalanceEntry => m_gameBalanceEntry;
 
     void Awake()
@@ -202,11 +204,6 @@ public class GameDataManager : MonoBehaviour
 
     public FactionEntry GetFactionEntry(FactionType argType)
     {
-        if (argType == FactionType.None)
-        {
-            return null;
-        }
-
         if (m_factionEntryDict != null && m_factionEntryDict.TryGetValue(argType, out FactionEntry entry))
         {
             return entry;

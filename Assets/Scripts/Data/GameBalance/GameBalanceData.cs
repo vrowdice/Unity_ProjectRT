@@ -5,17 +5,22 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewGameBalanceData", menuName = "Game Balance Data")]
 public class GameBalanceData : ScriptableObject
 {
+    [Header("Common")]
+    public float m_dateBalanceMul = 1.03f;
+    public int m_maxDate = 200;
+
+    [Header("Balance Type")]
+    public List<BalanceTypeBalance> m_balanceTypeMulList = new List<BalanceTypeBalance>();
+    public BalanceType m_firstBalanceType = BalanceType.King;
+
+    [Header("Building")]
     [Range(0f, 1f)]
     public float m_buildingRefundRate = 0.8f; // 80% refund
 
-    public List<BalanceTypeBalance> m_balanceTypeMulList = new List<BalanceTypeBalance>();
+    [Header("Request")]
     public List<RequestTypeBalance> m_requestTypeBalanceList = new List<RequestTypeBalance>();
-
-    public BalanceType m_firstBalanceType = BalanceType.King;
-    public float m_dateBalanceMul = 1.03f;
     public int m_maxRequest = 5;
     public int m_makeRequestDate = 5;
-    public int m_maxDate = 200;
 
     private Dictionary<BalanceType, BalanceTypeBalance> m_balanceTypeDictionary;
     private Dictionary<RequestType, RequestTypeBalance> m_requestTypeDictionary;
