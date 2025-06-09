@@ -21,6 +21,13 @@ public class GameBalanceData : ScriptableObject
     public List<RequestTypeBalance> m_requestTypeBalanceList = new List<RequestTypeBalance>();
     public int m_maxRequest = 5;
     public int m_makeRequestDate = 5;
+    //첫 번째 컨텍을 할 확률
+    public float m_firstContactPer = 70.0f;
+    //한 의뢰 사이클의 두 번째 이상 컨택이 생길 확률
+    public float m_OverSecondContactPer = 25.0f;
+    //두번 이상 컨텍이 없을 경우 오르는 확률
+    public float m_NoContactChangePer = 5.0f;
+
 
     private Dictionary<BalanceType, BalanceTypeBalance> m_balanceTypeDictionary;
     private Dictionary<RequestType, RequestTypeBalance> m_requestTypeDictionary;

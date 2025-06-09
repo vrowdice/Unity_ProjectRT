@@ -22,6 +22,8 @@ public class RequestPanel : MonoBehaviour, IUIPanel
     private List<RequestPanel> m_acceptableRequestPanelList = new List<RequestPanel>();
     private List<RequestPanel> m_inProgressRequestPanelList = new List<RequestPanel>();
 
+    private bool m_isAcceptableBtnView = true;
+
     public MainUIManager MainUIManager => m_mainUIManager;
 
     // Start is called before the first frame update
@@ -36,57 +38,7 @@ public class RequestPanel : MonoBehaviour, IUIPanel
         
     }
 
-    public void OnOpen(GameDataManager argDataManager, MainUIManager argUIManager)
-    {
-        m_gameDataManager = argDataManager;
-        m_mainUIManager = argUIManager;
-        gameObject.SetActive(true);
-        ResetFactionLikeImage();
-        SetRequestBtns(true);
-    }
-
-    public void OnClose()
-    {
-
-    }
-
-    /// <summary>
-    /// 의뢰 패널 선택
-    /// </summary>
-    /// <param name="argPanelIndex"></param>
-    /// 0 = 수락 가능
-    /// 1 = 의뢰중
-    public void SelectResearchContent(int argPanelIndex)
-    {
-        foreach (Transform item in m_factionLikeScrollViewContentTrans)
-        {
-            Destroy(item.gameObject);
-        }
-
-        foreach (KeyValuePair<string, ResearchEntry> item in m_gameDataManager.CommonResearchEntryDict)
-        {
-            switch (argPanelIndex)
-            {
-                case 0:
-                    break;
-                case 1:
-                    break;
-                case 2:
-                    break;
-                default:
-                    Debug.LogError(ExceptionMessages.ErrorInvalidResearchInfo);
-                    break;
-            }
-
-        }
-    }
-
-    public void OpenRequestDetailPanel(int argRequestIndex)
-    {
-        m_requestDetailPanel.OnOpen();
-    }
-
-    void ResetFactionLikeImage()
+    private void ResetFactionLikeImage()
     {
         if (m_factionLikeImageList.Count != m_gameDataManager.FactionEntryDict.Count)
         {
@@ -124,8 +76,10 @@ public class RequestPanel : MonoBehaviour, IUIPanel
         }
     }
 
-    void SetRequestBtns(bool argIsAcceptable)
+    private void SetRequestBtns(bool argIsAcceptable)
     {
+        m_isAcceptableBtnView = argIsAcceptable;
+
         List<RequestState> _requestList = new List<RequestState>();
 
         if (argIsAcceptable == true)
@@ -134,7 +88,7 @@ public class RequestPanel : MonoBehaviour, IUIPanel
         }
         else
         {
-            _requestList = m_gameDataManager.InProgressRequestList;
+            _requestList = m_gameDataManager.AcceptedRequestList;
         }
 
         UIUtils.ClearChildren(m_requestBtnScrollViewContentTrans);
@@ -154,5 +108,60 @@ public class RequestPanel : MonoBehaviour, IUIPanel
                 _state.m_factionType.ToString(),
                 _state.m_requestType.ToString());
         }
+    }
+
+    public void OnOpen(GameDataManager argDataManager, MainUIManager argUIManager)
+    {
+        m_gameDataManager = argDataManager;
+        m_mainUIManager = argUIManager;
+
+        gameObject.SetActive(true);
+        ResetFactionLikeImage();
+        SetRequestBtns();
+    }
+
+    public void OnClose()
+    {
+
+    }
+
+    public void SetRequestBtns()
+    {
+        SetRequestBtns(m_isAcceptableBtnView);
+    }
+
+    /// <summary>
+    /// 의뢰 패널 선택
+    /// </summary>
+    /// <param name="argPanelIndex"></param>
+    /// 0 = 수락 가능
+    /// 1 = 의뢰중
+    public void SelectRequestContent(int argPanelIndex)
+    {
+        UIUtils.ClearChildren(m_factionLikeScrollViewContentTrans);
+
+        switch (argPanelIndex)
+        {
+            case 0:
+                SetRequestBtns(true);
+                break;
+            case 1:
+                SetRequestBtns(false);
+                break;
+            default:
+                Debug.LogError(ExceptionMessages.ErrorInvalidResearchInfo);
+                break;
+        }
+    }
+
+    public void AcceptRequest(int argAcceptIndex)
+    {
+        m_gameDataManager.AcceptRequest(argAcceptIndex);
+        SetRequestBtns();
+    }
+
+    public void OpenRequestDetailPanel(int argRequestIndex)
+    {
+        m_requestDetailPanel.OnOpen();
     }
 }

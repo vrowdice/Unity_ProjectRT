@@ -20,12 +20,5 @@ public class RequestState
         m_factionAddLike = argGameBalanceEntry.CalRequestFactionLike(argNowLike, m_requestType);
         m_wealthToken = argGameBalanceEntry.CalRequestWealthToken(argDate, m_requestType);
         m_exchangeToken = argGameBalanceEntry.CalRequestExchangeToken(argDate, m_requestType);
-
-        Debug.Log($"[Request Init] m_requestType: {m_requestType}");
-        Debug.Log($"[Request Init] m_factionType: {m_factionType}");
-        Debug.Log($"[Request Init] m_resourceReward: {m_resourceReward}");
-        Debug.Log($"[Request Init] m_factionAddLike: {m_factionAddLike}");
-        Debug.Log($"[Request Init] m_wealthToken: {m_wealthToken}");
-        Debug.Log($"[Request Init] m_exchangeToken: {m_exchangeToken}");
     }
 }

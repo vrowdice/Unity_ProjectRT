@@ -296,6 +296,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1416523583 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4065553994891212314, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
+  m_PrefabInstance: {fileID: 7655059404562622715}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df2b77f4b4a173245a8b399cd8bc7030, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1839723544
 GameObject:
   m_ObjectHideFlags: 0
@@ -584,6 +595,18 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -40
       objectReference: {fileID: 0}
+    - target: {fileID: 3957625855305389682, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1416523583}
+    - target: {fileID: 3957625855305389682, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SelectRequestContent
+      objectReference: {fileID: 0}
+    - target: {fileID: 3957625855305389682, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: RequestPanel, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 4065553994891212314, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
       propertyPath: m_requestBtnPrefeb
       value: 
@@ -592,6 +615,18 @@ PrefabInstance:
       propertyPath: m_requestBtnScrollViewContentTrans
       value: 
       objectReference: {fileID: 1020633553}
+    - target: {fileID: 4591861951030532653, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1416523583}
+    - target: {fileID: 4591861951030532653, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SelectRequestContent
+      objectReference: {fileID: 0}
+    - target: {fileID: 4591861951030532653, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
+      propertyPath: onValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: RequestPanel, Assembly-CSharp
+      objectReference: {fileID: 0}
     - target: {fileID: 4603024856201034543, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
       propertyPath: m_AnchorMax.y
       value: 1
@@ -881,7 +916,8 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 6757947731419700574, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8027221356781332390, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}

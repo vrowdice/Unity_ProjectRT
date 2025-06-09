@@ -49,6 +49,6 @@ public class RequestBtn : MonoBehaviour
 
     public void Click()
     {
-        m_requestPanel.OpenRequestDetailPanel(m_index);
+        m_requestPanel.AcceptRequest(m_index);
     }
 }

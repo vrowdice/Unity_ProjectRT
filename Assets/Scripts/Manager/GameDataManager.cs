@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -40,7 +41,7 @@ public class GameDataManager : MonoBehaviour
     private Dictionary<RequestType, Sprite> m_requestIconDict = new();
 
     private List<RequestState> m_acceptableRequestList = new List<RequestState>();
-    private List<RequestState> m_inProgressRequestList = new List<RequestState>();
+    private List<RequestState> m_AcceptedRequestList = new List<RequestState>();
 
     private GameBalanceEntry m_gameBalanceEntry;
 
@@ -48,7 +49,7 @@ public class GameDataManager : MonoBehaviour
     public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDict;
     public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDict;
     public List<RequestState> AcceptableRequestList => m_acceptableRequestList;
-    public List<RequestState> InProgressRequestList => m_inProgressRequestList;
+    public List<RequestState> AcceptedRequestList => m_AcceptedRequestList;
     public GameBalanceEntry GameBalanceEntry => m_gameBalanceEntry;
 
     void Awake()
@@ -150,39 +151,43 @@ public class GameDataManager : MonoBehaviour
         }
     }
 
-    private RequestType GetRandomRequestType()
+    private void RandomContactRequest()
     {
-        System.Array requestTypes = System.Enum.GetValues(typeof(RequestType));
-        return (RequestType)requestTypes.GetValue(Random.Range(0, requestTypes.Length));
+
     }
 
-    private FactionType RandomFactionType(List<FactionType> argFactionTypeList)
+    /// <summary>
+    /// 일반 의뢰 생성
+    /// 보통은 컨텍트 의뢰를 먼저 생성한 다음에 호출합니다.
+    /// </summary>
+    private void RandomNormalRequest()
     {
-        if (argFactionTypeList == null || argFactionTypeList.Count == 0)
+        List<FactionType> _factionTypes = FactionEntryDict.Keys.ToList();
+
+        //만약 그 팩션을 가지고 있지 않을 경우 리스트에서 제외합니다.
+        for (int i = _factionTypes.Count - 1; i >= 0; i--)
         {
-            return FactionType.None;
+            FactionType item = _factionTypes[i];
+
+            if (item == FactionType.None)
+            {
+                continue;
+            }
+
+            if (GetFactionEntry(item).m_state.m_have == false)
+            {
+                _factionTypes.RemoveAt(i);
+            }
         }
-        int randomIndex = Random.Range(0, argFactionTypeList.Count);
 
-        if(GetFactionEntry(argFactionTypeList[randomIndex]).m_state.m_have == false)
+        //이미 있는 컨택트 의뢰 갯수를 반영해 최대 의뢰를 생성합니다.
+        int _requestCount = GameBalanceEntry.m_data.m_maxRequest - AcceptableRequestList.Count;
+        for (int i = 0; i < _requestCount; i++)
         {
-            return FactionType.None;
-        }
-
-        return argFactionTypeList[randomIndex];
-    }
-
-
-    public void MakeRandomRequest()
-    {
-        List<FactionType> _factionTypes = new List<FactionType>(FactionEntryDict.Keys);
-
-        for (int i = 0; i < GameBalanceEntry.m_data.m_maxRequest; i++)
-        {
-            FactionType _type = RandomFactionType(_factionTypes);
+            FactionType _type = ProbabilityUtils.GetRandomElement(_factionTypes);
 
             int _like = 0;
-            if(GetFactionEntry(_type) == null)
+            if (GetFactionEntry(_type) == null)
             {
                 _like = 0;
             }
@@ -191,15 +196,32 @@ public class GameDataManager : MonoBehaviour
                 _like = GetFactionEntry(_type).m_state.m_like;
             }
 
+            List<RequestType> _requestTyps = EnumUtils.GetAllEnumValues<RequestType>();
+            _requestTyps.Remove(RequestType.Contact);
+
+            //의뢰 추가 부분
             m_acceptableRequestList.Add(new RequestState(
                 GameManager.Instance.Date,
                 _like,
-                GetRandomRequestType(),
+                ProbabilityUtils.GetRandomElement(_requestTyps),
                 _type,
                 GameBalanceEntry));
 
+            //만약 하나의 팩션 의뢰가 나왔다면 그 팩션은 제외하고 의뢰를 생성합니다.
             _factionTypes.Remove(_type);
         }
+    }
+
+    public void MakeRandomRequest()
+    {
+        RandomContactRequest();
+        RandomNormalRequest();
+    }
+
+    public void AcceptRequest(int argAcceptableRequestIndex)
+    {
+        m_AcceptedRequestList.Add(AcceptableRequestList[argAcceptableRequestIndex]);
+        m_acceptableRequestList.RemoveAt(argAcceptableRequestIndex);
     }
 
     public FactionEntry GetFactionEntry(FactionType argType)
