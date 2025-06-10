@@ -16,10 +16,7 @@ public class GameBalanceEntry
 
     public int CalRequestFactionLike(int argNowLike, RequestType argRequestType)
     {
-        if(argRequestType == RequestType.Contact)
-        {
-            return 1;
-        }
+        Debug.Log((int)(m_state.m_dateMul / m_state.m_mainMul + argNowLike / m_data.GetRequestTypeBalance(argRequestType).m_likeMul));
 
         return (int)(m_state.m_dateMul / m_state.m_mainMul + argNowLike / m_data.GetRequestTypeBalance(argRequestType).m_likeMul);
     }
@@ -48,7 +45,7 @@ public class GameBalanceEntry
         return rewards;
     }
 
-    public int CalRequestExchangeToken(int argDate ,RequestType argRequestType)
+    public int CalRequestExchangeToken(int argDateMul ,RequestType argRequestType)
     {
         RequestTypeBalance _requestTypeBalance = m_data.GetRequestTypeBalance(argRequestType);
 
@@ -57,10 +54,10 @@ public class GameBalanceEntry
             return 0;
         }
 
-        return (int)(_requestTypeBalance.m_exchangeTokenMul * m_state.m_mainMul + argDate / 10);
+        return (int)(_requestTypeBalance.m_exchangeTokenMul * m_state.m_mainMul + argDateMul / 10);
     }
 
-    public int CalRequestWealthToken(int argDate, RequestType argRequestType)
+    public int CalRequestWealthToken(int argDateMul, RequestType argRequestType)
     {
         RequestTypeBalance _requestTypeBalance = m_data.GetRequestTypeBalance(argRequestType);
 
@@ -69,6 +66,6 @@ public class GameBalanceEntry
             return 0;
         }
 
-        return (int)(_requestTypeBalance.m_wealthTokenMul * m_state.m_mainMul + argDate / 10);
+        return (int)(_requestTypeBalance.m_wealthTokenMul * m_state.m_mainMul + argDateMul / 10);
     }
 }

@@ -137,7 +137,7 @@ public class BuildingPanel : MonoBehaviour, IUIPanel
 
         ResetState();
         GameManager.Instance.GetBuildingDateResource();
-        MainUIManager.SetAllResourceText();
+        MainUIManager.UpdateAllMainText();
     }
 
     private void UpdateChangeInfoUI()

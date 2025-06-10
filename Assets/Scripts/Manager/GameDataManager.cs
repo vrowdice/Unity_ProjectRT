@@ -41,7 +41,7 @@ public class GameDataManager : MonoBehaviour
     private Dictionary<RequestType, Sprite> m_requestIconDict = new();
 
     private List<RequestState> m_acceptableRequestList = new List<RequestState>();
-    private List<RequestState> m_AcceptedRequestList = new List<RequestState>();
+    private List<RequestState> m_acceptedRequestList = new List<RequestState>();
 
     private GameBalanceEntry m_gameBalanceEntry;
 
@@ -49,7 +49,7 @@ public class GameDataManager : MonoBehaviour
     public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDict;
     public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDict;
     public List<RequestState> AcceptableRequestList => m_acceptableRequestList;
-    public List<RequestState> AcceptedRequestList => m_AcceptedRequestList;
+    public List<RequestState> AcceptedRequestList => m_acceptedRequestList;
     public GameBalanceEntry GameBalanceEntry => m_gameBalanceEntry;
 
     void Awake()
@@ -151,40 +151,75 @@ public class GameDataManager : MonoBehaviour
         }
     }
 
+    private void ResetAcceptableRequest()
+    {
+        AcceptableRequestList.Clear();
+    }
+
+    /// <summary>
+    /// 컨택트 랜덤 의뢰를 최대 두개 생성합니다
+    /// 첫 번째 컨택트 확률과 두 번째 컨택트 확률이 각각 정해져 있습니다
+    /// </summary>
     private void RandomContactRequest()
     {
+        List<FactionType> _factionTypes = FactionEntryDict.Keys.ToList();
 
+        //랜덤 팩션 타입 지정
+        FactionType _type = ProbabilityUtils.GetRandomElement(_factionTypes);
+
+        //계산식
+        float _per = GameBalanceEntry.m_state.m_noContactCount *
+            GameBalanceEntry.m_data.m_noContactChangePer +
+            GameBalanceEntry.m_data.m_firstContactPer;
+
+        //첫 번째 컨택
+        if (ProbabilityUtils.RollPercent(_per) == true)
+        {
+            m_acceptableRequestList.Add(new RequestState(
+                true,
+                GameManager.Instance.Date,
+                GetFactionEntry(_type).m_state.m_like,
+                ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType>()),
+                _type,
+                GameBalanceEntry));
+
+            _factionTypes.Remove(_type);
+
+            //두 번째 컨택 팩션 타입 지정
+            _type = ProbabilityUtils.GetRandomElement(_factionTypes);
+
+            //두 번째 컨택 계산식
+            _per = GameBalanceEntry.m_state.m_noContactCount *
+                GameBalanceEntry.m_data.m_noContactChangePer +
+                GameBalanceEntry.m_data.m_overSecondContactPer;
+
+            //두 번째 컨택
+            if (ProbabilityUtils.RollPercent(_per) == true)
+            {
+                m_acceptableRequestList.Add(new RequestState(
+                    true,
+                    GameManager.Instance.Date,
+                    GetFactionEntry(_type).m_state.m_like,
+                    ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType>()),
+                    _type,
+                    GameBalanceEntry));
+            }
+
+            GameBalanceEntry.m_state.m_noContactCount = 0;
+        }
     }
 
     /// <summary>
     /// 일반 의뢰 생성
-    /// 보통은 컨텍트 의뢰를 먼저 생성한 다음에 호출합니다.
     /// </summary>
     private void RandomNormalRequest()
     {
-        List<FactionType> _factionTypes = FactionEntryDict.Keys.ToList();
+        List<FactionType> _haveFactionTypes = GetHaveFactionTypeList();
 
-        //만약 그 팩션을 가지고 있지 않을 경우 리스트에서 제외합니다.
-        for (int i = _factionTypes.Count - 1; i >= 0; i--)
+        //의뢰 갯수를 반영해 최대 의뢰를 생성합니다.
+        for (int i = 0; i < GameBalanceEntry.m_data.m_maxRequest; i++)
         {
-            FactionType item = _factionTypes[i];
-
-            if (item == FactionType.None)
-            {
-                continue;
-            }
-
-            if (GetFactionEntry(item).m_state.m_have == false)
-            {
-                _factionTypes.RemoveAt(i);
-            }
-        }
-
-        //이미 있는 컨택트 의뢰 갯수를 반영해 최대 의뢰를 생성합니다.
-        int _requestCount = GameBalanceEntry.m_data.m_maxRequest - AcceptableRequestList.Count;
-        for (int i = 0; i < _requestCount; i++)
-        {
-            FactionType _type = ProbabilityUtils.GetRandomElement(_factionTypes);
+            FactionType _type = ProbabilityUtils.GetRandomElement(_haveFactionTypes);
 
             int _like = 0;
             if (GetFactionEntry(_type) == null)
@@ -196,31 +231,31 @@ public class GameDataManager : MonoBehaviour
                 _like = GetFactionEntry(_type).m_state.m_like;
             }
 
-            List<RequestType> _requestTyps = EnumUtils.GetAllEnumValues<RequestType>();
-            _requestTyps.Remove(RequestType.Contact);
-
             //의뢰 추가 부분
             m_acceptableRequestList.Add(new RequestState(
+                false,
                 GameManager.Instance.Date,
                 _like,
-                ProbabilityUtils.GetRandomElement(_requestTyps),
+                ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType>()),
                 _type,
                 GameBalanceEntry));
 
             //만약 하나의 팩션 의뢰가 나왔다면 그 팩션은 제외하고 의뢰를 생성합니다.
-            _factionTypes.Remove(_type);
+            _haveFactionTypes.Remove(_type);
         }
     }
 
     public void MakeRandomRequest()
     {
-        RandomContactRequest();
+        ResetAcceptableRequest();
+
         RandomNormalRequest();
+        RandomContactRequest();
     }
 
     public void AcceptRequest(int argAcceptableRequestIndex)
     {
-        m_AcceptedRequestList.Add(AcceptableRequestList[argAcceptableRequestIndex]);
+        m_acceptedRequestList.Add(AcceptableRequestList[argAcceptableRequestIndex]);
         m_acceptableRequestList.RemoveAt(argAcceptableRequestIndex);
     }
 
@@ -293,4 +328,29 @@ public class GameDataManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 만약 그 팩션을 가지고 있지 않을 경우 리스트에서 제외합니다.
+    /// </summary>
+    /// <returns>팩션 타입 리스트</returns>
+    public List<FactionType> GetHaveFactionTypeList()
+    {
+        List<FactionType> _factionTypes = FactionEntryDict.Keys.ToList();
+
+        for (int i = _factionTypes.Count - 1; i >= 0; i--)
+        {
+            FactionType item = _factionTypes[i];
+
+            if (item == FactionType.None)
+            {
+                continue;
+            }
+
+            if (GetFactionEntry(item).m_state.m_have == false)
+            {
+                _factionTypes.RemoveAt(i);
+            }
+        }
+
+        return _factionTypes;
+    }
 }

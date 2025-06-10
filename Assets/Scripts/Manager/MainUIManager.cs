@@ -47,6 +47,56 @@ public class MainUIManager : MonoBehaviour, IUIManager
     public GameObject ResourceIconTextPrefeb { get => m_resourceIconTextPrefeb; }
     public Transform CanvasTrans => m_canvasTrans;
 
+    void SetResourceText(ResourceType argType)
+    {
+        long resourceAmount = m_gameManager.GetResource(argType);
+        string formattedAmount = ReplaceUtils.FormatNumber(resourceAmount);
+
+        switch (argType)
+        {
+            case ResourceType.Wood:
+                m_woodText.text = formattedAmount;
+                break;
+            case ResourceType.Iron:
+                m_metalText.text = formattedAmount;
+                break;
+            case ResourceType.Food:
+                m_foodText.text = formattedAmount;
+                break;
+            case ResourceType.Tech:
+                m_techText.text = formattedAmount;
+                break;
+            default:
+                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
+                break;
+        }
+    }
+
+    void SetAddResourceText(ResourceType argType)
+    {
+        long resourceAmount = m_gameManager.GetDayAddResource(argType);
+        string formattedAmount = ReplaceUtils.FormatNumber(resourceAmount);
+
+        switch (argType)
+        {
+            case ResourceType.Wood:
+                m_addWoodText.text = "+ " + formattedAmount;
+                break;
+            case ResourceType.Iron:
+                m_addMetalText.text = "+ " + formattedAmount;
+                break;
+            case ResourceType.Food:
+                m_addFoodText.text = "+ " + formattedAmount;
+                break;
+            case ResourceType.Tech:
+                m_addTechText.text = "+ " + formattedAmount;
+                break;
+            default:
+                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
+                break;
+        }
+    }
+
     public void Initialize()
     {
         m_gameManager = GameManager.Instance;
@@ -72,10 +122,10 @@ public class MainUIManager : MonoBehaviour, IUIManager
 
         m_BackMainBtn.SetActive(false);
 
-        SetAllResourceText();
+        UpdateAllMainText();
     }
 
-    public void SetAllResourceText()
+    public void UpdateAllMainText()
     {
         SetResourceText(ResourceType.Wood);
         SetResourceText(ResourceType.Iron);
@@ -86,56 +136,9 @@ public class MainUIManager : MonoBehaviour, IUIManager
         SetAddResourceText(ResourceType.Iron);
         SetAddResourceText(ResourceType.Food);
         SetAddResourceText(ResourceType.Tech);
-    }
 
-    void SetResourceText(ResourceType argType)
-    {
-        long resourceAmount = m_gameManager.GetResource(argType);
-        string formattedAmount = NumberFormatter.FormatNumber(resourceAmount);
-
-        switch (argType)
-        {
-            case ResourceType.Wood:
-                m_woodText.text = formattedAmount;
-                break;
-            case ResourceType.Iron:
-                m_metalText.text = formattedAmount;
-                break;
-            case ResourceType.Food:
-                m_foodText.text = formattedAmount;
-                break;
-            case ResourceType.Tech:
-                m_techText.text = formattedAmount;
-                break;
-            default:
-                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
-                break;
-        }
-    }
-
-    void SetAddResourceText(ResourceType argType)
-    {
-        long resourceAmount = m_gameManager.GetDayAddResource(argType);
-        string formattedAmount = NumberFormatter.FormatNumber(resourceAmount);
-
-        switch (argType)
-        {
-            case ResourceType.Wood:
-                m_addWoodText.text = "+ " + formattedAmount;
-                break;
-            case ResourceType.Iron:
-                m_addMetalText.text = "+ " + formattedAmount;
-                break;
-            case ResourceType.Food:
-                m_addFoodText.text = "+ " + formattedAmount;
-                break;
-            case ResourceType.Tech:
-                m_addTechText.text = "+ " + formattedAmount;
-                break;
-            default:
-                Debug.LogError(ExceptionMessages.ErrorNoSuchType);
-                break;
-        }
+        UpdateDateText();
+        UpdateRequestText();
     }
 
     public bool TryAdd(ResourceType argType, int argAmount)
@@ -192,11 +195,21 @@ public class MainUIManager : MonoBehaviour, IUIManager
         }
     }
 
+    public void UpdateRequestText()
+    {
+        m_requestText.text = m_gameManager.GameDataManager.AcceptableRequestList.Count + " / " + m_gameManager.GameDataManager.AcceptedRequestList.Count;
+    }
+
+    public void UpdateDateText()
+    {
+        m_dateText.text = GameManager.Instance.Date + " Days";
+    }
+
     public void AddOneDate()
     {
         GameManager.Instance.AddDate(1);
 
-        m_dateText.text = GameManager.Instance.Date + " Days";
+        UpdateAllMainText();
     }
 
     //--디버그용--

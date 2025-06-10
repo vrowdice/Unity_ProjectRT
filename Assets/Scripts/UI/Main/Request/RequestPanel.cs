@@ -38,7 +38,7 @@ public class RequestPanel : MonoBehaviour, IUIPanel
         
     }
 
-    private void ResetFactionLikeImage()
+    private void UpdateFactionLikeImage()
     {
         if (m_factionLikeImageList.Count != m_gameDataManager.FactionEntryDict.Count)
         {
@@ -76,7 +76,7 @@ public class RequestPanel : MonoBehaviour, IUIPanel
         }
     }
 
-    private void SetRequestBtns(bool argIsAcceptable)
+    private void UpdateRequestBtns(bool argIsAcceptable)
     {
         m_isAcceptableBtnView = argIsAcceptable;
 
@@ -100,13 +100,12 @@ public class RequestPanel : MonoBehaviour, IUIPanel
             GameObject _btnObj = Instantiate(m_requestBtnPrefeb, m_requestBtnScrollViewContentTrans);
             RequestBtn _requestBtn = _btnObj.GetComponent<RequestBtn>();
             _requestBtn.Initialize(
-                _state.m_resourceReward,
+                true,
                 this,
-                m_gameDataManager.FactionEntryDict[_state.m_factionType].m_data.m_icon,
                 i,
-                _state.m_factionAddLike,
-                _state.m_factionType.ToString(),
-                _state.m_requestType.ToString());
+                m_gameDataManager.GetFactionEntry(_state.m_factionType).m_data.m_icon,
+                m_gameDataManager.GetRequestIcon(_state.m_requestType),
+                _state);
         }
     }
 
@@ -116,8 +115,8 @@ public class RequestPanel : MonoBehaviour, IUIPanel
         m_mainUIManager = argUIManager;
 
         gameObject.SetActive(true);
-        ResetFactionLikeImage();
-        SetRequestBtns();
+        UpdateFactionLikeImage();
+        UpdateRequestBtns();
     }
 
     public void OnClose()
@@ -125,9 +124,9 @@ public class RequestPanel : MonoBehaviour, IUIPanel
 
     }
 
-    public void SetRequestBtns()
+    public void UpdateRequestBtns()
     {
-        SetRequestBtns(m_isAcceptableBtnView);
+        UpdateRequestBtns(m_isAcceptableBtnView);
     }
 
     /// <summary>
@@ -143,10 +142,10 @@ public class RequestPanel : MonoBehaviour, IUIPanel
         switch (argPanelIndex)
         {
             case 0:
-                SetRequestBtns(true);
+                UpdateRequestBtns(true);
                 break;
             case 1:
-                SetRequestBtns(false);
+                UpdateRequestBtns(false);
                 break;
             default:
                 Debug.LogError(ExceptionMessages.ErrorInvalidResearchInfo);
@@ -157,11 +156,13 @@ public class RequestPanel : MonoBehaviour, IUIPanel
     public void AcceptRequest(int argAcceptIndex)
     {
         m_gameDataManager.AcceptRequest(argAcceptIndex);
-        SetRequestBtns();
+        UpdateRequestBtns();
+
+        m_mainUIManager.UpdateAllMainText();
     }
 
-    public void OpenRequestDetailPanel(int argRequestIndex)
+    public void OpenRequestDetailPanel(bool argIsAcceptable, int argRequestIndex)
     {
-        m_requestDetailPanel.OnOpen();
+        m_requestDetailPanel.OnOpen(this, argIsAcceptable, argRequestIndex);
     }
 }

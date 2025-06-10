@@ -37,7 +37,7 @@ public class FactionDetailPanel : MonoBehaviour
         
     }
 
-    public void OnOpen(FactionEntry argFactionEntry)
+    public void OnOpen(FactionPanel argFactionPanel, FactionEntry argFactionEntry)
     {
         foreach (Transform item in m_uniqeResearchContentTrans)
         {
@@ -50,10 +50,12 @@ public class FactionDetailPanel : MonoBehaviour
         m_nameText.text = argFactionEntry.m_data.m_name;
         m_traitText.text = argFactionEntry.m_data.m_traitDescription;
 
-        foreach(ResearchData item in argFactionEntry.m_data.m_uniqueResearch)
+        m_friendlinessText.text = argFactionEntry.m_state.m_like.ToString();
+
+        foreach (ResearchData item in argFactionEntry.m_data.m_uniqueResearch)
         {
             Instantiate(m_factionResearchBtnPrefeb, m_uniqeResearchContentTrans).GetComponent<FactionResearchBtn>().
-                Initialize(item.m_factionType, item.m_icon, item.m_name, item.m_description);
+                Initialize(argFactionPanel, item.m_factionType, item.m_icon, item.m_name, item.m_description);
         }
 
         gameObject.SetActive(true);

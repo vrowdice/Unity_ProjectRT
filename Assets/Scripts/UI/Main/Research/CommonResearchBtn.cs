@@ -14,13 +14,14 @@ public class CommonResearchBtn : MonoBehaviour
     TextMeshProUGUI m_expText = null;
 
     private string m_researchCode;
-    private FactionPanel m_factionPanel = null;
+    private ResearchPanel m_researchPanel = null;
 
-    public void Initialize(string argResearchCode, Sprite argIcon, string argName, string argExp)
+    public void Initialize(ResearchPanel argResearchPanel, ResearchEntry argEntry)
     {
-        m_researchCode = argResearchCode;
-        m_iconImage.sprite = argIcon;
-        m_nameText.text = argName;
-        m_expText.text = argExp;
+        m_researchPanel = argResearchPanel;
+        m_researchCode = argEntry.m_data.m_code;
+        m_iconImage.sprite = argEntry.m_data.m_icon;
+        m_nameText.text = argEntry.m_data.m_name;
+        m_expText.text = argEntry.m_data.m_description;
     }
 }

@@ -23,7 +23,7 @@ public class ResourceIconText : MonoBehaviour
 
         if (m_text != null)
         {
-            m_text.text = NumberFormatter.FormatNumber(argBaseAmount);
+            m_text.text = ReplaceUtils.FormatNumber(argBaseAmount);
             m_text.color = Color.black;
         }
 

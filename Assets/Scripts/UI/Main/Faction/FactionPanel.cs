@@ -44,6 +44,6 @@ public class FactionPanel : MonoBehaviour, IUIPanel
 
     public void OpenFactionDetailPanel(FactionType argFactionType)
     {
-        m_factionDetailPanel.OnOpen(m_gameDataManager.FactionEntryDict[argFactionType]);
+        m_factionDetailPanel.OnOpen(this ,m_gameDataManager.FactionEntryDict[argFactionType]);
     }
 }

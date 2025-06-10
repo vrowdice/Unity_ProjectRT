@@ -133,7 +133,7 @@ public class GameManager : MonoBehaviour
             m_resourcesDict[item.Key] += item.Value;
         }
 
-        m_nowUIManager.SetAllResourceText();
+        m_nowUIManager.UpdateAllMainText();
         return true;
     }
 
@@ -156,7 +156,7 @@ public class GameManager : MonoBehaviour
 
         m_resourcesDict[argType] += argAmount;
 
-        m_nowUIManager.SetAllResourceText();
+        m_nowUIManager.UpdateAllMainText();
         return true;
     }
 

@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96cd6ddee64c34042bae35487122cfe4, type: 3}
   m_Name: GameBalanceData
   m_EditorClassIdentifier: 
-  m_buildingRefundRate: 0.8
+  m_dateBalanceMul: 1.03
+  m_maxDate: 200
   m_balanceTypeMulList:
   - m_royalRank: 0
     m_mul: 1.1
@@ -28,6 +29,8 @@ MonoBehaviour:
     m_mul: 1.9
   - m_royalRank: 6
     m_mul: 2.2
+  m_firstBalanceType: 0
+  m_buildingRefundRate: 0.8
   m_requestTypeBalanceList:
   - m_type: 0
     m_randomResourceTypeCount: 2
@@ -57,11 +60,8 @@ MonoBehaviour:
     m_likeMul: 30
     m_wealthTokenMul: 0
     m_exchangeTokenMul: 0
-  - m_type: 4
-    m_randomResourceTypeCount: 3
-    m_randomMinResourceAmountMul: 3
-    m_randomMaxResourceAmountMul: 8
-    m_likeMul: 5
-    m_wealthTokenMul: 2
-    m_exchangeTokenMul: 0
   m_maxRequest: 5
+  m_makeRequestDate: 5
+  m_firstContactPer: 70
+  m_overSecondContactPer: 25
+  m_noContactChangePer: 15

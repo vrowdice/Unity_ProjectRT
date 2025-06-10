@@ -11,24 +11,15 @@ public class RequestDetailPanel : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_descriptionText = null;
     [SerializeField]
-    TextMeshProUGUI m_conditionText = null;
+    TextMeshProUGUI m_rewardText = null;
 
+    private RequestPanel m_requestPanel;
 
-    // Start is called before the first frame update
-    void Start()
+    public void OnOpen(RequestPanel argRequestPanel, bool argIsAcceptable, int argRequestIndex)
     {
+        m_requestPanel = argRequestPanel;
 
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
-    public void OnOpen()
-    {
-        m_conditionText.text = "";
+        m_rewardText.text = "";
 
         gameObject.SetActive(true);
     }
