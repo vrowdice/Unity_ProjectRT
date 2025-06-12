@@ -67,6 +67,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: cc542c4de248fe841a067a99c2108dd6, type: 2}
     - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_tokenIconList.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
       propertyPath: m_factionDataList.Array.size
       value: 4
       objectReference: {fileID: 0}
@@ -90,6 +94,18 @@ PrefabInstance:
       propertyPath: m_factionDataList.Array.data[3]
       value: 
       objectReference: {fileID: 11400000, guid: 325de04b9c745534e90ae5917ca7bee8, type: 2}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_tokenIconList.Array.data[0].m_icon
+      value: 
+      objectReference: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_tokenIconList.Array.data[0].m_type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_tokenIconList.Array.data[1].m_icon
+      value: 
+      objectReference: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
     - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
       propertyPath: m_requestIconList.Array.data[1].m_type
       value: 1

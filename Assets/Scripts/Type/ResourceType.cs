@@ -1,7 +1,10 @@
-public enum ResourceType
+public class ResourceType
 {
-    Wood,
-    Iron,
-    Food,
-    Tech,
+    public enum TYPE
+    {
+        Wood,
+        Iron,
+        Food,
+        Tech,
+    }
 }

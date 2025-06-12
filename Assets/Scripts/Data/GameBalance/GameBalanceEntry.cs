@@ -14,27 +14,27 @@ public class GameBalanceEntry
         m_state.m_mainMul = m_data.GetBalanceTypeBalance(m_data.m_firstBalanceType).m_mul;
     }
 
-    public int CalRequestFactionLike(int argNowLike, RequestType argRequestType)
+    public int CalRequestFactionLike(int argNowLike, RequestType.TYPE argRequestType)
     {
         Debug.Log((int)(m_state.m_dateMul / m_state.m_mainMul + argNowLike / m_data.GetRequestTypeBalance(argRequestType).m_likeMul));
 
         return (int)(m_state.m_dateMul / m_state.m_mainMul + argNowLike / m_data.GetRequestTypeBalance(argRequestType).m_likeMul);
     }
 
-    public List<ResourceAmount> CalRequestResources(RequestType argRequestType)
+    public List<ResourceAmount> CalRequestResources(RequestType.TYPE argRequestType)
     {
-        List<ResourceAmount> rewards = new List<ResourceAmount>();
-        List<ResourceType> availableResourceTypes = new List<ResourceType>(System.Enum.GetValues(typeof(ResourceType)) as ResourceType[]);
+        List<ResourceAmount> rewards = new();
+        List<ResourceType.TYPE> availableResourceTypes = new(System.Enum.GetValues(typeof(ResourceType.TYPE)) as ResourceType.TYPE[]);
 
-        RequestTypeBalance _requestTypeBalance = m_data.GetRequestTypeBalance(argRequestType);
+        RequestTypeBalance _RequestTypeBalance = m_data.GetRequestTypeBalance(argRequestType);
 
-        for (int i = 0; i < _requestTypeBalance.m_randomResourceTypeCount; i++)
+        for (int i = 0; i < _RequestTypeBalance.m_randomResourceTypeCount; i++)
         {
             int randomIndex = Random.Range(0, availableResourceTypes.Count);
-            ResourceType selectedType = availableResourceTypes[randomIndex];
+            ResourceType.TYPE selectedType = availableResourceTypes[randomIndex];
 
-            long randomAmountMul = Random.Range((int)_requestTypeBalance.m_randomMinResourceAmountMul,
-                (int)_requestTypeBalance.m_randomMaxResourceAmountMul + 1);
+            long randomAmountMul = Random.Range((int)_RequestTypeBalance.m_randomMinResourceAmountMul,
+                (int)_RequestTypeBalance.m_randomMaxResourceAmountMul + 1);
 
             randomAmountMul = (long)(((randomAmountMul * m_state.m_dateMul) * 5 / m_state.m_mainMul) * m_state.m_rewardMul);
 
@@ -45,27 +45,48 @@ public class GameBalanceEntry
         return rewards;
     }
 
-    public int CalRequestExchangeToken(int argDateMul ,RequestType argRequestType)
+    public List<TokenAmount> CalRequestTokens(int argDateMul, RequestType.TYPE argRequestType)
     {
-        RequestTypeBalance _requestTypeBalance = m_data.GetRequestTypeBalance(argRequestType);
+        List<TokenAmount> _list = new();
 
-        if(_requestTypeBalance.m_exchangeTokenMul == 0)
+        int _amount = CalRequestExchangeToken(argDateMul, argRequestType);
+        if(_amount != 0)
         {
-            return 0;
+            TokenAmount _tokenAmount = new(TokenType.TYPE.ExchangeToken, _amount);
+            _list.Add(_tokenAmount);
         }
 
-        return (int)(_requestTypeBalance.m_exchangeTokenMul * m_state.m_mainMul + argDateMul / 10);
+        _amount = CalRequestWealthToken(argDateMul, argRequestType);
+        if(_amount != 0)
+        {
+            TokenAmount _tokenAmount = new(TokenType.TYPE.WealthToken, _amount);
+            _list.Add(_tokenAmount);
+        }
+
+        return _list;
     }
 
-    public int CalRequestWealthToken(int argDateMul, RequestType argRequestType)
+    public int CalRequestExchangeToken(int argDateMul ,RequestType.TYPE argRequestType)
     {
-        RequestTypeBalance _requestTypeBalance = m_data.GetRequestTypeBalance(argRequestType);
+        RequestTypeBalance _RequestTypeBalance = m_data.GetRequestTypeBalance(argRequestType);
 
-        if (_requestTypeBalance.m_wealthTokenMul == 0)
+        if(_RequestTypeBalance.m_exchangeTokenMul == 0)
         {
             return 0;
         }
 
-        return (int)(_requestTypeBalance.m_wealthTokenMul * m_state.m_mainMul + argDateMul / 10);
+        return (int)(_RequestTypeBalance.m_exchangeTokenMul * m_state.m_mainMul + argDateMul / 10);
+    }
+
+    public int CalRequestWealthToken(int argDateMul, RequestType.TYPE argRequestType)
+    {
+        RequestTypeBalance _RequestTypeBalance = m_data.GetRequestTypeBalance(argRequestType);
+
+        if (_RequestTypeBalance.m_wealthTokenMul == 0)
+        {
+            return 0;
+        }
+
+        return (int)(_RequestTypeBalance.m_wealthTokenMul * m_state.m_mainMul + argDateMul / 10);
     }
 }

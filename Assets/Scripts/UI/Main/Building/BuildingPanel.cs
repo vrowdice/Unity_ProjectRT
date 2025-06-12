@@ -17,8 +17,8 @@ public class BuildingPanel : MonoBehaviour, IUIPanel
     private MainUIManager m_mainUIManager = null;
     private List<BuildingBtn> m_bulidingBtnList = new List<BuildingBtn>();
 
-    private Dictionary<ResourceType, long> m_requireResourcesDict = new();
-    private Dictionary<ResourceType, long> m_producedResourcesDict = new();
+    private Dictionary<ResourceType.TYPE, long> m_requireResourcesDict = new();
+    private Dictionary<ResourceType.TYPE, long> m_producedResourcesDict = new();
 
     public GameDataManager GameDataManager => m_gameDataManager;
     public MainUIManager MainUIManager => m_mainUIManager;
@@ -42,7 +42,7 @@ public class BuildingPanel : MonoBehaviour, IUIPanel
 
         gameObject.SetActive(true);
 
-        foreach (ResourceType argType in System.Enum.GetValues(typeof(ResourceType)))
+        foreach (ResourceType.TYPE argType in System.Enum.GetValues(typeof(ResourceType.TYPE)))
         {
             m_requireResourcesDict[argType] = 0;
             m_producedResourcesDict[argType] = 0;
@@ -87,7 +87,7 @@ public class BuildingPanel : MonoBehaviour, IUIPanel
 
     public void OnBuildingBtnChanged(string argCode)
     {
-        foreach (ResourceType type in System.Enum.GetValues(typeof(ResourceType)))
+        foreach (ResourceType.TYPE type in System.Enum.GetValues(typeof(ResourceType.TYPE)))
         {
             m_producedResourcesDict[type] = 0;
             m_requireResourcesDict[type] = 0;
@@ -142,16 +142,16 @@ public class BuildingPanel : MonoBehaviour, IUIPanel
 
     private void UpdateChangeInfoUI()
     {
-        UIUtils.ClearChildren(m_addResourceContentTrans);
-        UIUtils.ClearChildren(m_requiredResourceContentTrans);
+        GameObjectUtils.ClearChildren(m_addResourceContentTrans);
+        GameObjectUtils.ClearChildren(m_requiredResourceContentTrans);
 
-        foreach (KeyValuePair<ResourceType, long> item in m_producedResourcesDict)
+        foreach (KeyValuePair<ResourceType.TYPE, long> item in m_producedResourcesDict)
         {
             GameObject obj = Instantiate(MainUIManager.ResourceIconTextPrefeb, m_addResourceContentTrans);
             obj.GetComponent<ResourceIconText>().InitializeMainText(item.Key, item.Value);
         }
 
-        foreach (KeyValuePair<ResourceType, long> item in m_requireResourcesDict)
+        foreach (KeyValuePair<ResourceType.TYPE, long> item in m_requireResourcesDict)
         {
             GameObject obj = Instantiate(MainUIManager.ResourceIconTextPrefeb, m_requiredResourceContentTrans);
             obj.GetComponent<ResourceIconText>().InitializeMainText(item.Key, item.Value);

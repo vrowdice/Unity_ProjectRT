@@ -1,5 +1,8 @@
-public enum TokenType
+public class TokenType
 {
-    WealthToken,
-    ExchangeToken
+    public enum TYPE
+    {
+        WealthToken,
+        ExchangeToken
+    }
 }

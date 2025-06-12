@@ -16,10 +16,24 @@ public class ResourceIconText : MonoBehaviour
 
     //각각 초기화 필요
     //해당 함수 선행 실행 후 변경 택스트 실행
-    public void InitializeMainText(ResourceType argResourceType, long argBaseAmount)
+    public void InitializeMainText(ResourceType.TYPE argResourceType, long argBaseAmount)
     {
         if (m_icon != null)
             m_icon.sprite = GameManager.Instance.GameDataManager.GetResourceIcon(argResourceType);
+
+        if (m_text != null)
+        {
+            m_text.text = ReplaceUtils.FormatNumber(argBaseAmount);
+            m_text.color = Color.black;
+        }
+
+        m_changeText.gameObject.SetActive(false);
+    }
+
+    public void InitializeMainText(TokenType.TYPE argTokenType, long argBaseAmount)
+    {
+        if (m_icon != null)
+            m_icon.sprite = GameManager.Instance.GameDataManager.GetTokenIcon(argTokenType);
 
         if (m_text != null)
         {

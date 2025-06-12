@@ -13,10 +13,10 @@ public class FactionResearchBtn : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_expText = null;
 
-    private FactionType m_factionType;
+    private FactionType.TYPE m_factionType;
     private FactionPanel m_factionPanel = null;
 
-    public void Initialize(FactionPanel argFactionPanel, FactionType argFactionType, Sprite argIcon, string argName, string argExp)
+    public void Initialize(FactionPanel argFactionPanel, FactionType.TYPE argFactionType, Sprite argIcon, string argName, string argExp)
     {
         m_factionPanel = argFactionPanel;
         m_factionType = argFactionType;

@@ -24,8 +24,8 @@ public class GameManager : MonoBehaviour
 
     private IUIManager m_nowUIManager = null;
 
-    private Dictionary<ResourceType, long> m_resourcesDict = new();
-    private Dictionary<ResourceType, long> m_producedResourcesDict = new();
+    private Dictionary<ResourceType.TYPE, long> m_resourcesDict = new();
+    private Dictionary<ResourceType.TYPE, long> m_producedResourcesDict = new();
 
     void Awake()
     {
@@ -47,7 +47,7 @@ public class GameManager : MonoBehaviour
 
     void FirstSetting()
     {
-        foreach (ResourceType argType in System.Enum.GetValues(typeof(ResourceType)))
+        foreach (ResourceType.TYPE argType in System.Enum.GetValues(typeof(ResourceType.TYPE)))
         {
             //릴리즈 시 0으로 변경할 것
             m_resourcesDict[argType] = 100000;
@@ -108,9 +108,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public bool TryChangeAllResources(Dictionary<ResourceType, long> argResourceChanges)
+    public bool TryChangeAllResources(Dictionary<ResourceType.TYPE, long> argResourceChanges)
     {
-        foreach (KeyValuePair<ResourceType, long> item in argResourceChanges)
+        foreach (KeyValuePair<ResourceType.TYPE, long> item in argResourceChanges)
         {
             if (!m_resourcesDict.ContainsKey(item.Key))
             {
@@ -128,7 +128,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        foreach (KeyValuePair<ResourceType, long> item in argResourceChanges)
+        foreach (KeyValuePair<ResourceType.TYPE, long> item in argResourceChanges)
         {
             m_resourcesDict[item.Key] += item.Value;
         }
@@ -137,7 +137,7 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
-    public bool TryChangeResource(ResourceType argType, long argAmount)
+    public bool TryChangeResource(ResourceType.TYPE argType, long argAmount)
     {
         if (!m_resourcesDict.ContainsKey(argType))
         {
@@ -164,7 +164,7 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < argDay; i++)
         {
-            foreach (KeyValuePair<ResourceType, long> kvp in m_producedResourcesDict)
+            foreach (KeyValuePair<ResourceType.TYPE, long> kvp in m_producedResourcesDict)
             {
                 TryChangeResource(kvp.Key, kvp.Value);
             }
@@ -173,8 +173,8 @@ public class GameManager : MonoBehaviour
 
     public void GetBuildingDateResource()
     {
-        List<ResourceType> keyList = new List<ResourceType>(m_producedResourcesDict.Keys);
-        foreach (ResourceType key in keyList)
+        List<ResourceType.TYPE> keyList = new List<ResourceType.TYPE>(m_producedResourcesDict.Keys);
+        foreach (ResourceType.TYPE key in keyList)
         {
             m_producedResourcesDict[key] = 0;
         }
@@ -202,12 +202,12 @@ public class GameManager : MonoBehaviour
         m_scenLoadManager.LoadScene(argSceneName);
     }
 
-    public long GetResource(ResourceType argType)
+    public long GetResource(ResourceType.TYPE argType)
     {
         return m_resourcesDict.TryGetValue(argType, out long value) ? value : 0;
     }
 
-    public long GetDayAddResource(ResourceType argType)
+    public long GetDayAddResource(ResourceType.TYPE argType)
     {
         return m_producedResourcesDict.TryGetValue(argType, out long value) ? value : 0;
     }

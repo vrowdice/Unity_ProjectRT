@@ -10,15 +10,15 @@ public class GameBalanceData : ScriptableObject
     public int m_maxDate = 200;
 
     [Header("Balance Type")]
-    public List<BalanceTypeBalance> m_balanceTypeMulList = new List<BalanceTypeBalance>();
-    public BalanceType m_firstBalanceType = BalanceType.King;
+    public List<BalanceTypeBalance> m_balanceTypeMulList = new();
+    public BalanceType.TYPE m_firstBalanceType = BalanceType.TYPE.King;
 
     [Header("Building")]
     [Range(0f, 1f)]
     public float m_buildingRefundRate = 0.8f; // 80% refund
 
     [Header("Request")]
-    public List<RequestTypeBalance> m_requestTypeBalanceList = new List<RequestTypeBalance>();
+    public List<RequestTypeBalance> m_requestTypeBalanceList = new();
     public int m_maxRequest = 5;
     public int m_makeRequestDate = 5;
     //첫 번째 컨텍을 할 확률
@@ -29,12 +29,12 @@ public class GameBalanceData : ScriptableObject
     public float m_noContactChangePer = 15.0f;
 
 
-    private Dictionary<BalanceType, BalanceTypeBalance> m_balanceTypeDictionary;
-    private Dictionary<RequestType, RequestTypeBalance> m_requestTypeDictionary;
+    private Dictionary<BalanceType.TYPE, BalanceTypeBalance> m_balanceTypeDictionary;
+    private Dictionary<RequestType.TYPE, RequestTypeBalance> m_requestTypeDictionary;
 
     public void InitializeDict()
     {
-        m_balanceTypeDictionary = new Dictionary<BalanceType, BalanceTypeBalance>();
+        m_balanceTypeDictionary = new Dictionary<BalanceType.TYPE, BalanceTypeBalance>();
         foreach (var balanceEntry in m_balanceTypeMulList)
         {
             if (!m_balanceTypeDictionary.ContainsKey(balanceEntry.m_royalRank))
@@ -47,7 +47,7 @@ public class GameBalanceData : ScriptableObject
             }
         }
 
-        m_requestTypeDictionary = new Dictionary<RequestType, RequestTypeBalance>();
+        m_requestTypeDictionary = new Dictionary<RequestType.TYPE, RequestTypeBalance>();
         foreach (var requestEntry in m_requestTypeBalanceList)
         {
             if (!m_requestTypeDictionary.ContainsKey(requestEntry.m_type))
@@ -61,7 +61,7 @@ public class GameBalanceData : ScriptableObject
         }
     }
 
-    public BalanceTypeBalance GetBalanceTypeBalance(BalanceType type)
+    public BalanceTypeBalance GetBalanceTypeBalance(BalanceType.TYPE type)
     {
         if (m_balanceTypeDictionary.TryGetValue(type, out BalanceTypeBalance balance))
         {
@@ -70,7 +70,7 @@ public class GameBalanceData : ScriptableObject
         Debug.LogWarning(ExceptionMessages.ErrorNoSuchType + type);
         return null;
     }
-    public RequestTypeBalance GetRequestTypeBalance(RequestType type)
+    public RequestTypeBalance GetRequestTypeBalance(RequestType.TYPE type)
     {
         if (m_requestTypeDictionary.TryGetValue(type, out RequestTypeBalance request))
         {

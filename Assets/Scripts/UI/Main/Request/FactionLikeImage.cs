@@ -13,9 +13,9 @@ public class FactionLikeImage : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_nameText = null;
 
-    public FactionType m_factionType = FactionType.None;
+    public FactionType.TYPE m_factionType = FactionType.TYPE.None;
 
-    public void Initialize(FactionType argFactionType, Sprite argSprite, string argName, int arglike)
+    public void Initialize(FactionType.TYPE argFactionType, Sprite argSprite, string argName, int arglike)
     {
         m_factionType = argFactionType;
         m_image.sprite = argSprite;

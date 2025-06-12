@@ -8,44 +8,55 @@ public class GameDataManager : MonoBehaviour
     [System.Serializable]
     public struct ResourceIcon
     {
-        public ResourceType m_type;
+        public ResourceType.TYPE m_type;
+        public Sprite m_icon;
+    }
+    [System.Serializable]
+    public struct TokenIcon
+    {
+        public TokenType.TYPE m_type;
         public Sprite m_icon;
     }
     [System.Serializable]
     public struct RequestIcon
     {
-        public RequestType m_type;
+        public RequestType.TYPE m_type;
         public Sprite m_icon;
     }
 
     [Header("Game Data")]
     [SerializeField]
-    private List<FactionData> m_factionDataList = new List<FactionData>();
+    private List<FactionData> m_factionDataList = new();
     [SerializeField]
-    private List<ResearchData> m_commonResearchDataList = new List<ResearchData>();
+    private List<ResearchData> m_commonResearchDataList = new();
     [SerializeField]
-    private List<BuildingData> m_buildingDataList = new List<BuildingData>();
+    private List<BuildingData> m_buildingDataList = new();
+    [SerializeField]
+    private List<RequestLineTemplate> m_requestLineTemplateList = new();
 
     [Header("Common Data")]
     [SerializeField]
     private List<ResourceIcon> m_resourceIconList = new();
     [SerializeField]
+    private List<TokenIcon> m_tokenIconList = new();
+    [SerializeField]
     private List<RequestIcon> m_requestIconList = new();
     [SerializeField]
     private GameBalanceData m_gameBalanceData;
 
-    private Dictionary<FactionType, FactionEntry> m_factionEntryDict = new Dictionary<FactionType, FactionEntry>();
-    private Dictionary<string, ResearchEntry> m_commonResearchEntryDict = new Dictionary<string, ResearchEntry>();
-    private Dictionary<string, BuildingEntry> m_buildingEntryDict = new Dictionary<string, BuildingEntry>();
-    private Dictionary<ResourceType, Sprite> m_resourceIconDict = new();
-    private Dictionary<RequestType, Sprite> m_requestIconDict = new();
+    private readonly Dictionary<FactionType.TYPE, FactionEntry> m_factionEntryDict = new();
+    private readonly Dictionary<string, ResearchEntry> m_commonResearchEntryDict = new();
+    private readonly Dictionary<string, BuildingEntry> m_buildingEntryDict = new();
+    private readonly Dictionary<ResourceType.TYPE, Sprite> m_resourceIconDict = new();
+    private readonly Dictionary<TokenType.TYPE, Sprite> m_tokenIconDict = new();
+    private readonly Dictionary<RequestType.TYPE, Sprite> m_requestIconDict = new();
 
-    private List<RequestState> m_acceptableRequestList = new List<RequestState>();
-    private List<RequestState> m_acceptedRequestList = new List<RequestState>();
+    private readonly List<RequestState> m_acceptableRequestList = new();
+    private readonly List<RequestState> m_acceptedRequestList = new();
 
     private GameBalanceEntry m_gameBalanceEntry;
 
-    public Dictionary<FactionType, FactionEntry> FactionEntryDict => m_factionEntryDict;
+    public Dictionary<FactionType.TYPE, FactionEntry> FactionEntryDict => m_factionEntryDict;
     public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDict;
     public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDict;
     public List<RequestState> AcceptableRequestList => m_acceptableRequestList;
@@ -68,7 +79,7 @@ public class GameDataManager : MonoBehaviour
         {
             if (!m_factionEntryDict.ContainsKey(faction.m_factionType))
             {
-                FactionEntry _entry = new FactionEntry(faction);
+                FactionEntry _entry = new(faction);
 
                 m_factionEntryDict.Add(faction.m_factionType, _entry);
             }
@@ -82,7 +93,7 @@ public class GameDataManager : MonoBehaviour
         {
             if (!m_commonResearchEntryDict.ContainsKey(research.name))
             {
-                ResearchEntry _entry = new ResearchEntry(research);
+                ResearchEntry _entry = new(research);
 
                 research.m_code = research.name;
                 m_commonResearchEntryDict.Add(research.m_code, _entry);
@@ -97,7 +108,7 @@ public class GameDataManager : MonoBehaviour
         {
             if (!m_buildingEntryDict.ContainsKey(building.name))
             {
-                BuildingEntry _entry = new BuildingEntry(building);
+                BuildingEntry _entry = new(building);
 
                 building.m_code = building.name;
                 m_buildingEntryDict.Add(building.m_code, _entry);
@@ -135,6 +146,19 @@ public class GameDataManager : MonoBehaviour
             }
         }
 
+        m_tokenIconDict.Clear();
+        foreach (var entry in m_tokenIconList)
+        {
+            if (!m_tokenIconDict.ContainsKey(entry.m_type))
+            {
+                m_tokenIconDict.Add(entry.m_type, entry.m_icon);
+            }
+            else
+            {
+                Debug.LogWarning(ExceptionMessages.ErrorNoSuchType + entry.m_type);
+            }
+        }
+
         m_requestIconDict.Clear();
         {
             foreach (var entry in m_requestIconList)
@@ -162,10 +186,10 @@ public class GameDataManager : MonoBehaviour
     /// </summary>
     private void RandomContactRequest()
     {
-        List<FactionType> _factionTypes = FactionEntryDict.Keys.ToList();
+        List<FactionType.TYPE> _factionTypes = FactionEntryDict.Keys.ToList();
 
         //랜덤 팩션 타입 지정
-        FactionType _type = ProbabilityUtils.GetRandomElement(_factionTypes);
+        FactionType.TYPE _type = ProbabilityUtils.GetRandomElement(_factionTypes);
 
         //계산식
         float _per = GameBalanceEntry.m_state.m_noContactCount *
@@ -179,7 +203,7 @@ public class GameDataManager : MonoBehaviour
                 true,
                 GameManager.Instance.Date,
                 GetFactionEntry(_type).m_state.m_like,
-                ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType>()),
+                ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>()),
                 _type,
                 GameBalanceEntry));
 
@@ -200,7 +224,7 @@ public class GameDataManager : MonoBehaviour
                     true,
                     GameManager.Instance.Date,
                     GetFactionEntry(_type).m_state.m_like,
-                    ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType>()),
+                    ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>()),
                     _type,
                     GameBalanceEntry));
             }
@@ -214,14 +238,14 @@ public class GameDataManager : MonoBehaviour
     /// </summary>
     private void RandomNormalRequest()
     {
-        List<FactionType> _haveFactionTypes = GetHaveFactionTypeList();
+        List<FactionType.TYPE> _haveFactionTypes = GetHaveFactionTypeList();
 
         //의뢰 갯수를 반영해 최대 의뢰를 생성합니다.
         for (int i = 0; i < GameBalanceEntry.m_data.m_maxRequest; i++)
         {
-            FactionType _type = ProbabilityUtils.GetRandomElement(_haveFactionTypes);
+            FactionType.TYPE _type = ProbabilityUtils.GetRandomElement(_haveFactionTypes);
 
-            int _like = 0;
+            int _like;
             if (GetFactionEntry(_type) == null)
             {
                 _like = 0;
@@ -236,7 +260,7 @@ public class GameDataManager : MonoBehaviour
                 false,
                 GameManager.Instance.Date,
                 _like,
-                ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType>()),
+                ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>()),
                 _type,
                 GameBalanceEntry));
 
@@ -253,20 +277,23 @@ public class GameDataManager : MonoBehaviour
         RandomContactRequest();
     }
 
-    public void AcceptRequest(int argAcceptableRequestIndex)
+    public void AcceptRequest(RequestState request)
     {
-        m_acceptedRequestList.Add(AcceptableRequestList[argAcceptableRequestIndex]);
-        m_acceptableRequestList.RemoveAt(argAcceptableRequestIndex);
+        if (m_acceptableRequestList.Contains(request))
+        {
+            m_acceptedRequestList.Add(request);
+            m_acceptableRequestList.Remove(request);
+        }
     }
 
-    public FactionEntry GetFactionEntry(FactionType argType)
+    public FactionEntry GetFactionEntry(FactionType.TYPE argType)
     {
         if (m_factionEntryDict != null && m_factionEntryDict.TryGetValue(argType, out FactionEntry entry))
         {
             return entry;
         }
 
-        Debug.LogWarning($"{ExceptionMessages.ErrorNoSuchType}: FactionType - {argType}");
+        Debug.LogWarning($"{ExceptionMessages.ErrorNoSuchType}: FactionType.TYPE - {argType}");
         return null;
     }
 
@@ -302,7 +329,7 @@ public class GameDataManager : MonoBehaviour
         return null;
     }
 
-    public Sprite GetResourceIcon(ResourceType type)
+    public Sprite GetResourceIcon(ResourceType.TYPE type)
     {
         if (m_resourceIconDict.TryGetValue(type, out var icon))
         {
@@ -315,7 +342,20 @@ public class GameDataManager : MonoBehaviour
         }
     }
 
-    public Sprite GetRequestIcon(RequestType type)
+    public Sprite GetTokenIcon(TokenType.TYPE type)
+    {
+        if (m_tokenIconDict.TryGetValue(type, out var icon))
+        {
+            return icon;
+        }
+        else
+        {
+            Debug.LogWarning(ExceptionMessages.ErrorNoSuchType);
+            return null;
+        }
+    }
+
+    public Sprite GetRequestIcon(RequestType.TYPE type)
     {
         if (m_requestIconDict.TryGetValue(type, out var icon))
         {
@@ -332,15 +372,15 @@ public class GameDataManager : MonoBehaviour
     /// 만약 그 팩션을 가지고 있지 않을 경우 리스트에서 제외합니다.
     /// </summary>
     /// <returns>팩션 타입 리스트</returns>
-    public List<FactionType> GetHaveFactionTypeList()
+    public List<FactionType.TYPE> GetHaveFactionTypeList()
     {
-        List<FactionType> _factionTypes = FactionEntryDict.Keys.ToList();
+        List<FactionType.TYPE> _factionTypes = FactionEntryDict.Keys.ToList();
 
         for (int i = _factionTypes.Count - 1; i >= 0; i--)
         {
-            FactionType item = _factionTypes[i];
+            FactionType.TYPE item = _factionTypes[i];
 
-            if (item == FactionType.None)
+            if (item == FactionType.TYPE.None)
             {
                 continue;
             }

@@ -41,8 +41,8 @@ public class BuildingBtn : MonoBehaviour
         m_buildingPanel = argBuildingPanel;
         m_buildingEntry = argBuildingEntry;
 
-        UIUtils.ClearChildren(m_addResourceContentTrans);
-        UIUtils.ClearChildren(m_requiredResourceContentTrans);
+        GameObjectUtils.ClearChildren(m_addResourceContentTrans);
+        GameObjectUtils.ClearChildren(m_requiredResourceContentTrans);
 
         m_nameText.text = argBuildingEntry.m_data.m_name;
         m_image.sprite = argBuildingEntry.m_data.m_icon;
@@ -112,8 +112,8 @@ public class BuildingBtn : MonoBehaviour
 
     private void UpdateResourceContentAndUI()
     {
-        UIUtils.ClearChildren(m_addResourceContentTrans);
-        UIUtils.ClearChildren(m_requiredResourceContentTrans);
+        GameObjectUtils.ClearChildren(m_addResourceContentTrans);
+        GameObjectUtils.ClearChildren(m_requiredResourceContentTrans);
 
         int _totalCount = m_buildingCount + m_buildingCountState;
 

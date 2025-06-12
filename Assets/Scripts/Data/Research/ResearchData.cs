@@ -18,5 +18,5 @@ public class ResearchData : ScriptableObject
     public Sprite m_icon;                // 연구 아이콘
     public bool m_isFirstLocked = false;
 
-    public FactionType m_factionType; //추가: 해당 연구가 속한 팩션
+    public FactionType.TYPE m_factionType; //추가: 해당 연구가 속한 팩션
 }

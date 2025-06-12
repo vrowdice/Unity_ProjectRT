@@ -11,10 +11,10 @@ public class FactionInfoBtn : MonoBehaviour
     [SerializeField]
     Image m_image = null;
 
-    private FactionType m_factionType;
+    private FactionType.TYPE m_factionType;
     private FactionPanel m_factionPanel = null;
 
-    public void Initialize(FactionType argFactionType, string argName, Sprite argSprite, FactionPanel argPanel)
+    public void Initialize(FactionType.TYPE argFactionType, string argName, Sprite argSprite, FactionPanel argPanel)
     {
         m_factionType = argFactionType;
         m_nameText.text = argName;

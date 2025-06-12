@@ -1,7 +1,7 @@
 [System.Serializable]
 public class RequestTypeBalance
 {
-    public RequestType m_type;
+    public RequestType.TYPE m_type;
     public int m_randomResourceTypeCount;
     public int m_randomMinResourceAmountMul;
     public int m_randomMaxResourceAmountMul;
@@ -10,7 +10,7 @@ public class RequestTypeBalance
     public float m_exchangeTokenMul;
 
     public RequestTypeBalance(
-        RequestType type,
+        RequestType.TYPE type,
         int randomResourceTypeCount,
         int randomMinResourceAmountMul,
         int randomMaxResourceAmountMul,

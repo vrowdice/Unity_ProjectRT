@@ -4,7 +4,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewFactionData", menuName = "Faction Data")]
 public class FactionData : ScriptableObject
 {
-    public FactionType m_factionType; // ÆÑ¼Ç À¯Çü (enum)
+    public FactionType.TYPE m_factionType; // ÆÑ¼Ç À¯Çü (enum)
     public string m_name;
     [TextArea]
     public string m_description;     // ¼³¸í

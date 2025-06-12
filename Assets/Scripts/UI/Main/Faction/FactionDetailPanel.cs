@@ -24,19 +24,6 @@ public class FactionDetailPanel : MonoBehaviour
     [SerializeField]
     Transform m_uniqeResearchContentTrans = null;
 
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void OnOpen(FactionPanel argFactionPanel, FactionEntry argFactionEntry)
     {
         foreach (Transform item in m_uniqeResearchContentTrans)

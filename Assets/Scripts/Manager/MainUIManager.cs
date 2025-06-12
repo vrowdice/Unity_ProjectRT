@@ -47,23 +47,23 @@ public class MainUIManager : MonoBehaviour, IUIManager
     public GameObject ResourceIconTextPrefeb { get => m_resourceIconTextPrefeb; }
     public Transform CanvasTrans => m_canvasTrans;
 
-    void SetResourceText(ResourceType argType)
+    void SetResourceText(ResourceType.TYPE argType)
     {
         long resourceAmount = m_gameManager.GetResource(argType);
         string formattedAmount = ReplaceUtils.FormatNumber(resourceAmount);
 
         switch (argType)
         {
-            case ResourceType.Wood:
+            case ResourceType.TYPE.Wood:
                 m_woodText.text = formattedAmount;
                 break;
-            case ResourceType.Iron:
+            case ResourceType.TYPE.Iron:
                 m_metalText.text = formattedAmount;
                 break;
-            case ResourceType.Food:
+            case ResourceType.TYPE.Food:
                 m_foodText.text = formattedAmount;
                 break;
-            case ResourceType.Tech:
+            case ResourceType.TYPE.Tech:
                 m_techText.text = formattedAmount;
                 break;
             default:
@@ -72,23 +72,23 @@ public class MainUIManager : MonoBehaviour, IUIManager
         }
     }
 
-    void SetAddResourceText(ResourceType argType)
+    void SetAddResourceText(ResourceType.TYPE argType)
     {
         long resourceAmount = m_gameManager.GetDayAddResource(argType);
         string formattedAmount = ReplaceUtils.FormatNumber(resourceAmount);
 
         switch (argType)
         {
-            case ResourceType.Wood:
+            case ResourceType.TYPE.Wood:
                 m_addWoodText.text = "+ " + formattedAmount;
                 break;
-            case ResourceType.Iron:
+            case ResourceType.TYPE.Iron:
                 m_addMetalText.text = "+ " + formattedAmount;
                 break;
-            case ResourceType.Food:
+            case ResourceType.TYPE.Food:
                 m_addFoodText.text = "+ " + formattedAmount;
                 break;
-            case ResourceType.Tech:
+            case ResourceType.TYPE.Tech:
                 m_addTechText.text = "+ " + formattedAmount;
                 break;
             default:
@@ -127,21 +127,21 @@ public class MainUIManager : MonoBehaviour, IUIManager
 
     public void UpdateAllMainText()
     {
-        SetResourceText(ResourceType.Wood);
-        SetResourceText(ResourceType.Iron);
-        SetResourceText(ResourceType.Food);
-        SetResourceText(ResourceType.Tech);
+        SetResourceText(ResourceType.TYPE.Wood);
+        SetResourceText(ResourceType.TYPE.Iron);
+        SetResourceText(ResourceType.TYPE.Food);
+        SetResourceText(ResourceType.TYPE.Tech);
 
-        SetAddResourceText(ResourceType.Wood);
-        SetAddResourceText(ResourceType.Iron);
-        SetAddResourceText(ResourceType.Food);
-        SetAddResourceText(ResourceType.Tech);
+        SetAddResourceText(ResourceType.TYPE.Wood);
+        SetAddResourceText(ResourceType.TYPE.Iron);
+        SetAddResourceText(ResourceType.TYPE.Food);
+        SetAddResourceText(ResourceType.TYPE.Tech);
 
         UpdateDateText();
         UpdateRequestText();
     }
 
-    public bool TryAdd(ResourceType argType, int argAmount)
+    public bool TryAdd(ResourceType.TYPE argType, int argAmount)
     {
         if (m_gameManager.TryChangeResource(argType, argAmount))
         {
@@ -151,7 +151,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
         return false;
     }
 
-    public bool TryConsume(ResourceType argType, int argAmount)
+    public bool TryConsume(ResourceType.TYPE argType, int argAmount)
     {
         if (m_gameManager.TryChangeResource(argType, argAmount))
         {
@@ -216,9 +216,9 @@ public class MainUIManager : MonoBehaviour, IUIManager
     //릴리즈 시 주석처리 하거나 삭제할 것
     public void AddResource1000()
     {
-        TryAdd(ResourceType.Wood, 1000);
-        TryAdd(ResourceType.Iron, 1000);
-        TryAdd(ResourceType.Food, 1000);
-        TryAdd(ResourceType.Tech, 1000);
+        TryAdd(ResourceType.TYPE.Wood, 1000);
+        TryAdd(ResourceType.TYPE.Iron, 1000);
+        TryAdd(ResourceType.TYPE.Food, 1000);
+        TryAdd(ResourceType.TYPE.Tech, 1000);
     }
 }

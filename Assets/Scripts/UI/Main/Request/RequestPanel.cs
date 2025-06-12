@@ -17,38 +17,27 @@ public class RequestPanel : MonoBehaviour, IUIPanel
 
     private GameDataManager m_gameDataManager = null;
     private MainUIManager m_mainUIManager = null;
-    private List<FactionLikeImage> m_factionLikeImageList = new List<FactionLikeImage>();
+    private List<FactionLikeImage> m_factionLikeImageList = new();
 
-    private List<RequestPanel> m_acceptableRequestPanelList = new List<RequestPanel>();
-    private List<RequestPanel> m_inProgressRequestPanelList = new List<RequestPanel>();
+    private List<RequestPanel> m_acceptableRequestPanelList = new();
+    private List<RequestPanel> m_inProgressRequestPanelList = new();
 
     private bool m_isAcceptableBtnView = true;
 
+    public GameDataManager GameDataManager => m_gameDataManager;
     public MainUIManager MainUIManager => m_mainUIManager;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     private void UpdateFactionLikeImage()
     {
         if (m_factionLikeImageList.Count != m_gameDataManager.FactionEntryDict.Count)
         {
-            UIUtils.ClearChildren(m_factionLikeScrollViewContentTrans);
+            GameObjectUtils.ClearChildren(m_factionLikeScrollViewContentTrans);
 
-            foreach (KeyValuePair<FactionType, FactionEntry> item in m_gameDataManager.FactionEntryDict)
+            foreach (KeyValuePair<FactionType.TYPE, FactionEntry> item in m_gameDataManager.FactionEntryDict)
             {
                 FactionEntry _tmpEntry = item.Value;
 
-                if (_tmpEntry.m_data.m_factionType == FactionType.None || !_tmpEntry.m_state.m_have)
+                if (_tmpEntry.m_data.m_factionType == FactionType.TYPE.None || !_tmpEntry.m_state.m_have)
                 {
                     continue;
                 }
@@ -65,7 +54,7 @@ public class RequestPanel : MonoBehaviour, IUIPanel
         {
             foreach (FactionLikeImage item in m_factionLikeImageList)
             {
-                if (item.m_factionType == FactionType.None)
+                if (item.m_factionType == FactionType.TYPE.None)
                 {
                     Debug.LogError(ExceptionMessages.ErrorValueNotAllowed);
                     continue;
@@ -80,7 +69,7 @@ public class RequestPanel : MonoBehaviour, IUIPanel
     {
         m_isAcceptableBtnView = argIsAcceptable;
 
-        List<RequestState> _requestList = new List<RequestState>();
+        List<RequestState> _requestList;
 
         if (argIsAcceptable == true)
         {
@@ -91,7 +80,7 @@ public class RequestPanel : MonoBehaviour, IUIPanel
             _requestList = m_gameDataManager.AcceptedRequestList;
         }
 
-        UIUtils.ClearChildren(m_requestBtnScrollViewContentTrans);
+        GameObjectUtils.ClearChildren(m_requestBtnScrollViewContentTrans);
 
         for (int i = 0; i < _requestList.Count; i++)
         {
@@ -102,7 +91,6 @@ public class RequestPanel : MonoBehaviour, IUIPanel
             _requestBtn.Initialize(
                 true,
                 this,
-                i,
                 m_gameDataManager.GetFactionEntry(_state.m_factionType).m_data.m_icon,
                 m_gameDataManager.GetRequestIcon(_state.m_requestType),
                 _state);
@@ -137,7 +125,7 @@ public class RequestPanel : MonoBehaviour, IUIPanel
     /// 1 = ÀÇ·ÚÁß
     public void SelectRequestContent(int argPanelIndex)
     {
-        UIUtils.ClearChildren(m_factionLikeScrollViewContentTrans);
+        GameObjectUtils.ClearChildren(m_factionLikeScrollViewContentTrans);
 
         switch (argPanelIndex)
         {
@@ -153,15 +141,15 @@ public class RequestPanel : MonoBehaviour, IUIPanel
         }
     }
 
-    public void AcceptRequest(int argAcceptIndex)
+    public void AcceptRequest(RequestState argState)
     {
-        m_gameDataManager.AcceptRequest(argAcceptIndex);
+        m_gameDataManager.AcceptRequest(argState);
         UpdateRequestBtns();
 
         m_mainUIManager.UpdateAllMainText();
     }
 
-    public void OpenRequestDetailPanel(bool argIsAcceptable, int argRequestIndex)
+    public void OpenRequestDetailPanel(bool argIsAcceptable, RequestState argRequestIndex)
     {
         m_requestDetailPanel.OnOpen(this, argIsAcceptable, argRequestIndex);
     }

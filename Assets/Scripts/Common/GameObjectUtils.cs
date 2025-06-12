@@ -1,6 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-public static class UIUtils
+public static class GameObjectUtils
 {
     public static void ClearChildren(Transform parent)
     {
