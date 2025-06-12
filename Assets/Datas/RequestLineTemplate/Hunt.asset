@@ -13,5 +13,7 @@ MonoBehaviour:
   m_Name: Hunt
   m_EditorClassIdentifier: 
   m_type: 0
-  m_titleTemplate: 
-  m_contentTemplates: []
+  m_titleTemplate: Enemy Eliminating Mission
+  m_contentTemplates:
+  - 
+  - 

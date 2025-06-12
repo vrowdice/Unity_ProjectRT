@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff63b8061c272534eb9665166673a1ec, type: 3}
   m_Name: Conquest
   m_EditorClassIdentifier: 
-  m_type: 0
+  m_type: 1
   m_titleTemplate: 
   m_contentTemplates: []
