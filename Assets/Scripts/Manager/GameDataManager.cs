@@ -50,6 +50,7 @@ public class GameDataManager : MonoBehaviour
     private readonly Dictionary<ResourceType.TYPE, Sprite> m_resourceIconDict = new();
     private readonly Dictionary<TokenType.TYPE, Sprite> m_tokenIconDict = new();
     private readonly Dictionary<RequestType.TYPE, Sprite> m_requestIconDict = new();
+    private readonly Dictionary<RequestType.TYPE, RequestLineTemplate> m_requestLineTemplateDict = new();
 
     private readonly List<RequestState> m_acceptableRequestList = new();
     private readonly List<RequestState> m_acceptedRequestList = new();
@@ -65,12 +66,12 @@ public class GameDataManager : MonoBehaviour
 
     void Awake()
     {
-        InitializeDict();
-        InitializeIcons();
-        InitializeBalanceEntry();
+        InitDict();
+        InitIconDict();
+        InitBalanceEntry();
     }
 
-    private void InitializeDict()
+    private void InitDict()
     {
         m_factionEntryDict.Clear();
         m_commonResearchEntryDict.Clear();
@@ -118,20 +119,21 @@ public class GameDataManager : MonoBehaviour
                 Debug.LogError(ExceptionMessages.ErrorValueNotAllowed + building.name);
             }
         }
+
+        foreach (RequestLineTemplate item in m_requestLineTemplateList)
+        {
+            if (!m_buildingEntryDict.ContainsKey(item.name))
+            {
+                m_requestLineTemplateDict.Add(item.m_type, item);
+            }
+            else
+            {
+                Debug.LogError(ExceptionMessages.ErrorValueNotAllowed + item.name);
+            }
+        }
     }
 
-    private void InitializeBalanceEntry()
-    {
-        m_gameBalanceData.InitializeDict();
-
-        m_gameBalanceEntry = new GameBalanceEntry(m_gameBalanceData, new GameBalanceState());
-
-        GameBalanceEntry.m_state.m_mainMul = GameBalanceEntry.m_data.GetBalanceTypeBalance(
-            GameBalanceEntry.m_data.m_firstBalanceType).m_mul;
-        GameBalanceEntry.m_state.m_dateMul = 1.0f;
-    }
-
-    private void InitializeIcons()
+    private void InitIconDict()
     {
         m_resourceIconDict.Clear();
         foreach (var entry in m_resourceIconList)
@@ -175,6 +177,17 @@ public class GameDataManager : MonoBehaviour
         }
     }
 
+    private void InitBalanceEntry()
+    {
+        m_gameBalanceData.InitializeDict();
+
+        m_gameBalanceEntry = new GameBalanceEntry(m_gameBalanceData, new GameBalanceState());
+
+        GameBalanceEntry.m_state.m_mainMul = GameBalanceEntry.m_data.GetBalanceTypeBalance(
+            GameBalanceEntry.m_data.m_firstBalanceType).m_mul;
+        GameBalanceEntry.m_state.m_dateMul = 1.0f;
+    }
+
     private void ResetAcceptableRequest()
     {
         AcceptableRequestList.Clear();
@@ -199,13 +212,15 @@ public class GameDataManager : MonoBehaviour
         //첫 번째 컨택
         if (ProbabilityUtils.RollPercent(_per) == true)
         {
+            RequestType.TYPE _requestType = ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>());
             m_acceptableRequestList.Add(new RequestState(
                 true,
                 GameManager.Instance.Date,
                 GetFactionEntry(_type).m_state.m_like,
                 ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>()),
                 _type,
-                GameBalanceEntry));
+                GameBalanceEntry,
+                GetRequestLineTemplate(_requestType)));
 
             _factionTypes.Remove(_type);
 
@@ -218,15 +233,17 @@ public class GameDataManager : MonoBehaviour
                 GameBalanceEntry.m_data.m_overSecondContactPer;
 
             //두 번째 컨택
+            _requestType = ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>());
             if (ProbabilityUtils.RollPercent(_per) == true)
             {
                 m_acceptableRequestList.Add(new RequestState(
                     true,
                     GameManager.Instance.Date,
                     GetFactionEntry(_type).m_state.m_like,
-                    ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>()),
+                    _requestType,
                     _type,
-                    GameBalanceEntry));
+                    GameBalanceEntry,
+                    GetRequestLineTemplate(_requestType)));
             }
 
             GameBalanceEntry.m_state.m_noContactCount = 0;
@@ -243,29 +260,31 @@ public class GameDataManager : MonoBehaviour
         //의뢰 갯수를 반영해 최대 의뢰를 생성합니다.
         for (int i = 0; i < GameBalanceEntry.m_data.m_maxRequest; i++)
         {
-            FactionType.TYPE _type = ProbabilityUtils.GetRandomElement(_haveFactionTypes);
+            FactionType.TYPE _factionType = ProbabilityUtils.GetRandomElement(_haveFactionTypes);
 
             int _like;
-            if (GetFactionEntry(_type) == null)
+            if (GetFactionEntry(_factionType) == null)
             {
                 _like = 0;
             }
             else
             {
-                _like = GetFactionEntry(_type).m_state.m_like;
+                _like = GetFactionEntry(_factionType).m_state.m_like;
             }
 
             //의뢰 추가 부분
+            RequestType.TYPE _requestType = ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>());
             m_acceptableRequestList.Add(new RequestState(
                 false,
                 GameManager.Instance.Date,
                 _like,
-                ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>()),
-                _type,
-                GameBalanceEntry));
+                _requestType,
+                _factionType,
+                GameBalanceEntry,
+                GetRequestLineTemplate(_requestType)));
 
             //만약 하나의 팩션 의뢰가 나왔다면 그 팩션은 제외하고 의뢰를 생성합니다.
-            _haveFactionTypes.Remove(_type);
+            _haveFactionTypes.Remove(_factionType);
         }
     }
 
@@ -327,6 +346,19 @@ public class GameDataManager : MonoBehaviour
 
         Debug.LogWarning($"{ExceptionMessages.ErrorNoSuchType}: Building - {argKey}");
         return null;
+    }
+
+    public RequestLineTemplate GetRequestLineTemplate(RequestType.TYPE argType)
+    {
+        if (m_requestLineTemplateDict.TryGetValue(argType, out RequestLineTemplate item))
+        {
+            return item;
+        }
+        else
+        {
+            Debug.LogWarning(ExceptionMessages.ErrorNoSuchType);
+            return null;
+        }
     }
 
     public Sprite GetResourceIcon(ResourceType.TYPE type)

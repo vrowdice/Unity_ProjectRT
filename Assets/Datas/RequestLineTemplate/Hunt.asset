@@ -15,5 +15,5 @@ MonoBehaviour:
   m_type: 0
   m_titleTemplate: Enemy Eliminating Mission
   m_contentTemplates:
-  - 
-  - 
+  - I heard that the chieftain of {faction} has arrived in the territory.
+  - '{faction} has requested that we drive out {enemy}.'

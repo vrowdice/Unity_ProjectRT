@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: Stockpile
   m_EditorClassIdentifier: 
   m_type: 3
-  m_titleTemplate: 
-  m_contentTemplates: []
+  m_titleTemplate: Request for support from {faction}
+  m_contentTemplates:
+  - The messenger from {faction} came to visit after a long time, but his expression
+    was not very good.
+  - The messenger sent to {faction} returned with bad news.

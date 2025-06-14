@@ -13,5 +13,8 @@ MonoBehaviour:
   m_Name: Producsion
   m_EditorClassIdentifier: 
   m_type: 2
-  m_titleTemplate: 
-  m_contentTemplates: []
+  m_titleTemplate: Request to increase production of {resource}
+  m_contentTemplates:
+  - I have heard that we require more of {resource}.
+  - As the power grows, the consumption of {resource} increases. It is time for a
+    countermeasure
