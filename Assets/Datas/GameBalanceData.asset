@@ -60,6 +60,7 @@ MonoBehaviour:
     m_likeMul: 30
     m_wealthTokenMul: 0
     m_exchangeTokenMul: 0
+  m_forcedContactRequestList: 02000000
   m_maxRequest: 5
   m_makeRequestDate: 5
   m_firstContactPer: 70

@@ -106,6 +106,11 @@ public class GameManager : MonoBehaviour
         {
             m_gameDataManager.MakeRandomRequest();
         }
+
+        if(_balanceEntry.m_data.m_forcedContactRequestList.Contains(Date) == true)
+        {
+            m_gameDataManager.RandomContactRequest();
+        }
     }
 
     public bool TryChangeAllResources(Dictionary<ResourceType.TYPE, long> argResourceChanges)

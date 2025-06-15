@@ -197,7 +197,7 @@ public class GameDataManager : MonoBehaviour
     /// 컨택트 랜덤 의뢰를 최대 두개 생성합니다
     /// 첫 번째 컨택트 확률과 두 번째 컨택트 확률이 각각 정해져 있습니다
     /// </summary>
-    private void RandomContactRequest()
+    public void RandomContactRequest()
     {
         List<FactionType.TYPE> _factionTypes = FactionEntryDict.Keys.ToList();
 

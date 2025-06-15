@@ -19,6 +19,7 @@ public class GameBalanceData : ScriptableObject
 
     [Header("Request")]
     public List<RequestTypeBalance> m_requestTypeBalanceList = new();
+    public List<int> m_forcedContactRequestList = new();
     public int m_maxRequest = 5;
     public int m_makeRequestDate = 5;
     //첫 번째 컨텍을 할 확률
