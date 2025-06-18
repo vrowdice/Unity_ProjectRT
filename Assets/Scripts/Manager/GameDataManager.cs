@@ -33,6 +33,8 @@ public class GameDataManager : MonoBehaviour
     private List<BuildingData> m_buildingDataList = new();
     [SerializeField]
     private List<RequestLineTemplate> m_requestLineTemplateList = new();
+    [SerializeField]
+    private RequestLineTemplate m_contactLineTemplate;
 
     [Header("Common Data")]
     [SerializeField]
@@ -200,6 +202,7 @@ public class GameDataManager : MonoBehaviour
     public void RandomContactRequest()
     {
         List<FactionType.TYPE> _factionTypes = FactionEntryDict.Keys.ToList();
+        _factionTypes.Remove(FactionType.TYPE.None);
 
         //·£´ý ÆÑ¼Ç Å¸ÀÔ ÁöÁ¤
         FactionType.TYPE _type = ProbabilityUtils.GetRandomElement(_factionTypes);
@@ -220,7 +223,7 @@ public class GameDataManager : MonoBehaviour
                 ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>()),
                 _type,
                 GameBalanceEntry,
-                GetRequestLineTemplate(_requestType)));
+                m_contactLineTemplate));
 
             _factionTypes.Remove(_type);
 
@@ -243,7 +246,7 @@ public class GameDataManager : MonoBehaviour
                     _requestType,
                     _type,
                     GameBalanceEntry,
-                    GetRequestLineTemplate(_requestType)));
+                    m_contactLineTemplate));
             }
 
             GameBalanceEntry.m_state.m_noContactCount = 0;

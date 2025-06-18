@@ -67,6 +67,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: cc542c4de248fe841a067a99c2108dd6, type: 2}
     - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_contactLineTemplate
+      value: 
+      objectReference: {fileID: 11400000, guid: 7fb5bb8ff1e6c4549bfc4f7892dda70d, type: 2}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
       propertyPath: m_tokenIconList.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -95,6 +99,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 11400000, guid: 325de04b9c745534e90ae5917ca7bee8, type: 2}
     - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_requestLineTemplateList.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
       propertyPath: m_tokenIconList.Array.data[0].m_icon
       value: 
       objectReference: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
@@ -122,6 +130,22 @@ PrefabInstance:
       propertyPath: m_requestIconList.Array.data[4].m_type
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_requestLineTemplateList.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: c3930821ac0646c4290d91e85746014c, type: 2}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_requestLineTemplateList.Array.data[1]
+      value: 
+      objectReference: {fileID: 11400000, guid: 32e40d3421f26684c919de4fcf5a73eb, type: 2}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_requestLineTemplateList.Array.data[2]
+      value: 
+      objectReference: {fileID: 11400000, guid: c790f1d990b16b94aa9ec716a298553e, type: 2}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_requestLineTemplateList.Array.data[3]
+      value: 
+      objectReference: {fileID: 11400000, guid: 190ca812e3397594c90b1b0581d92883, type: 2}
     - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
       propertyPath: m_resourceIconList.Array.data[0].m_icon
       value: 
