@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine; // Random.Range를 사용하기 위해 필요
+using UnityEngine;
 
 public static class EnumUtils
 {
@@ -22,19 +22,7 @@ public static class EnumUtils
         // 1. Enum의 모든 유효한 값을 가져옵니다.
         List<T> allValues = GetAllEnumValues<T>();
 
-        // 2. 'None' (0으로 시작하는 경우)과 'Max' (마지막에 위치하는 경우)를 필터링합니다.
-        //    이것은 관습적인 이름 규칙을 따르며, Enum 정의에 따라 달라질 수 있습니다.
-        //    Enum이 0부터 시작하고 'None'이 0인 경우, 첫 번째 요소를 제외.
-        //    Enum의 마지막 요소가 'Max'이고 그게 총 개수를 나타내는 경우, 마지막 요소를 제외.
-        //    더 정확한 필터링이 필요하다면 T.ToString()으로 이름을 확인하거나, 특정 값을 직접 비교해야 합니다.
         List<T> usableValues = new List<T>(allValues); // 복사본 생성
-
-        // T가 Enum이므로, T의 값을 int로 캐스팅하여 0과 마지막 값과 비교해봅니다.
-        // 이것은 Enum 정의에 따라 달라질 수 있는 '추측'에 가깝습니다.
-        // 만약 None = 0이 아닐 수도 있고, Max가 없을 수도 있기 때문입니다.
-        // 가장 안전한 방법은 Enum 정의 시 'None'과 'Max'를 제외한
-        // 실제 사용할 Enum 멤버들만으로 `GetAllEnumValues`를 부르는 것입니다.
-        // 하지만 여기서는 제네릭이므로 일반적인 패턴을 따르겠습니다.
 
         // None/Max 필터링 (가장 일반적인 패턴에 대한 추정)
         if (usableValues.Count > 0)

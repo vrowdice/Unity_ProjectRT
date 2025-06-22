@@ -29,6 +29,9 @@ public class GameBalanceData : ScriptableObject
     //두번 이상 컨텍이 없을 경우 오르는 확률
     public float m_noContactChangePer = 15.0f;
 
+    [Header("Event")]
+    public int m_firstEventSlot = 2;
+    public int m_maxEventSlot = 2;
 
     private Dictionary<BalanceType.TYPE, BalanceTypeBalance> m_balanceTypeDictionary;
     private Dictionary<RequestType.TYPE, RequestTypeBalance> m_requestTypeDictionary;

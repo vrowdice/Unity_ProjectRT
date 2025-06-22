@@ -47,7 +47,7 @@ public class GameManager : MonoBehaviour
 
     void FirstSetting()
     {
-        foreach (ResourceType.TYPE argType in System.Enum.GetValues(typeof(ResourceType.TYPE)))
+        foreach (ResourceType.TYPE argType in EnumUtils.GetAllEnumValues<ResourceType.TYPE>())
         {
             //릴리즈 시 0으로 변경할 것
             m_resourcesDict[argType] = 100000;

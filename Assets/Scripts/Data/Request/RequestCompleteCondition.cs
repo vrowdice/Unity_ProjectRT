@@ -17,7 +17,7 @@ public class RequestCompleteCondition
 
         switch (argType)
         {
-            case RequestType.TYPE.Hunt:
+            case RequestType.TYPE.Battle:
                 m_completeTargetInfo = 0;
                 m_completeValue = (int)((15 * argDateMul) * argMainMul);
                 m_limTime = Mathf.Max((int)((5 + argDateMul) - argMainMul), 5);

@@ -25,26 +25,18 @@ public class GameDataManager : MonoBehaviour
     }
 
     [Header("Game Data")]
-    [SerializeField]
-    private List<FactionData> m_factionDataList = new();
-    [SerializeField]
-    private List<ResearchData> m_commonResearchDataList = new();
-    [SerializeField]
-    private List<BuildingData> m_buildingDataList = new();
-    [SerializeField]
-    private List<RequestLineTemplate> m_requestLineTemplateList = new();
-    [SerializeField]
-    private RequestLineTemplate m_contactLineTemplate;
+    [SerializeField] private List<EventData> m_eventDataList = new();
+    [SerializeField] private List<FactionData> m_factionDataList = new();
+    [SerializeField] private List<ResearchData> m_commonResearchDataList = new();
+    [SerializeField] private List<BuildingData> m_buildingDataList = new();
+    [SerializeField] private List<RequestLineTemplate> m_requestLineTemplateList = new();
+    [SerializeField] private RequestLineTemplate m_contactLineTemplate;
 
     [Header("Common Data")]
-    [SerializeField]
-    private List<ResourceIcon> m_resourceIconList = new();
-    [SerializeField]
-    private List<TokenIcon> m_tokenIconList = new();
-    [SerializeField]
-    private List<RequestIcon> m_requestIconList = new();
-    [SerializeField]
-    private GameBalanceData m_gameBalanceData;
+    [SerializeField] private List<ResourceIcon> m_resourceIconList = new();
+    [SerializeField] private List<TokenIcon> m_tokenIconList = new();
+    [SerializeField] private List<RequestIcon> m_requestIconList = new();
+    [SerializeField] private GameBalanceData m_gameBalanceData;
 
     private readonly Dictionary<FactionType.TYPE, FactionEntry> m_factionEntryDict = new();
     private readonly Dictionary<string, ResearchEntry> m_commonResearchEntryDict = new();
@@ -58,6 +50,7 @@ public class GameDataManager : MonoBehaviour
     private readonly List<RequestState> m_acceptedRequestList = new();
 
     private GameBalanceEntry m_gameBalanceEntry;
+    private EventEntry m_eventEntry;
 
     public Dictionary<FactionType.TYPE, FactionEntry> FactionEntryDict => m_factionEntryDict;
     public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDict;
@@ -65,12 +58,14 @@ public class GameDataManager : MonoBehaviour
     public List<RequestState> AcceptableRequestList => m_acceptableRequestList;
     public List<RequestState> AcceptedRequestList => m_acceptedRequestList;
     public GameBalanceEntry GameBalanceEntry => m_gameBalanceEntry;
+    public EventEntry EventEntry => m_eventEntry;
 
     void Awake()
     {
         InitDict();
         InitIconDict();
         InitBalanceEntry();
+        InitEventEntry();
     }
 
     private void InitDict()
@@ -188,6 +183,15 @@ public class GameDataManager : MonoBehaviour
         GameBalanceEntry.m_state.m_mainMul = GameBalanceEntry.m_data.GetBalanceTypeBalance(
             GameBalanceEntry.m_data.m_firstBalanceType).m_mul;
         GameBalanceEntry.m_state.m_dateMul = 1.0f;
+    }
+
+    private void InitEventEntry()
+    {
+        foreach(EventData item in m_eventDataList)
+        {
+            item.Initialize(this);
+            EventEntry.m_dataList.Add(item);
+        }
     }
 
     private void ResetAcceptableRequest()
