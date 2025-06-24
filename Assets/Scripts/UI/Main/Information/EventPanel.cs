@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class EventPanel : MonoBehaviour, IUIPanel
 {
+    [SerializeField] GameObject m_EventInfoPanelPrefeb = null;
+
     private GameDataManager m_gameDataManager = null;
     private MainUIManager m_mainUIManager = null;
 

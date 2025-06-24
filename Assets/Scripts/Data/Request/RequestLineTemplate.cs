@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "RequestLineTemplate")]
+[CreateAssetMenu(fileName = "RequestLineTemplateData", menuName = "Request Line Template Data")]
 public class RequestLineTemplate : ScriptableObject
 {
     public RequestType.TYPE m_type = RequestType.TYPE.Battle;

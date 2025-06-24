@@ -25,7 +25,7 @@ public class GameDataManager : MonoBehaviour
     }
 
     [Header("Game Data")]
-    [SerializeField] private List<EventData> m_eventDataList = new();
+    [SerializeField] private List<EventGroupData> m_eventGroupDataList = new();
     [SerializeField] private List<FactionData> m_factionDataList = new();
     [SerializeField] private List<ResearchData> m_commonResearchDataList = new();
     [SerializeField] private List<BuildingData> m_buildingDataList = new();
@@ -38,13 +38,13 @@ public class GameDataManager : MonoBehaviour
     [SerializeField] private List<RequestIcon> m_requestIconList = new();
     [SerializeField] private GameBalanceData m_gameBalanceData;
 
-    private readonly Dictionary<FactionType.TYPE, FactionEntry> m_factionEntryDict = new();
-    private readonly Dictionary<string, ResearchEntry> m_commonResearchEntryDict = new();
-    private readonly Dictionary<string, BuildingEntry> m_buildingEntryDict = new();
-    private readonly Dictionary<ResourceType.TYPE, Sprite> m_resourceIconDict = new();
-    private readonly Dictionary<TokenType.TYPE, Sprite> m_tokenIconDict = new();
-    private readonly Dictionary<RequestType.TYPE, Sprite> m_requestIconDict = new();
-    private readonly Dictionary<RequestType.TYPE, RequestLineTemplate> m_requestLineTemplateDict = new();
+    private readonly Dictionary<FactionType.TYPE, FactionEntry> m_factionEntryDic = new();
+    private readonly Dictionary<string, ResearchEntry> m_commonResearchEntryDic = new();
+    private readonly Dictionary<string, BuildingEntry> m_buildingEntryDic = new();
+    private readonly Dictionary<ResourceType.TYPE, Sprite> m_resourceIconDic = new();
+    private readonly Dictionary<TokenType.TYPE, Sprite> m_tokenIconDic = new();
+    private readonly Dictionary<RequestType.TYPE, Sprite> m_requestIconDic = new();
+    private readonly Dictionary<RequestType.TYPE, RequestLineTemplate> m_requestLineTemplateDic = new();
 
     private readonly List<RequestState> m_acceptableRequestList = new();
     private readonly List<RequestState> m_acceptedRequestList = new();
@@ -52,9 +52,9 @@ public class GameDataManager : MonoBehaviour
     private GameBalanceEntry m_gameBalanceEntry;
     private EventEntry m_eventEntry;
 
-    public Dictionary<FactionType.TYPE, FactionEntry> FactionEntryDict => m_factionEntryDict;
-    public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDict;
-    public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDict;
+    public Dictionary<FactionType.TYPE, FactionEntry> FactionEntryDict => m_factionEntryDic;
+    public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDic;
+    public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDic;
     public List<RequestState> AcceptableRequestList => m_acceptableRequestList;
     public List<RequestState> AcceptedRequestList => m_acceptedRequestList;
     public GameBalanceEntry GameBalanceEntry => m_gameBalanceEntry;
@@ -70,16 +70,16 @@ public class GameDataManager : MonoBehaviour
 
     private void InitDict()
     {
-        m_factionEntryDict.Clear();
-        m_commonResearchEntryDict.Clear();
+        m_factionEntryDic.Clear();
+        m_commonResearchEntryDic.Clear();
 
         foreach (FactionData faction in m_factionDataList)
         {
-            if (!m_factionEntryDict.ContainsKey(faction.m_factionType))
+            if (!m_factionEntryDic.ContainsKey(faction.m_factionType))
             {
                 FactionEntry _entry = new(faction);
 
-                m_factionEntryDict.Add(faction.m_factionType, _entry);
+                m_factionEntryDic.Add(faction.m_factionType, _entry);
             }
             else
             {
@@ -89,12 +89,12 @@ public class GameDataManager : MonoBehaviour
 
         foreach (ResearchData research in m_commonResearchDataList)
         {
-            if (!m_commonResearchEntryDict.ContainsKey(research.name))
+            if (!m_commonResearchEntryDic.ContainsKey(research.name))
             {
                 ResearchEntry _entry = new(research);
 
                 research.m_code = research.name;
-                m_commonResearchEntryDict.Add(research.m_code, _entry);
+                m_commonResearchEntryDic.Add(research.m_code, _entry);
             }
             else
             {
@@ -104,12 +104,12 @@ public class GameDataManager : MonoBehaviour
         
         foreach (BuildingData building in m_buildingDataList)
         {
-            if (!m_buildingEntryDict.ContainsKey(building.name))
+            if (!m_buildingEntryDic.ContainsKey(building.name))
             {
                 BuildingEntry _entry = new(building);
 
                 building.m_code = building.name;
-                m_buildingEntryDict.Add(building.m_code, _entry);
+                m_buildingEntryDic.Add(building.m_code, _entry);
             }
             else
             {
@@ -119,9 +119,9 @@ public class GameDataManager : MonoBehaviour
 
         foreach (RequestLineTemplate item in m_requestLineTemplateList)
         {
-            if (!m_buildingEntryDict.ContainsKey(item.name))
+            if (!m_buildingEntryDic.ContainsKey(item.name))
             {
-                m_requestLineTemplateDict.Add(item.m_type, item);
+                m_requestLineTemplateDic.Add(item.m_type, item);
             }
             else
             {
@@ -132,12 +132,12 @@ public class GameDataManager : MonoBehaviour
 
     private void InitIconDict()
     {
-        m_resourceIconDict.Clear();
+        m_resourceIconDic.Clear();
         foreach (var entry in m_resourceIconList)
         {
-            if (!m_resourceIconDict.ContainsKey(entry.m_type))
+            if (!m_resourceIconDic.ContainsKey(entry.m_type))
             {
-                m_resourceIconDict.Add(entry.m_type, entry.m_icon);
+                m_resourceIconDic.Add(entry.m_type, entry.m_icon);
             }
             else
             {
@@ -145,12 +145,12 @@ public class GameDataManager : MonoBehaviour
             }
         }
 
-        m_tokenIconDict.Clear();
+        m_tokenIconDic.Clear();
         foreach (var entry in m_tokenIconList)
         {
-            if (!m_tokenIconDict.ContainsKey(entry.m_type))
+            if (!m_tokenIconDic.ContainsKey(entry.m_type))
             {
-                m_tokenIconDict.Add(entry.m_type, entry.m_icon);
+                m_tokenIconDic.Add(entry.m_type, entry.m_icon);
             }
             else
             {
@@ -158,13 +158,13 @@ public class GameDataManager : MonoBehaviour
             }
         }
 
-        m_requestIconDict.Clear();
+        m_requestIconDic.Clear();
         {
             foreach (var entry in m_requestIconList)
             {
-                if (!m_requestIconDict.ContainsKey(entry.m_type))
+                if (!m_requestIconDic.ContainsKey(entry.m_type))
                 {
-                    m_requestIconDict.Add(entry.m_type, entry.m_icon);
+                    m_requestIconDic.Add(entry.m_type, entry.m_icon);
                 }
                 else
                 {
@@ -187,11 +187,7 @@ public class GameDataManager : MonoBehaviour
 
     private void InitEventEntry()
     {
-        foreach(EventData item in m_eventDataList)
-        {
-            item.Initialize(this);
-            EventEntry.m_dataList.Add(item);
-        }
+        m_eventEntry = new EventEntry(m_eventGroupDataList, this);
     }
 
     private void ResetAcceptableRequest()
@@ -314,7 +310,7 @@ public class GameDataManager : MonoBehaviour
 
     public FactionEntry GetFactionEntry(FactionType.TYPE argType)
     {
-        if (m_factionEntryDict != null && m_factionEntryDict.TryGetValue(argType, out FactionEntry entry))
+        if (m_factionEntryDic != null && m_factionEntryDic.TryGetValue(argType, out FactionEntry entry))
         {
             return entry;
         }
@@ -330,7 +326,7 @@ public class GameDataManager : MonoBehaviour
             return null;
         }
 
-        if (m_commonResearchEntryDict != null && m_commonResearchEntryDict.TryGetValue(argKey, out ResearchEntry entry))
+        if (m_commonResearchEntryDic != null && m_commonResearchEntryDic.TryGetValue(argKey, out ResearchEntry entry))
         {
             return entry;
         }
@@ -346,7 +342,7 @@ public class GameDataManager : MonoBehaviour
             return null;
         }
 
-        if (m_buildingEntryDict != null && m_buildingEntryDict.TryGetValue(argKey, out BuildingEntry entry))
+        if (m_buildingEntryDic != null && m_buildingEntryDic.TryGetValue(argKey, out BuildingEntry entry))
         {
             return entry;
         }
@@ -357,7 +353,7 @@ public class GameDataManager : MonoBehaviour
 
     public RequestLineTemplate GetRequestLineTemplate(RequestType.TYPE argType)
     {
-        if (m_requestLineTemplateDict.TryGetValue(argType, out RequestLineTemplate item))
+        if (m_requestLineTemplateDic.TryGetValue(argType, out RequestLineTemplate item))
         {
             return item;
         }
@@ -370,7 +366,7 @@ public class GameDataManager : MonoBehaviour
 
     public Sprite GetResourceIcon(ResourceType.TYPE type)
     {
-        if (m_resourceIconDict.TryGetValue(type, out var icon))
+        if (m_resourceIconDic.TryGetValue(type, out var icon))
         {
             return icon;
         }
@@ -383,7 +379,7 @@ public class GameDataManager : MonoBehaviour
 
     public Sprite GetTokenIcon(TokenType.TYPE type)
     {
-        if (m_tokenIconDict.TryGetValue(type, out var icon))
+        if (m_tokenIconDic.TryGetValue(type, out var icon))
         {
             return icon;
         }
@@ -396,7 +392,7 @@ public class GameDataManager : MonoBehaviour
 
     public Sprite GetRequestIcon(RequestType.TYPE type)
     {
-        if (m_requestIconDict.TryGetValue(type, out var icon))
+        if (m_requestIconDic.TryGetValue(type, out var icon))
         {
             return icon;
         }

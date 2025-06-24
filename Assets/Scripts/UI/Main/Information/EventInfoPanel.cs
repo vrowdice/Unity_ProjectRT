@@ -12,8 +12,9 @@ public class EventInfoPanel : MonoBehaviour
 
     [SerializeField] GameObject m_effectTextPrefeb = null;
 
-    public void Init()
+    public void Init(EventData argEventData, EventState argEventState)
     {
-
+        m_eventTitleText.text = argEventData.m_title;
+        m_timeText.text = string.Empty;
     }
 }
