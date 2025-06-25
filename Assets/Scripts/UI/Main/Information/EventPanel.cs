@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class EventPanel : MonoBehaviour, IUIPanel
 {
-    [SerializeField] GameObject m_EventInfoPanelPrefeb = null;
+    [SerializeField] GameObject m_eventInfoPanelPrefeb = null;
+    [SerializeField] Transform m_eventInfoScrollViewContentTrans = null;
 
     private GameDataManager m_gameDataManager = null;
     private MainUIManager m_mainUIManager = null;
@@ -17,7 +18,14 @@ public class EventPanel : MonoBehaviour, IUIPanel
         m_gameDataManager = argdataManager;
         m_mainUIManager = argMainUIManager;
 
+        GameObjectUtils.ClearChildren(m_eventInfoScrollViewContentTrans);
 
+        foreach(ActiveEvent activeEvent in GameDataManager.EventEntry.m_state.m_activeEventList)
+        {
+            EventInfoPanel _infoPanel; 
+            _infoPanel = Instantiate(m_eventInfoPanelPrefeb, m_eventInfoScrollViewContentTrans).GetComponent<EventInfoPanel>();
+            _infoPanel.Init(activeEvent);
+        }
     }
 
     public void OnClose()

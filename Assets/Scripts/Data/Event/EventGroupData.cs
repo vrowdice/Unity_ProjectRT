@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewEventGroupData", menuName = "Event Group Data")]
 public class EventGroupData : ScriptableObject
 {
+    public string m_groupName = "None";
     public int m_eventGroupKey = 0;
     public float m_firstPercent = 5;
     public float m_dateChangePercent = 1;

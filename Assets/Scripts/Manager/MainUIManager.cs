@@ -74,6 +74,8 @@ public class MainUIManager : MonoBehaviour, IUIManager
 
     void SetAddResourceText(ResourceType.TYPE argType)
     {
+        m_gameManager.GetBuildingDateResource();
+
         long resourceAmount = m_gameManager.GetDayAddResource(argType);
         string formattedAmount = ReplaceUtils.FormatNumber(resourceAmount);
 
@@ -97,9 +99,9 @@ public class MainUIManager : MonoBehaviour, IUIManager
         }
     }
 
-    public void Initialize()
+    public void Initialize(GameManager gameManager)
     {
-        m_gameManager = GameManager.Instance;
+        m_gameManager = gameManager;
         m_canvasTrans = transform;
 
         //패널 초기화

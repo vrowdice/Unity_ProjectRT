@@ -2,18 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EventEntry : MonoBehaviour
+public class EventEntry
 {
     private GameDataManager m_gameDataManager = null;
 
     public Dictionary<int, EventGroupData> m_groupDataDic = new();
     public Dictionary<int, EventGroupState> m_groupStateDic = new();
-    public EventState m_state;
+    public EventState m_state = new();
 
     public EventEntry(List<EventGroupData> argDataList, GameDataManager argDataManager)
     {
         m_gameDataManager = argDataManager;
-        m_state = new EventState();
         //추후 변경 필요
         m_state.m_maxEvent = m_gameDataManager.GameBalanceEntry.m_data.m_firstEventSlot;
 
@@ -26,6 +25,7 @@ public class EventEntry : MonoBehaviour
         foreach (ResourceType.TYPE argType in EnumUtils.GetAllEnumValues<ResourceType.TYPE>())
         {
             m_state.m_territoryResourceModDic[argType] = 0;
+            m_state.m_buildingResourceModDic[argType] = 0;
         }
 
         foreach(KeyValuePair<int, EventGroupData> item in m_groupDataDic)
@@ -34,8 +34,14 @@ public class EventEntry : MonoBehaviour
         }
     }
 
-    public void NextDate()
+    /// <summary>
+    /// 다음 날 처리 확률을 높이고 이벤트 발생
+    /// </summary>
+    /// <returns></returns>
+    public bool AddDate()
     {
+        bool _isAddEvent = false;
+
         //그룹 상태 딕셔너리 가져옴
         foreach (KeyValuePair<int ,EventGroupState> groupStateitem in m_groupStateDic)
         {
@@ -43,7 +49,7 @@ public class EventEntry : MonoBehaviour
             groupStateitem.Value.m_percent += m_groupDataDic[groupStateitem.Key].m_dateChangePercent;
 
             //만약 최대 이벤트 갯수이면 다음으로
-            if (m_state.m_activeEffectList.Count >= m_state.m_maxEvent)
+            if (m_state.m_activeEventList.Count >= m_state.m_maxEvent)
             {
                 continue;
             }
@@ -56,22 +62,22 @@ public class EventEntry : MonoBehaviour
 
                 //그룹의 랜덤 이벤트의 이펙트 활성화
                 EventData _eventData = ProbabilityUtils.GetRandomElement(m_groupDataDic[groupStateitem.Key].m_dataList);
-                _eventData.ActivateAllEffect(m_gameDataManager, Random.Range(_eventData.m_minDuration, _eventData.m_maxDuration));
-                foreach(EffectBase effectBaseItem in _eventData.m_effectList)
-                {
-                    m_state.m_activeEffectList.Add(effectBaseItem);
-                }
+                ActiveEvent _newEvent = _eventData.Activate(m_gameDataManager);
+                m_state.m_activeEventList.Add(_newEvent);
+
+                _isAddEvent = true;
             }
         }
 
         //틱으로 지속시간을 감소하고 0이면 비활성화
-        for (int i = m_state.m_activeEffectList.Count - 1; i >= 0; i--)
+        for (int i = m_state.m_activeEventList.Count - 1; i >= 0; i--)
         {
-            var effect = m_state.m_activeEffectList[i];
-            if (effect.Tick(m_gameDataManager))
+            if (m_state.m_activeEventList[i].Tick(m_gameDataManager))
             {
-                m_state.m_activeEffectList.RemoveAt(i);
+                m_state.m_activeEventList.RemoveAt(i);
             }
         }
+
+        return _isAddEvent;
     }
 }

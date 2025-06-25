@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ResearchCountCondition", menuName = "Conditions/Research Count")]
 public class ResearchCountCondition : ConditionBase
 {
-    public int maxResearchCount;
+    public int m_maxResearchCount;
 
     private GameDataManager m_dataManager;
 
@@ -22,6 +22,6 @@ public class ResearchCountCondition : ConditionBase
             return false;
         }
 
-        return m_dataManager.AcceptedRequestList.Count <= maxResearchCount;
+        return m_dataManager.AcceptedRequestList.Count <= m_maxResearchCount;
     }
 }

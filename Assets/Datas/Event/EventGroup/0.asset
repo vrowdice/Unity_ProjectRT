@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4be4df7387169842afcd5a916d93c01, type: 3}
   m_Name: 0
   m_EditorClassIdentifier: 
+  m_groupName: None
   m_eventGroupKey: 0
   m_firstPercent: 5
   m_dateChangePercent: 1

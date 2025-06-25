@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 895ca96f05c98c34d94c32946029dd9f, type: 3}
+  m_Name: Resource2
+  m_EditorClassIdentifier: 
+  m_type: 0
+  m_isGood: 1
+  m_minDuration: 1
+  m_maxDuration: 3
+  m_title: "\uB300\uC218\uB9BC\uC758 \uC740\uD61C"
+  m_description: "\uC218\uC2ED\uB144 \uC804\uC758 \uC791\uC740 \uC528\uC557\uB4E4\uC774
+    \uC774\uB807\uAC8C \uC790\uB784 \uC815\uB3C4\uB85C \uC624\uB798 \uC9C0\uB0AC\uAC74\uB9CC. "
+  m_conditionList: []
+  m_effectList:
+  - {fileID: 11400000, guid: 0a1e6652d4d6e8d4aa01b05fcbbc8125, type: 2}

@@ -5,9 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewEventData", menuName = "Event Data")]
 public class EventData : ScriptableObject
 {
-    public EventType.TYPE m_type;
     public bool m_isGood;
-    public int m_eventGroupKey;
     public int m_minDuration = 1;
     public int m_maxDuration = 2;
     public string m_title;
@@ -31,12 +29,20 @@ public class EventData : ScriptableObject
         }
     }
 
+    public ActiveEvent Activate(GameDataManager dataManager)
+    {
+        int duration = Random.Range(m_minDuration, m_maxDuration + 1);
+        foreach (var effect in m_effectList)
+        {
+            effect.Activate(dataManager);
+        }
+        return new ActiveEvent(this, duration);
+    }
+
     public void ActivateAllEffect(GameDataManager dataManager, int duration)
     {
         foreach(EffectBase item in m_effectList)
         {
-            item.Init(duration);
-
             item.Activate(dataManager);
         }
     }

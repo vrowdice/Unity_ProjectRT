@@ -5,8 +5,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewBuildingData", menuName = "Building Data")]
 public class BuildingData : ScriptableObject
 {
-    [HideInInspector]
-    public string m_code;
+    [HideInInspector] public string m_code;
+
+    public BuildingType.TYPE m_buildingType;
     public string m_name;
     [TextArea] public string m_description;
 

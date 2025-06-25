@@ -195,6 +195,14 @@ public class GameDataManager : MonoBehaviour
         AcceptableRequestList.Clear();
     }
 
+    public void RandomBuilding(int buildingCount)
+    {
+        for(int i = 0; i < buildingCount; i++)
+        {
+            ProbabilityUtils.GetRandomElement(BuildingEntryDict).Value.m_state.m_amount++;
+        }
+    }
+
     /// <summary>
     /// 컨택트 랜덤 의뢰를 최대 두개 생성합니다
     /// 첫 번째 컨택트 확률과 두 번째 컨택트 확률이 각각 정해져 있습니다

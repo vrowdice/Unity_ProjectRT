@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -67,7 +68,7 @@ public class GameManager : MonoBehaviour
 
             if (m_nowUIManager != null)
             {
-                m_nowUIManager.Initialize();
+                m_nowUIManager.Initialize(this);
             }
             else
             {
@@ -78,6 +79,8 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogError("No Canvas found in the scene!");
         }
+
+        GetBuildingDateResource();
     }
 
     public void AddDate(int argAddDate)
@@ -110,6 +113,11 @@ public class GameManager : MonoBehaviour
         if(_balanceEntry.m_data.m_forcedContactRequestList.Contains(Date) == true)
         {
             m_gameDataManager.RandomContactRequest();
+        }
+
+        if (m_gameDataManager.EventEntry.AddDate() == true)
+        {
+            Warning(InfoMessages.EventOccurs);
         }
     }
 
@@ -169,7 +177,7 @@ public class GameManager : MonoBehaviour
     {
         for (int i = 0; i < argDay; i++)
         {
-            foreach (KeyValuePair<ResourceType.TYPE, long> kvp in m_producedResourcesDict)
+            foreach (var kvp in m_producedResourcesDict.ToList())
             {
                 TryChangeResource(kvp.Key, kvp.Value);
             }
@@ -178,29 +186,38 @@ public class GameManager : MonoBehaviour
 
     public void GetBuildingDateResource()
     {
-        List<ResourceType.TYPE> keyList = new List<ResourceType.TYPE>(m_producedResourcesDict.Keys);
-        foreach (ResourceType.TYPE key in keyList)
+        //리소스 양을 모두 0으로
+        foreach (var key in m_producedResourcesDict.Keys.ToList())
         {
             m_producedResourcesDict[key] = 0;
         }
 
-        foreach (KeyValuePair<string, BuildingEntry> kvp in GameDataManager.BuildingEntryDict)
+        // 각 건물마다 생산 계산
+        foreach (var buildingPair in GameDataManager.BuildingEntryDict)
         {
-            kvp.Value.ApplyProduction();
+            BuildingEntry building = buildingPair.Value;
+            building.ApplyProduction();
 
-            foreach (ResourceAmount argProduction in kvp.Value.m_state.m_calculatedProductionList)
+            foreach (var production in building.m_state.m_calculatedProductionList)
             {
-                if (m_producedResourcesDict.ContainsKey(argProduction.m_type))
+                float modifier = 1f;
+                if (m_gameDataManager.EventEntry.m_state.m_buildingResourceModDic.TryGetValue(production.m_type, out float value))
                 {
-                    m_producedResourcesDict[argProduction.m_type] += argProduction.m_amount;
+                    modifier = (value == 0f) ? 1f : value;
+                }
+
+                if (m_producedResourcesDict.ContainsKey(production.m_type))
+                {
+                    m_producedResourcesDict[production.m_type] += (long)(production.m_amount * modifier);
                 }
                 else
                 {
-                    Debug.LogError($"Production resource type {argProduction.m_type} not found in produced resources dictionary.");
+                    Debug.LogWarning($"[GetBuildingDateResource] Unknown resource type: {production.m_type}");
                 }
             }
         }
     }
+
 
     public void LoadScene(string argSceneName)
     {

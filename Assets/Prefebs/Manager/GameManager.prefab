@@ -83,6 +83,14 @@ PrefabInstance:
       value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_buildingDataList.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_eventGroupDataList.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
       propertyPath: m_factionDataList.Array.data[0]
       value: 
       objectReference: {fileID: 11400000, guid: dc7a369e2b583824eb13d837f1095c38, type: 2}
@@ -98,6 +106,18 @@ PrefabInstance:
       propertyPath: m_factionDataList.Array.data[3]
       value: 
       objectReference: {fileID: 11400000, guid: 325de04b9c745534e90ae5917ca7bee8, type: 2}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_buildingDataList.Array.data[2]
+      value: 
+      objectReference: {fileID: 11400000, guid: 14521655c3ccfbb4aac41d61f5903919, type: 2}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_eventGroupDataList.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: 928b7e1614a553f458dbaf7dbff644f7, type: 2}
+    - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+      propertyPath: m_eventGroupDataList.Array.data[1]
+      value: 
+      objectReference: {fileID: 11400000, guid: ce6b1e3c43b803d43ba611f91352493f, type: 2}
     - target: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
       propertyPath: m_requestLineTemplateList.Array.size
       value: 4
