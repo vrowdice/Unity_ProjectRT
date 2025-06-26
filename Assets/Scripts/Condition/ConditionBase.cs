@@ -4,5 +4,6 @@ using UnityEngine;
 
 public abstract class ConditionBase : ScriptableObject, ICondition
 {
+    public abstract void Initialize(GameDataManager data);
     public abstract bool IsSatisfied();
 }

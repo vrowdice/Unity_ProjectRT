@@ -123,11 +123,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!224 &348795065 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 2116227211337917811, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
-  m_PrefabInstance: {fileID: 7655059404562622715}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &761996469
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -363,27 +358,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2116227211337917811, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.00008523464
-      objectReference: {fileID: 0}
-    - target: {fileID: 5118609332759434811, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
-      propertyPath: m_eventInfoPanelPrefeb
-      value: 
-      objectReference: {fileID: 3401743982942203741, guid: ed8f2302047d2fa4ea064821864abb49, type: 3}
-    - target: {fileID: 5118609332759434811, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
-      propertyPath: m_eventInfoScrollViewContentTrans
-      value: 
-      objectReference: {fileID: 348795065}
-    - target: {fileID: 5881822361752677516, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5881822361752677516, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5881822361752677516, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 0
+      value: -0.000062942505
       objectReference: {fileID: 0}
     - target: {fileID: 6393524419919394774, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
       propertyPath: m_Name

@@ -8,7 +8,7 @@ public class HaveBuildingCondition : ConditionBase
 
     private GameDataManager m_dataManager;
 
-    public void Initialize(GameDataManager data)
+    public override void Initialize(GameDataManager data)
     {
         m_dataManager = data;
     }
