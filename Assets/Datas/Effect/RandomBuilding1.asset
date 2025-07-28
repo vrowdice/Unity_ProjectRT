@@ -12,6 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a52a60329bf27945acbad50b7add251, type: 3}
   m_Name: RandomBuilding1
   m_EditorClassIdentifier: 
-  m_description: "\uB79C\uB364\uC73C\uB85C \uAC74\uBB3C 1\uAC1C\uC758 \uB808\uBCA8
-    1 \uC99D\uAC00"
+  m_description: "Increase the level of 1 random building by 1"
   m_addCount: 1

@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eb2828d35806c8d429f9c37aa1e896de, type: 3}
-  m_Name: 20001
+  m_Name: RequestOffice
   m_EditorClassIdentifier: 
-  m_code: 00001
-  m_name: WoodIron
-  m_description: WoodIron Description
+  m_code: 10002
+  m_buildingType: 2
+  m_name: Request Office
+  m_description: "A place where people who need help in various ways gather. Of course,
+    the price is not free.\r"
   m_icon: {fileID: 0}
   m_requireResourceList:
   - m_type: 0
-    m_amount: 100
-  m_productionList:
-  - m_type: 0
-    m_amount: 10
+    m_amount: 250
   - m_type: 1
-    m_amount: 10
+    m_amount: 250
+  m_productionList: []

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64267ea355f27ed4ca3896a3d6e9ec6c, type: 3}
+  m_Name: ImpWood1
+  m_EditorClassIdentifier: 
+  m_code: 00007
+  m_name: Wood Production Boost 1
+  m_description: Increase wood production in territory/buildings by 1.2x
+  m_cost: 150
+  m_duration: 5
+  m_prerequisites: []
+  m_unlocks:
+  - {fileID: 11400000, guid: 5581946337868924092a50e4cf388882, type: 2}
+  - {fileID: 11400000, guid: 7cb4db7b1135a0d41b5e327240e059a6, type: 2}
+  m_icon: {fileID: 0}
+  m_isFirstLocked: 0
+  m_factionType: 0

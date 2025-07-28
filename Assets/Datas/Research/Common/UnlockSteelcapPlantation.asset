@@ -10,15 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 64267ea355f27ed4ca3896a3d6e9ec6c, type: 3}
-  m_Name: 00002
+  m_Name: UnlockSteelcapPlantation
   m_EditorClassIdentifier: 
-  m_code: 00002
-  m_name: Common2
-  m_description: Common2 Description
-  m_cost: 0
-  m_duration: 0
-  m_prerequisites: []
+  m_code: 00017
+  m_name: Steelcap Cultivation Preparation
+  m_description: Unlocks the ability to build a steelcap plantation.
+  m_cost: 150
+  m_duration: 6
+  m_prerequisites:
+  - {fileID: 11400000, guid: 2560f953ee4d97b4b858cc401cfae112, type: 2}
   m_unlocks: []
   m_icon: {fileID: 0}
-  m_isResearched: 0
+  m_isFirstLocked: 0
   m_factionType: 0

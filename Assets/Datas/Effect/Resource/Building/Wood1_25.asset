@@ -14,6 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_duration: -1
   m_type: 0
-  m_description: "\uAC74\uBB3C\uC5D0\uC11C\uC758 \uB098\uBB34 \uC77C\uC77C \uC0DD\uC0B0\uB7C9
-    25% \uC99D\uAC00"
+  m_description: "Daily wood production in buildings increases by 25%"
   m_mod: 1.25
