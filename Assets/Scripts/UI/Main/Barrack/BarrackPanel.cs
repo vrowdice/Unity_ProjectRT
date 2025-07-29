@@ -2,24 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BarrackPanel : MonoBehaviour, IUIPanel
+public class BarrackPanel : BasePanel
 {
-    private GameDataManager m_gameDataManager = null;
-    private MainUIManager m_mainUIManager = null;
+    private const int m_barrackBuildingCode = 10003;
 
-    public GameDataManager GameDataManager => m_gameDataManager;
-    public MainUIManager MainUIManager => m_mainUIManager;
-
-    public void OnOpen(GameDataManager argdataManager, MainUIManager argMainUIManager)
+    protected override void OnPanelOpen()
     {
-        m_gameDataManager = argdataManager;
-        m_mainUIManager = argMainUIManager;
+        // 패널 설정
+        SetPanelName("Barrack");
+        SetBuildingLevel(m_barrackBuildingCode);
 
-
+        // 여기에 병영 패널 특화 초기화 로직을 추가할 수 있습니다
+        InitializeBarrackPanel();
     }
 
-    public void OnClose()
+    /// <summary>
+    /// 병영 패널 초기화
+    /// </summary>
+    private void InitializeBarrackPanel()
     {
-
+        // 병영 패널 특화 로직을 여기에 구현
+        // 예: 유닛 목록 표시, 훈련 기능 등
     }
 }

@@ -2,10 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MainPanel : MonoBehaviour, IUIPanel
+public class MainPanel : BasePanel
 {
-    private GameDataManager m_gameDataManager = null;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -18,14 +16,11 @@ public class MainPanel : MonoBehaviour, IUIPanel
         
     }
 
-    public void OnOpen(GameDataManager argDataManager, MainUIManager argUIManager)
+    protected override void OnPanelOpen()
     {
-        m_gameDataManager = argDataManager;
-        gameObject.SetActive(true);
-    }
-
-    public void OnClose()
-    {
-
+        // 메인 패널은 정보 패널을 표시하지 않음
+        m_showInfoPanel = false;
+        SetPanelName("");
+        SetBuildingLevel("");
     }
 }
