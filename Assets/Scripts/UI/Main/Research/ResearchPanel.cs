@@ -2,14 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ResearchPanel : MonoBehaviour, IUIPanel
+public class ResearchPanel : BasePanel
 {
     [SerializeField]
     Transform m_researchScrollViewContentTrans = null;
     [SerializeField]
     GameObject m_commonResearchBtnPrefeb = null;
 
-    private GameDataManager m_gameDataManager = null;
+    private const int m_labBuildingCode = 10001;
 
     // Update is called once per frame
     void Update()
@@ -17,63 +17,96 @@ public class ResearchPanel : MonoBehaviour, IUIPanel
         
     }
 
-    public void OnOpen(GameDataManager argDataManager, MainUIManager argUIManager)
+    protected override void OnPanelOpen()
     {
-        m_gameDataManager = argDataManager;
-        gameObject.SetActive(true);
+        // Ìå®ÎÑê ÏÑ§Ï†ï
+        SetPanelName("Lab");
+        SetBuildingLevel(m_labBuildingCode);
 
         SelectResearchContent(0);
     }
 
-    public void OnClose()
+    /// <summary>
+    /// Ïó∞Íµ¨ Ìå®ÎÑê ÏÑ†ÌÉù
+    /// </summary>
+    /// <param name="argPanelIndex"></param>
+    /// 0 = Ïó∞Íµ¨ Í∞ÄÎä•
+    /// 1 = Ïû†Í∏à
+    /// 2 = ÏôÑÎ£åÎê®
+    public void SelectResearchContent(int argPanelIndex)
     {
+        if (m_researchScrollViewContentTrans == null)
+        {
+            Debug.LogError("Research scroll view content transform is null!");
+            return;
+        }
 
+        if (m_commonResearchBtnPrefeb == null)
+        {
+            Debug.LogError("Common research button prefab is null!");
+            return;
+        }
+
+        ClearResearchButtons();
+        CreateResearchButtons(argPanelIndex);
     }
 
     /// <summary>
-    /// ø¨±∏ ∆–≥Œ º±≈√
+    /// Ïó∞Íµ¨ Î≤ÑÌäºÎì§ Ï†úÍ±∞
     /// </summary>
-    /// <param name="argPanelIndex"></param>
-    /// 0 = ø¨±∏ ∞°¥…
-    /// 1 = ¿·±‰
-    /// 2 = ø¨±∏µ»
-    public void SelectResearchContent(int argPanelIndex)
+    private void ClearResearchButtons()
     {
         foreach (Transform item in m_researchScrollViewContentTrans)
         {
-            Destroy(item.gameObject);
+            if (item != null)
+            {
+                Destroy(item.gameObject);
+            }
         }
+    }
 
+    /// <summary>
+    /// Ïó∞Íµ¨ Î≤ÑÌäºÎì§ ÏÉùÏÑ±
+    /// </summary>
+    /// <param name="panelIndex">Ìå®ÎÑê Ïù∏Îç±Ïä§</param>
+    private void CreateResearchButtons(int panelIndex)
+    {
         foreach (KeyValuePair<string, ResearchEntry> item in m_gameDataManager.CommonResearchEntryDict)
         {
-            switch (argPanelIndex)
+            if (item.Value == null) continue;
+
+            bool shouldCreate = false;
+
+            switch (panelIndex)
             {
-                case 0:
-                    if (item.Value.m_state.m_isLocked == false && item.Value.m_state.m_isResearched == false)
-                    {
-                        Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
-                            Initialize(this, item.Value);
-                    }
+                case 0: // Ïó∞Íµ¨ Í∞ÄÎä•
+                    shouldCreate = item.Value.m_state.m_isLocked == false && item.Value.m_state.m_isResearched == false;
                     break;
-                case 1:
-                    if (item.Value.m_state.m_isLocked == true)
-                    {
-                        Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
-                            Initialize(this, item.Value);
-                    }
+                case 1: // Ïû†Í∏à
+                    shouldCreate = item.Value.m_state.m_isLocked == true;
                     break;
-                case 2:
-                    if (item.Value.m_state.m_isResearched == true)
-                    {
-                        Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans).GetComponent<CommonResearchBtn>().
-                            Initialize(this, item.Value);
-                    }
+                case 2: // ÏôÑÎ£åÎê®
+                    shouldCreate = item.Value.m_state.m_isResearched == true;
                     break;
                 default:
                     Debug.LogError(ExceptionMessages.ErrorInvalidResearchInfo);
-                    break;
+                    return;
             }
 
+            if (shouldCreate)
+            {
+                GameObject btnObj = Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans);
+                CommonResearchBtn researchBtn = btnObj.GetComponent<CommonResearchBtn>();
+                
+                if (researchBtn != null)
+                {
+                    researchBtn.Initialize(this, item.Value);
+                }
+                else
+                {
+                    Debug.LogError("CommonResearchBtn component not found on prefab!");
+                }
+            }
         }
     }
 }

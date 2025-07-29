@@ -1,9 +1,16 @@
 using UnityEngine.SceneManagement;
 using UnityEngine;
 
+/// <summary>
+/// ì”¬ ë¡œë”©ì„ ê´€ë¦¬í•˜ëŠ” ë§¤ë‹ˆì € í´ë˜ìŠ¤
+/// ì”¬ ì „í™˜ ë° ë¹Œë“œ ì„¤ì • ê²€ì¦ì„ ë‹´ë‹¹
+/// </summary>
 public class SceneLoadManager : MonoBehaviour
 {
-    //¹öÆ°º°·Î ÇÒ´çµÈ String¿¡ ÇØ´çÇÏ´Â ¾À ºÒ·¯¿À±â
+    /// <summary>
+    /// ë²„íŠ¼ì—ì„œ í• ë‹¹ëœ Stringì— í•´ë‹¹í•˜ëŠ” ì”¬ì„ ë¡œë“œí•©ë‹ˆë‹¤
+    /// </summary>
+    /// <param name="sceneName">ë¡œë“œí•  ì”¬ ì´ë¦„</param>
     public void LoadScene(string sceneName)
     {
         if (IsSceneInBuildSettings(sceneName))
@@ -12,11 +19,15 @@ public class SceneLoadManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"¾À '{sceneName}' ÀÌ(°¡) Build Settings¿¡ ¾ø½À´Ï´Ù.");
+            Debug.LogWarning($"ì”¬ '{sceneName}' ì´(ê°€) Build Settingsì— ì—†ìŠµë‹ˆë‹¤.");
         }
     }
 
-    // ¾À ÂüÁ¶ ¿À·ù È®ÀÎ
+    /// <summary>
+    /// ì”¬ì´ ë¹Œë“œ ì„¤ì •ì— ìˆëŠ”ì§€ í™•ì¸
+    /// </summary>
+    /// <param name="sceneName">í™•ì¸í•  ì”¬ ì´ë¦„</param>
+    /// <returns>ë¹Œë“œ ì„¤ì •ì— ìˆìœ¼ë©´ true, ì—†ìœ¼ë©´ false</returns>
     private bool IsSceneInBuildSettings(string sceneName)
     {
         int sceneCount = SceneManager.sceneCountInBuildSettings;
