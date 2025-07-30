@@ -13,6 +13,5 @@ MonoBehaviour:
   m_Name: Iron1_5
   m_EditorClassIdentifier: 
   m_type: 1
-  m_description: "\uC601\uD1A0\uC5D0\uC11C\uC758 \uCCA0\uC758 \uC77C\uC77C \uC0DD\uC0B0\uB7C9\uC774
-    50% \uC99D\uAC00\uD569\uB2C8\uB2E4."
+  m_description: "Daily iron production in the territory increases by 50%"
   m_mod: 1.5

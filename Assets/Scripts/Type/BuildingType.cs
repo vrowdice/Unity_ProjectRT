@@ -4,5 +4,8 @@ public class BuildingType
     {
         Production,
         Research,
+        Request,
+        Barrack,
+        Information
     }
 }

@@ -16,10 +16,8 @@ MonoBehaviour:
   m_isGood: 1
   m_minDuration: 1
   m_maxDuration: 3
-  m_title: "\uAE08\uBE5B \uD30C\uB3C4"
-  m_description: "\uC544\uC774\uC5B8\uC6B0\uB4DC\uB294 \uADF8 \uC790\uCCB4\uB85C
-    \uD6A8\uC728\uC758 \uADF9\uCE58\uB97C \uBF51\uC544\uB0B8\uB2E4. - \u2018\uB958\uC624\u2019\uC758
-    \uC7AC\uB8CC\uD559 \uC804\uC9D1 \u4E2D"
+  m_title: "Golden Wave"
+  m_description: "Ironwood itself brings out the ultimate in efficiency. - From 'Ruo's' material science lecture notes."
   m_conditionList: []
   m_effectList:
   - {fileID: 11400000, guid: 6e57d3d5ccebabc43823d3e3ff62b8c6, type: 2}

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FactionPanel : MonoBehaviour, IUIPanel
+public class FactionPanel : BasePanel
 {
     [SerializeField]
     GameObject m_factionInfoBtnPrefeb = null;
@@ -10,8 +10,6 @@ public class FactionPanel : MonoBehaviour, IUIPanel
     Transform m_factionScrollViewContentTrans = null;
     [SerializeField]
     FactionDetailPanel m_factionDetailPanel = null;
-
-    private GameDataManager m_gameDataManager = null;
 
     // Start is called before the first frame update
     void Start()
@@ -31,15 +29,11 @@ public class FactionPanel : MonoBehaviour, IUIPanel
         
     }
 
-    public void OnOpen(GameDataManager argDataManager, MainUIManager argUIManager)
+    protected override void OnPanelOpen()
     {
-        m_gameDataManager = argDataManager;
-        gameObject.SetActive(true);
-    }
-
-    public void OnClose()
-    {
-
+        // 패널 설정
+        SetPanelName("Faction");
+        SetBuildingLevel(""); // 팩션 패널은 레벨이 필요 없음
     }
 
     public void OpenFactionDetailPanel(FactionType.TYPE argFactionType)

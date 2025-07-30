@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BuildingPanel : MonoBehaviour, IUIPanel
+public class BuildingPanel : BasePanel
 {
     [SerializeField]
     GameObject m_buildingBtnPrefeb = null;
@@ -13,15 +13,10 @@ public class BuildingPanel : MonoBehaviour, IUIPanel
     [SerializeField]
     Transform m_requiredResourceContentTrans = null;
 
-    private GameDataManager m_gameDataManager = null;
-    private MainUIManager m_mainUIManager = null;
     private List<BuildingBtn> m_bulidingBtnList = new List<BuildingBtn>();
 
     private Dictionary<ResourceType.TYPE, long> m_requireResourcesDict = new();
     private Dictionary<ResourceType.TYPE, long> m_producedResourcesDict = new();
-
-    public GameDataManager GameDataManager => m_gameDataManager;
-    public MainUIManager MainUIManager => m_mainUIManager;
 
     // Start is called before the first frame update
     void Start()
@@ -35,28 +30,76 @@ public class BuildingPanel : MonoBehaviour, IUIPanel
         
     }
 
-    public void OnOpen(GameDataManager argDataManager, MainUIManager argUIManager)
+    protected override void OnPanelOpen()
     {
-        m_gameDataManager = argDataManager;
-        m_mainUIManager = argUIManager;
+        // 패널 설정
+        SetPanelName("Building");
+        SetBuildingLevel(""); // 빌딩 패널은 레벨이 필요 없음
 
-        gameObject.SetActive(true);
+        InitializeResourceDictionaries();
+        InitializeBuildingButtons();
+    }
 
+    /// <summary>
+    /// 리소스 딕셔너리 초기화
+    /// </summary>
+    private void InitializeResourceDictionaries()
+    {
         foreach (ResourceType.TYPE argType in System.Enum.GetValues(typeof(ResourceType.TYPE)))
         {
             m_requireResourcesDict[argType] = 0;
             m_producedResourcesDict[argType] = 0;
         }
+    }
 
+    /// <summary>
+    /// 빌딩 버튼들 초기화
+    /// </summary>
+    private void InitializeBuildingButtons()
+    {
+        if (m_buildingScrollViewContentTrans == null)
+        {
+            Debug.LogError("Building scroll view content transform is null!");
+            return;
+        }
+
+        // 기존 버튼들이 있으면 제거
         if (m_buildingScrollViewContentTrans.childCount != m_gameDataManager.BuildingEntryDict.Count)
         {
-            foreach (Transform item in m_buildingScrollViewContentTrans)
+            ClearExistingButtons();
+        }
+        else
+        {
+            return; // 이미 올바른 개수만큼 있으면 리턴
+        }
+
+        // 새 버튼들 생성
+        CreateBuildingButtons();
+    }
+
+    /// <summary>
+    /// 기존 버튼들 제거
+    /// </summary>
+    private void ClearExistingButtons()
+    {
+        foreach (Transform item in m_buildingScrollViewContentTrans)
+        {
+            if (item != null)
             {
                 Destroy(item.gameObject);
             }
         }
-        else
+        m_bulidingBtnList.Clear();
+    }
+
+    /// <summary>
+    /// 빌딩 버튼들 생성
+    /// </summary>
+    private void CreateBuildingButtons()
+    {
+        if (m_buildingBtnPrefeb == null)
         {
+            Debug.LogError("Building button prefab is null!");
             return;
         }
 
@@ -65,14 +108,16 @@ public class BuildingPanel : MonoBehaviour, IUIPanel
             GameObject _buildingBtnObj = Instantiate(m_buildingBtnPrefeb, m_buildingScrollViewContentTrans);
             BuildingBtn _buildingBtn = _buildingBtnObj.GetComponent<BuildingBtn>();
 
-            m_bulidingBtnList.Add(_buildingBtn);
-            _buildingBtn.Initialize(this, item.Value);
+            if (_buildingBtn != null)
+            {
+                m_bulidingBtnList.Add(_buildingBtn);
+                _buildingBtn.Initialize(this, item.Value);
+            }
+            else
+            {
+                Debug.LogError($"BuildingBtn component not found on prefab for building: {item.Key}");
+            }
         }
-    }
-
-    public void OnClose()
-    {
-
     }
 
     public void OnClickResetButton()
