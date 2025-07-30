@@ -10,10 +10,12 @@ using UnityEngine.UI;
 /// </summary>
 public class BattleManager : MonoBehaviour
 {
+    [SerializeField] private BattleLoadingManager m_battleLoadingManager;
+
     // Start is called before the first frame update
     void Start()
     {
-       
+        StartCoroutine(m_battleLoadingManager.InitializeBattleScene());
     }
 
     // Update is called once per frame
