@@ -14,12 +14,13 @@ public class BattleLoadingManager : MonoBehaviour
     [Header("게임 필드")]
     public GameObject battleField;
 
-    private Vector3 defenseCameraPoint;
-    private Vector3 attackCameraPoint;
-    private Camera mainCamra;
+    public Vector3 defenseCameraPoint;
+    public Vector3 attackCameraPoint;
+    public Camera mainCamra;
     private Transform allySpawnArea;
     private Transform enemySpawnArea;
     private Vector3 spawnAreaSize;
+    public GameObject deploymentUI;
 
     [Header("게임 데이터 매니저")]
     [SerializeField] private GameDataManager m_gameDataManager = null;
@@ -31,6 +32,7 @@ public class BattleLoadingManager : MonoBehaviour
     private List<UnitStatBase> allyArmyDataList = new();
     private List<UnitStatBase> enemyArmyDataList = new();
 
+    [Header("병력 배치 UI")]
     [SerializeField] private GameObject DeploymentUI;
 
     [Header("유닛 슬롯 UI")]
@@ -39,6 +41,7 @@ public class BattleLoadingManager : MonoBehaviour
 
     //테스트용 후에 실제 값으로 변경해야함
     private bool isAttack = true;
+
 
     public IEnumerator InitializeBattleScene()
     {
@@ -66,6 +69,8 @@ public class BattleLoadingManager : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         loadingPanel.SetActive(false);
         CreateDeploymentUI();
+        BattleManager battleManager = FindObjectOfType<BattleManager>();
+        battleManager.isSettingClear = true;
     }
 
     private void LodingSetting()
@@ -214,7 +219,6 @@ public class BattleLoadingManager : MonoBehaviour
             //방어인 경우 카메라 설정
             mainCamra.transform.position = defenseCameraPoint;
         }
-
         yield return new WaitForSeconds(0.5f);
     }
 
@@ -227,7 +231,7 @@ public class BattleLoadingManager : MonoBehaviour
             return;
         }
 
-        GameObject deploymentUI = Instantiate(DeploymentUI, canvas.transform);
+        deploymentUI = Instantiate(DeploymentUI, canvas.transform);
 
         deploymentUI.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         deploymentUI.SetActive(true);
@@ -262,18 +266,6 @@ public class BattleLoadingManager : MonoBehaviour
                 Debug.Log($"unitName: {unit.unitName}");
                 nameText.text = unit.unitName;
             }
-
-            //// 버튼 클릭 이벤트 설정 (필요 시)
-            //Button btn = myUnit.GetComponent<Button>();
-            //if (btn != null)
-            //{
-            //    UnitStatBase capturedUnit = unit;
-            //    btn.onClick.AddListener(() =>
-            //    {
-            //        Debug.Log($"클릭한 유닛: {capturedUnit.unitName}");
-            //        // 유닛 선택 처리 등 추가 가능
-            //    });
-            //}
         }
     }
 }

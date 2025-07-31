@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +11,12 @@ using UnityEngine.UI;
 /// </summary>
 public class BattleManager : MonoBehaviour
 {
-    [SerializeField] private BattleLoadingManager m_battleLoadingManager;
+
+    [Header("배틀 로딩 매니저")]
+    [SerializeField] private BattleLoadingManager m_battleLoadingManager = null;
+    public bool isSettingClear = false;
+    public bool isAttackField = true;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -20,7 +26,22 @@ public class BattleManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if(isSettingClear == true)
+        {
+            MoveField();
+        }
     }
 
+    private void MoveField()
+    {
+        if(isAttackField != true)
+        {
+            m_battleLoadingManager.mainCamra.transform.position = m_battleLoadingManager.defenseCameraPoint;
+            Destroy(m_battleLoadingManager.deploymentUI);
+        }
+        else
+        {
+            m_battleLoadingManager.mainCamra.transform.position = m_battleLoadingManager.attackCameraPoint;
+        }
+    }
 }
