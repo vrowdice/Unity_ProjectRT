@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DefenseUnit
   m_EditorClassIdentifier: 
   prefab: {fileID: 8758676270530081962, guid: 682625c063ffee64fb3e4ee70e175600, type: 3}
-  unitName: "\uBC29\uC5B4"
+  unitName: Defense
   unitType: "\uBC29\uC5B4"
   affiliation: owl
   attackPower: 100

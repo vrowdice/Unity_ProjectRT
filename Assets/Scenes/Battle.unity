@@ -288,6 +288,7 @@ MonoBehaviour:
   allyArmyData: {fileID: 11400000, guid: 7455af548f99e144bb0df79eacd665c7, type: 2}
   enemyArmyData: {fileID: 11400000, guid: c5d9d7b02a979254f82f4f1e9e5dc142, type: 2}
   DeploymentUI: {fileID: 7749625856373780653, guid: e64dff44c55b1344f8a74da4b875fe4a, type: 3}
+  armyBox: {fileID: 5597607669795916161, guid: bd0bfac43fb2f7b4d9b9fc4a394d7c2b, type: 3}
 --- !u!4 &612371876
 Transform:
   m_ObjectHideFlags: 0

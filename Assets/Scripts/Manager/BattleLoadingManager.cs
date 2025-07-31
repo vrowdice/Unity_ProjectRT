@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,6 +32,10 @@ public class BattleLoadingManager : MonoBehaviour
     private List<UnitStatBase> enemyArmyDataList = new();
 
     [SerializeField] private GameObject DeploymentUI;
+
+    [Header("유닛 슬롯 UI")]
+    [SerializeField] private GameObject armyBox; // 병력 슬롯 UI 프리팹
+    private Transform contentParent;
 
     //테스트용 후에 실제 값으로 변경해야함
     private bool isAttack = true;
@@ -226,5 +231,49 @@ public class BattleLoadingManager : MonoBehaviour
 
         deploymentUI.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         deploymentUI.SetActive(true);
+        GenerateList();
+    }
+
+    private void GenerateList()
+    {
+        contentParent = GameObject.Find("Content").GetComponent<Transform>();
+
+        // 기존 자식 제거
+        foreach (Transform child in contentParent)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // 유닛 데이터 기반 프리팹 생성
+        foreach (var unit in allyArmyDataList)
+        {
+            GameObject myUnit = Instantiate(armyBox, contentParent);
+            myUnit.transform.localScale = Vector3.one;
+
+            // 유닛 아이콘 설정
+            Image icon = myUnit.transform.Find("ArmyImage").GetComponent<Image>();
+            if (icon != null && unit.unitIllustration != null)
+                icon = unit.unitIllustration;
+
+            // 유닛 이름 텍스트 설정
+            TextMeshProUGUI nameText = myUnit.transform.Find("AmryTexts").transform.Find("AmryNameText").GetComponent<TextMeshProUGUI>();
+            if (nameText != null)
+            {
+                Debug.Log($"unitName: {unit.unitName}");
+                nameText.text = unit.unitName;
+            }
+
+            //// 버튼 클릭 이벤트 설정 (필요 시)
+            //Button btn = myUnit.GetComponent<Button>();
+            //if (btn != null)
+            //{
+            //    UnitStatBase capturedUnit = unit;
+            //    btn.onClick.AddListener(() =>
+            //    {
+            //        Debug.Log($"클릭한 유닛: {capturedUnit.unitName}");
+            //        // 유닛 선택 처리 등 추가 가능
+            //    });
+            //}
+        }
     }
 }
