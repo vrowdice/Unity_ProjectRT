@@ -25,6 +25,7 @@ public class BuildingBtn : MonoBehaviour
     private int m_buildingCount = 0;
     private int m_buildingCountState = 0;
 
+    public BuildingEntry BuildingEntry => m_buildingEntry;
     public string Code => m_code;
     public List<ResourceAmount> CurrentProducedResources { get; private set; } = new List<ResourceAmount>();
     public List<ResourceAmount> CurrentRequiredResources { get; private set; } = new List<ResourceAmount>();
