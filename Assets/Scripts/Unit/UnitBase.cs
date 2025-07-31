@@ -45,13 +45,34 @@ public class UnitBase : MonoBehaviour
         set { _currentMana = Mathf.Max(0, Mathf.Min(value, maxMana)); }
     }
 
+    //공/수 여부
+    public bool isAttack;
+
     /////////////////////////////////////////////////
     [Header("연구 및 일러스트")]
     public List<string> activatedResearchList;
     public Image unitIllustration;
 
     /////////////////////////////////////////////////
+    public enum BasicAttackName
+    {
+        longDistanceDefault,
+        shortDistanceDefault,
+        defenseDefault
+    }
+
+    public enum BasicAttackType
+    {
+        many,
+        single
+    }
+
     [Header("기본 공격")]
+    //이름
+    public BasicAttackName basicAttackName;
+    //타입
+    public BasicAttackType basicAttackType;
+    //피해 계수
     public float damageCoefficient;
     // 주기
     public float attackFrequency;
@@ -74,8 +95,8 @@ public class UnitBase : MonoBehaviour
     public bool isAreaAttackFlipped;
 
     /////////////////////////////////////////////////
-    [Header("액티브 스킬 관련")]
 
+    [Header("액티브 스킬 관련")]
     public string activeSkillName;
     // 액티브 스킬의 타입
     public string activeSkillType;
@@ -291,5 +312,76 @@ public class UnitBase : MonoBehaviour
         {
             Debug.Log($"{unitName}이(가) 전투를 시작");
         }
+    }
+
+    /// <summary>
+    /// 스탯 데이터로 유닛 상태 초기화
+    /// </summary>
+    public virtual void Initialize(UnitStatBase stat)
+    {
+        // 기본 스탯
+        unitName = stat.unitName;
+        unitType = stat.unitType;
+        affiliation = stat.affiliation;
+
+        attackPower = stat.attackPower;
+        defensePower = stat.defensePower;
+        maxHealth = stat.maxHealth;
+        moveSpeed = stat.moveSpeed;
+        maxMana = stat.maxMana;
+        manaRecoveryOnBasicAttack = stat.manaRecoveryOnBasicAttack;
+        manaRecoveryPerSecond = stat.manaRecoveryPerSecond;
+
+        currentHealth = stat.maxHealth;
+        currentMana = 0f;
+
+        isAttack = stat.isAttack;
+
+        // 일러스트 및 연구 정보
+        activatedResearchList = new List<string>(stat.activatedResearchList);
+        unitIllustration = stat.unitIllustration;
+
+        // 기본 공격
+        basicAttackName = (BasicAttackName)stat.basicAttackName;
+        basicAttackType = (BasicAttackType)stat.basicAttackType;
+        damageCoefficient = stat.damageCoefficient;
+        attackFrequency = stat.attackFrequency;
+        attackCount = stat.attackCount;
+        attackRange = stat.attackRange;
+        multiTargetRange = stat.multiTargetRange;
+        maxMultiTargets = stat.maxMultiTargets;
+        areaAttackPrefab = stat.areaAttackPrefab;
+        areaAttackDirection = stat.areaAttackDirection;
+        areaAttackSpawnPosition = stat.areaAttackSpawnPosition;
+        isAreaAttackFlipped = stat.isAreaAttackFlipped;
+
+        // 액티브 스킬
+        activeSkillName = stat.activeSkillName;
+        activeSkillType = stat.activeSkillType;
+        activeSkillCooldown = stat.activeSkillCooldown;
+        isSkillFinished = stat.isSkillFinished;
+        activeSkillDamageCoefficient = stat.activeSkillDamageCoefficient;
+        activeSkillAttackCount = stat.activeSkillAttackCount;
+        activeMultiTargetRange = stat.activeMultiTargetRange;
+        activeMaxMultiTargets = stat.activeMaxMultiTargets;
+        activeAreaAttackPrefab = stat.activeAreaAttackPrefab;
+        activeAreaAttackDirection = stat.activeAreaAttackDirection;
+        activeAreaAttackSpawnPosition = stat.activeAreaAttackSpawnPosition;
+        isActiveAreaAttackFlipped = stat.isActiveAreaAttackFlipped;
+        otherSkillCoefficient = stat.otherSkillCoefficient;
+        otherSkillRange = stat.otherSkillRange;
+
+        // 패시브 스킬
+        passiveSkillCoefficient = stat.passiveSkillCoefficient;
+        passiveSkillRange = stat.passiveSkillRange;
+
+        // 전투 및 타겟팅 관련
+        isAttacker = stat.isAttacker;
+        isCombatInProgress = stat.isCombatInProgress;
+        isTargetingAvailable = stat.isTargetingAvailable;
+        targetedEnemy = stat.targetedEnemy;
+        isTargetEliminated = stat.isTargetEliminated;
+        enemySearchRange = stat.enemySearchRange;
+        distanceToTargetedEnemy = stat.distanceToTargetedEnemy;
     }
 }

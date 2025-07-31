@@ -7,6 +7,8 @@ using UnityEngine.UI;
 
 public class UnitStatBase : ScriptableObject
 {
+    public GameObject prefab;
+
     /////////////////////////////////////////////////
     [Header("기본 정보 및 스탯")]
     public string unitName;

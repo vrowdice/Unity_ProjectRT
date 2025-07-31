@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b380b4e2ae264a42b0bcd4938beb528, type: 3}
   m_Name: DefenseUnit
   m_EditorClassIdentifier: 
+  prefab: {fileID: 8758676270530081962, guid: 682625c063ffee64fb3e4ee70e175600, type: 3}
   unitName: "\uBC29\uC5B4"
   unitType: "\uBC29\uC5B4"
   affiliation: lion

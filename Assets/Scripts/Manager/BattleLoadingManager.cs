@@ -16,6 +16,9 @@ public class BattleLoadingManager : MonoBehaviour
     private Vector3 defenseCameraPoint;
     private Vector3 attackCameraPoint;
     private Camera mainCamra;
+    private Transform allySpawnArea;
+    private Transform enemySpawnArea;
+    private Vector3 spawnAreaSize;
 
     [Header("게임 데이터 매니저")]
     [SerializeField] private GameDataManager m_gameDataManager = null;
@@ -27,6 +30,7 @@ public class BattleLoadingManager : MonoBehaviour
     private List<UnitStatBase> allyArmyDataList = new();
     private List<UnitStatBase> enemyArmyDataList = new();
 
+    [SerializeField] private GameObject DeploymentUI;
 
     //테스트용 후에 실제 값으로 변경해야함
     private bool isAttack = true;
@@ -56,10 +60,23 @@ public class BattleLoadingManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
         loadingPanel.SetActive(false);
+        CreateDeploymentUI();
     }
 
     private void LodingSetting()
     {
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas == null)
+        {
+            Debug.LogError("Canvas를 찾을 수 없습니다!");
+            return;
+        }
+
+        loadingPanel = Instantiate(loadingPanel, canvas.transform);
+
+        loadingPanel.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        loadingPanel.SetActive(true);
+
         //로딩 화면 세팅
         loadingPanel.SetActive(true);
         loadingBar = loadingPanel.transform.Find("LoadingBar").GetComponent<Image>();
@@ -141,8 +158,37 @@ public class BattleLoadingManager : MonoBehaviour
         Debug.Log("맵 설정 중...");
         //배경세팅
         battleField = Instantiate(battleField);
+        allySpawnArea = GameObject.Find("AttackSpawnArea").transform;
+        enemySpawnArea = GameObject.Find("DefenseSpawnArea").transform;
+
+        Transform mySpawnArea = isAttack ? enemySpawnArea : allySpawnArea;
+        spawnAreaSize = mySpawnArea.GetComponent<BoxCollider2D>().size;
+
+        foreach (UnitStatBase unitData in enemyArmyDataList)
+        {
+            if (unitData.prefab == null)
+            {
+                Debug.LogWarning($"{unitData.unitName}의 프리팹이 설정되지 않았습니다.");
+                continue;
+            }
+
+            GameObject test = Instantiate(unitData.prefab, GetRandomPositionInArea(mySpawnArea, spawnAreaSize), Quaternion.identity);
+            test.GetComponent<UnitBase>().Initialize(unitData);
+        }
+
         yield return new WaitForSeconds(0.5f);
     }
+
+    private Vector3 GetRandomPositionInArea(Transform area, Vector2 size)
+    {
+        Vector2 offset = new Vector2(
+            Random.Range(-size.x / 2f, size.x / 2f),
+            Random.Range(-size.y / 2f, size.y / 2f)
+        );
+
+        return area.position + (Vector3)offset;
+    }
+
 
     private IEnumerator SetupCamera()
     {
@@ -165,5 +211,20 @@ public class BattleLoadingManager : MonoBehaviour
         }
 
         yield return new WaitForSeconds(0.5f);
+    }
+
+    void CreateDeploymentUI()
+    {
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas == null)
+        {
+            Debug.LogError("Canvas를 찾을 수 없습니다!");
+            return;
+        }
+
+        GameObject deploymentUI = Instantiate(DeploymentUI, canvas.transform);
+
+        deploymentUI.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        deploymentUI.SetActive(true);
     }
 }

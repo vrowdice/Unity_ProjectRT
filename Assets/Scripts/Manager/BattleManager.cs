@@ -11,7 +11,6 @@ using UnityEngine.UI;
 public class BattleManager : MonoBehaviour
 {
     [SerializeField] private BattleLoadingManager m_battleLoadingManager;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -23,4 +22,5 @@ public class BattleManager : MonoBehaviour
     {
         
     }
+
 }
