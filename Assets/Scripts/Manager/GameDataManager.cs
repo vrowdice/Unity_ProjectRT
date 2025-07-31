@@ -119,200 +119,19 @@ public class GameDataManager : MonoBehaviour
     [ContextMenu("Load Data from Resources")]
     public void LoadDataFromResources()
     {
-        LoadEventGroupDataFromResources();
-        LoadFactionDataFromResources();
-        LoadCommonResearchDataFromResources();
-        LoadBuildingDataFromResources();
-        LoadRequestLineTemplateDataFromResources();
-        LoadResourceIconsFromResources();
-        LoadTokenIconsFromResources();
-        LoadRequestIconsFromResources();
-        LoadGameBalanceDataFromResources();
-
-        Debug.Log("All game data loaded from Resources.");
+        DataLoader.LoadAllDataFromResources(
+            m_eventGroupDataList,
+            m_factionDataList,
+            m_commonResearchDataList,
+            m_buildingDataList,
+            m_requestLineTemplateList,
+            m_resourceIconList,
+            m_tokenIconList,
+            m_requestIconList,
+            ref m_gameBalanceData);
     }
 
-    /// <summary>
-    /// Resources에서 이벤트 그룹 데이터 로딩
-    /// </summary>
-    private void LoadEventGroupDataFromResources()
-    {
-        EventGroupData[] dataArray = Resources.LoadAll<EventGroupData>("");
-        m_eventGroupDataList.Clear();
-        m_eventGroupDataList.AddRange(dataArray);
-        Debug.Log($"{m_eventGroupDataList.Count} event group data loaded from Resources.");
-    }
 
-    /// <summary>
-    /// Resources에서 팩션 데이터 로딩
-    /// </summary>
-    private void LoadFactionDataFromResources()
-    {
-        FactionData[] dataArray = Resources.LoadAll<FactionData>("");
-        m_factionDataList.Clear();
-        m_factionDataList.AddRange(dataArray);
-        Debug.Log($"{m_factionDataList.Count} faction data loaded from Resources.");
-    }
-
-    /// <summary>
-    /// Resources에서 공통 연구 데이터 로딩
-    /// </summary>
-    private void LoadCommonResearchDataFromResources()
-    {
-        ResearchData[] dataArray = Resources.LoadAll<ResearchData>("");
-        m_commonResearchDataList.Clear();
-        
-        foreach (ResearchData data in dataArray)
-        {
-            if (data.m_factionType == FactionType.TYPE.None)
-            {
-                m_commonResearchDataList.Add(data);
-            }
-        }
-        
-        Debug.Log($"{m_commonResearchDataList.Count} common research data loaded from Resources.");
-    }
-
-    /// <summary>
-    /// Resources에서 건물 데이터 로딩
-    /// </summary>
-    private void LoadBuildingDataFromResources()
-    {
-        BuildingData[] dataArray = Resources.LoadAll<BuildingData>("");
-        m_buildingDataList.Clear();
-        m_buildingDataList.AddRange(dataArray);
-        Debug.Log($"{m_buildingDataList.Count} building data loaded from Resources.");
-    }
-
-    /// <summary>
-    /// Resources에서 요청 라인 템플릿 데이터 로딩
-    /// </summary>
-    private void LoadRequestLineTemplateDataFromResources()
-    {
-        RequestLineTemplate[] dataArray = Resources.LoadAll<RequestLineTemplate>("");
-        m_requestLineTemplateList.Clear();
-        m_requestLineTemplateList.AddRange(dataArray);
-        Debug.Log($"{m_requestLineTemplateList.Count} request line templates loaded from Resources.");
-    }
-
-    /// <summary>
-    /// Resources에서 리소스 아이콘 로딩
-    /// </summary>
-    private void LoadResourceIconsFromResources()
-    {
-        Sprite[] sprites = Resources.LoadAll<Sprite>("");
-        m_resourceIconList.Clear();
-        
-        var resourceTypes = System.Enum.GetValues(typeof(ResourceType.TYPE));
-        
-        foreach (ResourceType.TYPE resourceType in resourceTypes)
-        {
-            string resourceName = resourceType.ToString().ToLower();
-            
-            foreach (Sprite sprite in sprites)
-            {
-                if (sprite.name.ToLower().Contains(resourceName) || 
-                    sprite.name.ToLower().Contains("resource") ||
-                    sprite.name.ToLower().Contains("icon"))
-                {
-                    ResourceIcon icon = new ResourceIcon
-                    {
-                        m_type = resourceType,
-                        m_icon = sprite
-                    };
-                    m_resourceIconList.Add(icon);
-                    break;
-                }
-            }
-        }
-        
-        Debug.Log($"{m_resourceIconList.Count} resource icons loaded from Resources.");
-    }
-
-    /// <summary>
-    /// Resources에서 토큰 아이콘 로딩
-    /// </summary>
-    private void LoadTokenIconsFromResources()
-    {
-        Sprite[] sprites = Resources.LoadAll<Sprite>("");
-        m_tokenIconList.Clear();
-        
-        var tokenTypes = System.Enum.GetValues(typeof(TokenType.TYPE));
-        
-        foreach (TokenType.TYPE tokenType in tokenTypes)
-        {
-            string tokenName = tokenType.ToString().ToLower();
-            
-            foreach (Sprite sprite in sprites)
-            {
-                if (sprite.name.ToLower().Contains(tokenName) || 
-                    sprite.name.ToLower().Contains("token") ||
-                    sprite.name.ToLower().Contains("icon"))
-                {
-                    TokenIcon icon = new TokenIcon
-                    {
-                        m_type = tokenType,
-                        m_icon = sprite
-                    };
-                    m_tokenIconList.Add(icon);
-                    break;
-                }
-            }
-        }
-        
-        Debug.Log($"{m_tokenIconList.Count} token icons loaded from Resources.");
-    }
-
-    /// <summary>
-    /// Resources에서 요청 아이콘 로딩
-    /// </summary>
-    private void LoadRequestIconsFromResources()
-    {
-        Sprite[] sprites = Resources.LoadAll<Sprite>("");
-        m_requestIconList.Clear();
-        
-        var requestTypes = System.Enum.GetValues(typeof(RequestType.TYPE));
-        
-        foreach (RequestType.TYPE requestType in requestTypes)
-        {
-            string requestName = requestType.ToString().ToLower();
-            
-            foreach (Sprite sprite in sprites)
-            {
-                if (sprite.name.ToLower().Contains(requestName) || 
-                    sprite.name.ToLower().Contains("request") ||
-                    sprite.name.ToLower().Contains("icon"))
-                {
-                    RequestIcon icon = new RequestIcon
-                    {
-                        m_type = requestType,
-                        m_icon = sprite
-                    };
-                    m_requestIconList.Add(icon);
-                    break;
-                }
-            }
-        }
-        
-        Debug.Log($"{m_requestIconList.Count} request icons loaded from Resources.");
-    }
-
-    /// <summary>
-    /// Resources에서 게임 밸런스 데이터 로딩
-    /// </summary>
-    private void LoadGameBalanceDataFromResources()
-    {
-        GameBalanceData[] dataArray = Resources.LoadAll<GameBalanceData>("");
-        if (dataArray.Length > 0)
-        {
-            m_gameBalanceData = dataArray[0];
-            Debug.Log("Game balance data loaded from Resources.");
-        }
-        else
-        {
-            Debug.LogWarning("Game balance data not found in Resources.");
-        }
-    }
 
     #if UNITY_EDITOR
     /// <summary>
@@ -320,17 +139,16 @@ public class GameDataManager : MonoBehaviour
     /// </summary>
     private void LoadAllDataFromAssets()
     {
-        LoadEventGroupDataFromAssets();
-        LoadFactionDataFromAssets();
-        LoadCommonResearchDataFromAssets();
-        LoadBuildingDataFromAssets();
-        LoadRequestLineTemplateDataFromAssets();
-        LoadResourceIconsFromAssets();
-        LoadTokenIconsFromAssets();
-        LoadRequestIconsFromAssets();
-        LoadGameBalanceDataFromAssets();
-
-        Debug.Log("All game data has been loaded automatically.");
+        DataLoader.LoadAllDataFromAssets(
+            m_eventGroupDataList,
+            m_factionDataList,
+            m_commonResearchDataList,
+            m_buildingDataList,
+            m_requestLineTemplateList,
+            m_resourceIconList,
+            m_tokenIconList,
+            m_requestIconList,
+            ref m_gameBalanceData);
     }
 
     /// <summary>
@@ -612,54 +430,7 @@ public class GameDataManager : MonoBehaviour
             }
         }
 
-        // 연구 잠금 상태 설정 (m_unlocks 우선 처리)
-        foreach (ResearchData research in m_commonResearchDataList)
-        {
-            ResearchEntry entry = m_commonResearchEntryDic[research.m_code];
-            
-            // m_unlocks에 있는 연구들의 잠금 해제
-            if (research.m_unlocks != null)
-            {
-                foreach (ResearchData unlockResearch in research.m_unlocks)
-                {
-                    if (m_commonResearchEntryDic.TryGetValue(unlockResearch.m_code, out ResearchEntry unlockEntry))
-                    {
-                        unlockEntry.m_state.m_isLocked = false;
-                    }
-                }
-            }
-        }
-
-        // m_prerequisites 조건 확인하여 잠금 설정
-        foreach (ResearchData research in m_commonResearchDataList)
-        {
-            ResearchEntry entry = m_commonResearchEntryDic[research.m_code];
-            
-            // m_prerequisites 조건 확인
-            if (research.m_prerequisites != null && research.m_prerequisites.Count > 0)
-            {
-                bool allPrerequisitesMet = true;
-                
-                foreach (ResearchData prerequisite in research.m_prerequisites)
-                {
-                    if (m_commonResearchEntryDic.TryGetValue(prerequisite.m_code, out ResearchEntry prereqEntry))
-                    {
-                        // 선행 연구가 완료되지 않았으면 잠금
-                        if (!prereqEntry.m_state.m_isResearched)
-                        {
-                            allPrerequisitesMet = false;
-                            break;
-                        }
-                    }
-                }
-                
-                // 선행 조건이 충족되지 않으면 잠금
-                if (!allPrerequisitesMet)
-                {
-                    entry.m_state.m_isLocked = true;
-                }
-            }
-        }
+        LockResearch();
         
         // 건물 데이터 딕셔너리 초기화
         foreach (BuildingData building in m_buildingDataList)
@@ -764,12 +535,60 @@ public class GameDataManager : MonoBehaviour
         m_eventEntry = new EventEntry(m_eventGroupDataList, this);
     }
 
+
+
     /// <summary>
-    /// 수락 가능한 요청 리스트를 초기화
+    /// 연구 잠금 상태 설정
     /// </summary>
-    private void ResetAcceptableRequest()
+    private void LockResearch()
     {
-        AcceptableRequestList.Clear();
+        foreach (ResearchData research in m_commonResearchDataList)
+        {
+            ResearchEntry entry = m_commonResearchEntryDic[research.m_code];
+            
+            // m_unlocks에 있는 연구들의 잠금 해제
+            if (research.m_unlocks != null)
+            {
+                foreach (ResearchData unlockResearch in research.m_unlocks)
+                {
+                    if (m_commonResearchEntryDic.TryGetValue(unlockResearch.m_code, out ResearchEntry unlockEntry))
+                    {
+                        unlockEntry.m_state.m_isLocked = false;
+                    }
+                }
+            }
+        }
+
+        // m_prerequisites 조건 확인하여 잠금 설정
+        foreach (ResearchData research in m_commonResearchDataList)
+        {
+            ResearchEntry entry = m_commonResearchEntryDic[research.m_code];
+            
+            // m_prerequisites 조건 확인
+            if (research.m_prerequisites != null && research.m_prerequisites.Count > 0)
+            {
+                bool allPrerequisitesMet = true;
+                
+                foreach (ResearchData prerequisite in research.m_prerequisites)
+                {
+                    if (m_commonResearchEntryDic.TryGetValue(prerequisite.m_code, out ResearchEntry prereqEntry))
+                    {
+                        // 선행 연구가 완료되지 않았으면 잠금
+                        if (!prereqEntry.m_state.m_isResearched)
+                        {
+                            allPrerequisitesMet = false;
+                            break;
+                        }
+                    }
+                }
+                
+                // 선행 조건이 충족되지 않으면 잠금
+                if (!allPrerequisitesMet)
+                {
+                    entry.m_state.m_isLocked = true;
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -784,101 +603,7 @@ public class GameDataManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 연락 요청을 랜덤하게 생성합니다
-    /// 첫 번째 연락 확률과 두 번째 연락 확률이 다르게 적용됩니다
-    /// </summary>
-    public void RandomContactRequest()
-    {
-        List<FactionType.TYPE> _factionTypes = FactionEntryDict.Keys.ToList();
-        _factionTypes.Remove(FactionType.TYPE.None);
 
-        //첫 번째 팩션 타입 선택
-        FactionType.TYPE _type = ProbabilityUtils.GetRandomElement(_factionTypes);
-
-        //확률
-        float _per = GameBalanceEntry.m_state.m_noContactCount *
-            GameBalanceEntry.m_data.m_noContactChangePer +
-            GameBalanceEntry.m_data.m_firstContactPer;
-
-        //첫 번째 연락
-        if (ProbabilityUtils.RollPercent(_per) == true)
-        {
-            RequestType.TYPE _requestType = ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>());
-            m_acceptableRequestList.Add(new RequestState(
-                true,
-                GameManager.Instance.Date,
-                GetFactionEntry(_type).m_state.m_like,
-                ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>()),
-                _type,
-                GameBalanceEntry,
-                m_contactLineTemplate));
-
-            _factionTypes.Remove(_type);
-
-            //두 번째 팩션 타입 선택
-            _type = ProbabilityUtils.GetRandomElement(_factionTypes);
-
-            //두 번째 연락 확률
-            _per = GameBalanceEntry.m_state.m_noContactCount *
-                GameBalanceEntry.m_data.m_noContactChangePer +
-                GameBalanceEntry.m_data.m_overSecondContactPer;
-
-            //두 번째 연락
-            _requestType = ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>());
-            if (ProbabilityUtils.RollPercent(_per) == true)
-            {
-                m_acceptableRequestList.Add(new RequestState(
-                    true,
-                    GameManager.Instance.Date,
-                    GetFactionEntry(_type).m_state.m_like,
-                    _requestType,
-                    _type,
-                    GameBalanceEntry,
-                    m_contactLineTemplate));
-            }
-
-            GameBalanceEntry.m_state.m_noContactCount = 0;
-        }
-    }
-
-    /// <summary>
-    /// 일반 요청 생성
-    /// </summary>
-    private void RandomNormalRequest()
-    {
-        List<FactionType.TYPE> _haveFactionTypes = GetHaveFactionTypeList();
-
-        //요청 개수만큼 랜덤한 요청을 생성합니다.
-        for (int i = 0; i < GameBalanceEntry.m_data.m_maxRequest; i++)
-        {
-            FactionType.TYPE _factionType = ProbabilityUtils.GetRandomElement(_haveFactionTypes);
-
-            int _like;
-            if (GetFactionEntry(_factionType) == null)
-            {
-                _like = 0;
-            }
-            else
-            {
-                _like = GetFactionEntry(_factionType).m_state.m_like;
-            }
-
-            //요청 추가 부분
-            RequestType.TYPE _requestType = ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>());
-            m_acceptableRequestList.Add(new RequestState(
-                false,
-                GameManager.Instance.Date,
-                _like,
-                _requestType,
-                _factionType,
-                GameBalanceEntry,
-                GetRequestLineTemplate(_requestType)));
-
-            //같은 팩션의 요청이 중복되면 그 팩션을 제거하고 요청을 생성합니다.
-            _haveFactionTypes.Remove(_factionType);
-        }
-    }
 
     /// <summary>
     /// 랜덤 요청을 생성
@@ -886,10 +611,24 @@ public class GameDataManager : MonoBehaviour
     /// </summary>
     public void MakeRandomRequest()
     {
-        ResetAcceptableRequest();
+        RequestGenerator.MakeRandomRequest(
+            m_acceptableRequestList,
+            m_factionEntryDic,
+            m_gameBalanceEntry,
+            m_contactLineTemplate,
+            m_requestLineTemplateDic);
+    }
 
-        RandomNormalRequest();
-        RandomContactRequest();
+    /// <summary>
+    /// 강제 연락 요청 생성 (GameManager에서 호출)
+    /// </summary>
+    public void ForceContactRequest()
+    {
+        RequestGenerator.GenerateContactRequests(
+            m_acceptableRequestList,
+            m_factionEntryDic,
+            m_gameBalanceEntry,
+            m_contactLineTemplate);
     }
 
     /// <summary>
@@ -967,98 +706,26 @@ public class GameDataManager : MonoBehaviour
     /// <summary>
     /// 요청 라인 템플릿을 가져옴
     /// </summary>
-    /// <param name="argType">요청 타입</param>
-    /// <returns>요청 라인 템플릿, 없으면 null</returns>
-    public RequestLineTemplate GetRequestLineTemplate(RequestType.TYPE argType)
-    {
-        if (m_requestLineTemplateDic.TryGetValue(argType, out RequestLineTemplate item))
-        {
-            return item;
-        }
-        else
-        {
-            Debug.LogWarning(ExceptionMessages.ErrorNoSuchType);
-            return null;
-        }
-    }
+    public RequestLineTemplate GetRequestLineTemplate(RequestType.TYPE argType) => 
+        m_requestLineTemplateDic.TryGetValue(argType, out RequestLineTemplate item) ? item : null;
 
     /// <summary>
     /// 리소스 아이콘을 가져옴
     /// </summary>
-    /// <param name="type">리소스 타입</param>
-    /// <returns>리소스 아이콘 스프라이트, 없으면 null</returns>
-    public Sprite GetResourceIcon(ResourceType.TYPE type)
-    {
-        if (m_resourceIconDic.TryGetValue(type, out var icon))
-        {
-            return icon;
-        }
-        else
-        {
-            Debug.LogWarning(ExceptionMessages.ErrorNoSuchType);
-            return null;
-        }
-    }
+    public Sprite GetResourceIcon(ResourceType.TYPE type) => 
+        m_resourceIconDic.TryGetValue(type, out var icon) ? icon : null;
 
     /// <summary>
     /// 토큰 아이콘을 가져옴
     /// </summary>
-    /// <param name="type">토큰 타입</param>
-    /// <returns>토큰 아이콘 스프라이트, 없으면 null</returns>
-    public Sprite GetTokenIcon(TokenType.TYPE type)
-    {
-        if (m_tokenIconDic.TryGetValue(type, out var icon))
-        {
-            return icon;
-        }
-        else
-        {
-            Debug.LogWarning(ExceptionMessages.ErrorNoSuchType);
-            return null;
-        }
-    }
+    public Sprite GetTokenIcon(TokenType.TYPE type) => 
+        m_tokenIconDic.TryGetValue(type, out var icon) ? icon : null;
 
     /// <summary>
     /// 요청 아이콘을 가져옴
     /// </summary>
-    /// <param name="type">요청 타입</param>
-    /// <returns>요청 아이콘 스프라이트, 없으면 null</returns>
-    public Sprite GetRequestIcon(RequestType.TYPE type)
-    {
-        if (m_requestIconDic.TryGetValue(type, out var icon))
-        {
-            return icon;
-        }
-        else
-        {
-            Debug.LogWarning(ExceptionMessages.ErrorNoSuchType);
-            return null;
-        }
-    }
+    public Sprite GetRequestIcon(RequestType.TYPE type) => 
+        m_requestIconDic.TryGetValue(type, out var icon) ? icon : null;
 
-    /// <summary>
-    /// 보유하고 있는 팩션들의 타입 리스트를 반환합니다.
-    /// </summary>
-    /// <returns>팩션 타입 리스트</returns>
-    public List<FactionType.TYPE> GetHaveFactionTypeList()
-    {
-        List<FactionType.TYPE> _factionTypes = FactionEntryDict.Keys.ToList();
 
-        for (int i = _factionTypes.Count - 1; i >= 0; i--)
-        {
-            FactionType.TYPE item = _factionTypes[i];
-
-            if (item == FactionType.TYPE.None)
-            {
-                continue;
-            }
-
-            if (GetFactionEntry(item).m_state.m_have == false)
-            {
-                _factionTypes.RemoveAt(i);
-            }
-        }
-
-        return _factionTypes;
-    }
 }
