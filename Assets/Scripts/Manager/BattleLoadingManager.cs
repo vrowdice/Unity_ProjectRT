@@ -10,16 +10,25 @@ public class BattleLoadingManager : MonoBehaviour
     public GameObject loadingPanel;
     private Image loadingBar;
 
-    [Header("로딩 UI")]
+    [Header("게임 필드")]
     public GameObject battleField;
 
     private Vector3 defenseCameraPoint;
     private Vector3 attackCameraPoint;
     private Camera mainCamra;
 
+    [Header("게임 데이터 매니저")]
     [SerializeField] private GameDataManager m_gameDataManager = null;
 
-    //테스트용
+    [Header("유닛 데이터")]
+    [SerializeField] private AllyArmyData allyArmyData = null;
+    [SerializeField] private EnemyArmyData enemyArmyData = null;
+
+    private List<UnitStatBase> allyArmyDataList = new();
+    private List<UnitStatBase> enemyArmyDataList = new();
+
+
+    //테스트용 후에 실제 값으로 변경해야함
     private bool isAttack = true;
 
     public IEnumerator InitializeBattleScene()
@@ -69,6 +78,23 @@ public class BattleLoadingManager : MonoBehaviour
     private IEnumerator LoadArmyData()
     {
         Debug.Log("병력 로딩 중...");
+        // 이전 데이터 초기화
+        allyArmyDataList.Clear();
+        enemyArmyDataList.Clear();
+
+        //아군 병력 로딩
+        foreach (var unit in allyArmyData.units)
+        {
+            allyArmyDataList.Add(unit);
+            Debug.Log($"아군 유닛 이름: {unit.unitName}");
+        }
+
+        //적군 병력 로딩
+        foreach (var unit in enemyArmyData.units)
+        {
+            enemyArmyDataList.Add(unit);
+            Debug.Log($"적군 유닛 이름: {unit.unitName}");
+        }
 
         yield return new WaitForSeconds(0.5f);
     }

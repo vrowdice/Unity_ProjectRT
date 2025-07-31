@@ -382,6 +382,8 @@ MonoBehaviour:
   loadingPanel: {fileID: 1823605286}
   battleField: {fileID: 3002349331325594241, guid: ccdd5c3043b1f6547b3c9c07c9a0e30c, type: 3}
   m_gameDataManager: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
+  allyArmyData: {fileID: 11400000, guid: 7455af548f99e144bb0df79eacd665c7, type: 2}
+  enemyArmyData: {fileID: 11400000, guid: c5d9d7b02a979254f82f4f1e9e5dc142, type: 2}
 --- !u!4 &612371876
 Transform:
   m_ObjectHideFlags: 0
