@@ -621,6 +621,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bcf38c4b4bbea540a8406cd33e92361, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_panelName: 
+  m_showInfoPanel: 1
+  m_buildingCodeForLevel: 
+  m_levelPrefix: 'LV. '
 --- !u!1 &466942241968338246
 GameObject:
   m_ObjectHideFlags: 0
@@ -1525,6 +1529,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a9fc81d38f70f8458ee0369f679f800, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_panelName: 
+  m_showInfoPanel: 1
+  m_buildingCodeForLevel: 
+  m_levelPrefix: 'LV. '
   m_buildingBtnPrefeb: {fileID: 6619158803788390416, guid: f2dab8d08067fbf43a7c64b5bea7e200, type: 3}
   m_buildingScrollViewContentTrans: {fileID: 5521758885934782410}
   m_addResourceContentTrans: {fileID: 2368078268831417743}
@@ -3038,6 +3046,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df2b77f4b4a173245a8b399cd8bc7030, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_panelName: 
+  m_showInfoPanel: 1
+  m_buildingCodeForLevel: 10002
+  m_levelPrefix: 'LV. '
   m_factionLikeScrollViewContentTrans: {fileID: 575107476902130441}
   m_requestBtnScrollViewContentTrans: {fileID: 1892608975296713373}
   m_factionLikeImagePrefeb: {fileID: 2423388785812910452, guid: 2f19089ac925f54409e7a83bfbe7b5af, type: 3}
@@ -5241,7 +5253,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &32989778037777712
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5466,6 +5478,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 781d695f897ea724198c402244d1045d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_panelName: 
+  m_showInfoPanel: 1
+  m_buildingCodeForLevel: 10001
+  m_levelPrefix: 'LV. '
   m_researchScrollViewContentTrans: {fileID: 3310048812696414748}
   m_commonResearchBtnPrefeb: {fileID: 2410503554826165642, guid: 655ba185a8380714bac558d63285a4e4, type: 3}
 --- !u!1 &3263164800934774319
@@ -8054,7 +8070,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -702, y: -0.00012207031}
+  m_AnchoredPosition: {x: -702, y: -0.0004272461}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &6035251382165271803
@@ -8436,6 +8452,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5280af87b1e6cc84a8bdec7fce388e98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_panelName: 
+  m_showInfoPanel: 1
+  m_buildingCodeForLevel: 10001
+  m_levelPrefix: 'LV. '
   m_factionInfoBtnPrefeb: {fileID: 4692664275447225844, guid: 7ce62b2862da109499cfbed2e7033183, type: 3}
   m_factionScrollViewContentTrans: {fileID: 6593712587555502900}
   m_factionDetailPanel: {fileID: 8102558201281864407}
@@ -9217,6 +9237,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c8a57209d3588440997096681d22574, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_panelName: 
+  m_showInfoPanel: 1
+  m_buildingCodeForLevel: 
+  m_levelPrefix: 'LV. '
 --- !u!1 &6343993389185786939
 GameObject:
   m_ObjectHideFlags: 0
@@ -12938,6 +12962,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6695143deeb18194cacad1bb84300ab9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_panelName: 
+  m_showInfoPanel: 1
+  m_buildingCodeForLevel: 10004
+  m_levelPrefix: 'LV. '
   m_eventInfoPanelPrefeb: {fileID: 3401743982942203741, guid: ed8f2302047d2fa4ea064821864abb49, type: 3}
   m_eventInfoScrollViewContentTrans: {fileID: 2116227211337917811}
 --- !u!1 &8750048453393319966

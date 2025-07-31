@@ -29,7 +29,7 @@ public class ResearchPanel : BasePanel
     /// <summary>
     /// 연구 패널 선택
     /// </summary>
-    /// <param name="argPanelIndex"></param>
+    /// <param name="argPanelIndex">연구 패널 인덱스</param>
     /// 0 = 연구 가능
     /// 1 = 잠금
     /// 2 = 완료됨

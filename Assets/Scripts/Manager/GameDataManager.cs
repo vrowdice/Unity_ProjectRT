@@ -611,6 +611,55 @@ public class GameDataManager : MonoBehaviour
                 Debug.LogError(ExceptionMessages.ErrorValueNotAllowed + research.m_code);
             }
         }
+
+        // 연구 잠금 상태 설정 (m_unlocks 우선 처리)
+        foreach (ResearchData research in m_commonResearchDataList)
+        {
+            ResearchEntry entry = m_commonResearchEntryDic[research.m_code];
+            
+            // m_unlocks에 있는 연구들의 잠금 해제
+            if (research.m_unlocks != null)
+            {
+                foreach (ResearchData unlockResearch in research.m_unlocks)
+                {
+                    if (m_commonResearchEntryDic.TryGetValue(unlockResearch.m_code, out ResearchEntry unlockEntry))
+                    {
+                        unlockEntry.m_state.m_isLocked = false;
+                    }
+                }
+            }
+        }
+
+        // m_prerequisites 조건 확인하여 잠금 설정
+        foreach (ResearchData research in m_commonResearchDataList)
+        {
+            ResearchEntry entry = m_commonResearchEntryDic[research.m_code];
+            
+            // m_prerequisites 조건 확인
+            if (research.m_prerequisites != null && research.m_prerequisites.Count > 0)
+            {
+                bool allPrerequisitesMet = true;
+                
+                foreach (ResearchData prerequisite in research.m_prerequisites)
+                {
+                    if (m_commonResearchEntryDic.TryGetValue(prerequisite.m_code, out ResearchEntry prereqEntry))
+                    {
+                        // 선행 연구가 완료되지 않았으면 잠금
+                        if (!prereqEntry.m_state.m_isResearched)
+                        {
+                            allPrerequisitesMet = false;
+                            break;
+                        }
+                    }
+                }
+                
+                // 선행 조건이 충족되지 않으면 잠금
+                if (!allPrerequisitesMet)
+                {
+                    entry.m_state.m_isLocked = true;
+                }
+            }
+        }
         
         // 건물 데이터 딕셔너리 초기화
         foreach (BuildingData building in m_buildingDataList)
