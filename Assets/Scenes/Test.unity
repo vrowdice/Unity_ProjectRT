@@ -172,14 +172,14 @@ MonoBehaviour:
   tilePrefabs:
   - normalBlock: {fileID: 7397298340344657089, guid: d4da973000c455843838943e23e179f2, type: 3}
     highBlock: {fileID: 7213263926266496013, guid: c3b40efe14060854381b2670a1607117, type: 3}
-  - normalBlock: {fileID: 7397298340344657089, guid: d4da973000c455843838943e23e179f2, type: 3}
-    highBlock: {fileID: 7213263926266496013, guid: c3b40efe14060854381b2670a1607117, type: 3}
+  - normalBlock: {fileID: 7213263926266496013, guid: 60c55bef0569dff4bb091b75ddcbf1e0, type: 3}
+    highBlock: {fileID: 7213263926266496013, guid: 91f8e42d3b3d1df4fa36963357744d1e, type: 3}
   seed: 
   useRandomSeed: 1
-  size: {x: 100, y: 100}
+  size: {x: 10, y: 10}
   normalBlockPercent: 50
   normalBiomePercent: 40
-  smoothingFactor: 5
+  smoothingFactor: 0
 --- !u!156049354 &36654569
 Grid:
   m_ObjectHideFlags: 0

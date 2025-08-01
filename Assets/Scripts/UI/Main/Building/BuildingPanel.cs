@@ -14,6 +14,7 @@ public class BuildingPanel : BasePanel
     Transform m_requiredResourceContentTrans = null;
 
     private List<BuildingBtn> m_bulidingBtnList = new List<BuildingBtn>();
+    private int m_filterIndex = 0;
 
     private Dictionary<ResourceType.TYPE, long> m_requireResourcesDict = new();
     private Dictionary<ResourceType.TYPE, long> m_producedResourcesDict = new();
@@ -32,12 +33,11 @@ public class BuildingPanel : BasePanel
 
     protected override void OnPanelOpen()
     {
-        // 패널 설정
         SetPanelName("Building");
-        SetBuildingLevel(""); // 빌딩 패널은 레벨이 필요 없음
+        SetBuildingLevel("");
 
         InitializeResourceDictionaries();
-        InitializeBuildingButtons();
+        ScrollViewFilterBtn(m_filterIndex);
     }
 
     /// <summary>
@@ -53,9 +53,14 @@ public class BuildingPanel : BasePanel
     }
 
     /// <summary>
-    /// 빌딩 버튼들 초기화
+    /// 0 = 기반 건물
+    /// 1 = 나무
+    /// 2 = 철
+    /// 3 = 음식
+    /// 4 = 연구력
     /// </summary>
-    private void InitializeBuildingButtons()
+    /// <param name="argFilterIndex"></param>
+    public void ScrollViewFilterBtn(int argFilterIndex)
     {
         if (m_buildingScrollViewContentTrans == null)
         {
@@ -63,45 +68,20 @@ public class BuildingPanel : BasePanel
             return;
         }
 
-        // 기존 버튼들이 있으면 제거
-        if (m_buildingScrollViewContentTrans.childCount != m_gameDataManager.BuildingEntryDict.Count)
+        if (m_buildingScrollViewContentTrans.childCount == 0)
         {
-            ClearExistingButtons();
-        }
-        else
-        {
-            return; // 이미 올바른 개수만큼 있으면 리턴
+            CreateAllBuildingButtons();
         }
 
-        // 새 버튼들 생성
-        CreateBuildingButtons();
+        UpdateButtonVisibility(argFilterIndex);
     }
 
     /// <summary>
-    /// 기존 버튼들 제거
+    /// 모든 건물 버튼을 생성
     /// </summary>
-    private void ClearExistingButtons()
+    private void CreateAllBuildingButtons()
     {
-        foreach (Transform item in m_buildingScrollViewContentTrans)
-        {
-            if (item != null)
-            {
-                Destroy(item.gameObject);
-            }
-        }
         m_bulidingBtnList.Clear();
-    }
-
-    /// <summary>
-    /// 빌딩 버튼들 생성
-    /// </summary>
-    private void CreateBuildingButtons()
-    {
-        if (m_buildingBtnPrefeb == null)
-        {
-            Debug.LogError("Building button prefab is null!");
-            return;
-        }
 
         foreach (KeyValuePair<string, BuildingEntry> item in m_gameDataManager.BuildingEntryDict)
         {
@@ -110,12 +90,97 @@ public class BuildingPanel : BasePanel
 
             if (_buildingBtn != null)
             {
-                m_bulidingBtnList.Add(_buildingBtn);
                 _buildingBtn.Initialize(this, item.Value);
+                m_bulidingBtnList.Add(_buildingBtn);
             }
             else
             {
                 Debug.LogError($"BuildingBtn component not found on prefab for building: {item.Key}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 필터에 따라 버튼의 활성화/비활성화 상태를 업데이트
+    /// </summary>
+    /// <param name="filterIndex">필터 인덱스</param>
+    private void UpdateButtonVisibility(int filterIndex)
+    {
+        foreach (BuildingBtn buildingBtn in m_bulidingBtnList)
+        {
+            BuildingData buildingData = buildingBtn.BuildingEntry.m_data;
+            bool shouldShow = ShouldShowBuilding(buildingData, filterIndex);
+            
+            buildingBtn.gameObject.SetActive(shouldShow);
+        }
+    }
+
+    /// <summary>
+    /// 건물이 필터 조건에 따라 표시되어야 하는지 확인
+    /// </summary>
+    /// <param name="buildingData">확인할 건물 데이터</param>
+    /// <param name="filterIndex">필터 인덱스</param>
+    /// <returns>표시되어야 하면 true, 아니면 false</returns>
+    private bool ShouldShowBuilding(BuildingData buildingData, int filterIndex)
+    {
+        // 기반 건물 필터 (0) - Production이 아닌 건물들
+        if (filterIndex == 0)
+        {
+            return buildingData.m_buildingType != BuildingType.TYPE.Production;
+        }
+
+        // 특정 리소스 생산 건물 필터 (1-4) - 해당 리소스를 생산하는 Production 건물들
+        if (filterIndex >= 1 && filterIndex <= 4)
+        {
+            ResourceType.TYPE targetResourceType = GetResourceTypeByFilterIndex(filterIndex);
+            return buildingData.m_buildingType == BuildingType.TYPE.Production &&
+                   buildingData.HasProductionResource(targetResourceType);
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// 필터 인덱스에 해당하는 리소스 타입을 반환
+    /// </summary>
+    /// <param name="filterIndex">필터 인덱스</param>
+    /// <returns>해당하는 리소스 타입</returns>
+    private ResourceType.TYPE GetResourceTypeByFilterIndex(int filterIndex)
+    {
+        switch (filterIndex)
+        {
+            case 1: return ResourceType.TYPE.Wood;
+            case 2: return ResourceType.TYPE.Iron;
+            case 3: return ResourceType.TYPE.Food;
+            case 4: return ResourceType.TYPE.Tech;
+            default: return ResourceType.TYPE.Wood;
+        }
+    }
+
+    /// <summary>
+    /// 모든 버튼을 비활성화
+    /// </summary>
+    private void DisableAllButtons()
+    {
+        foreach (BuildingBtn buildingBtn in m_bulidingBtnList)
+        {
+            if (buildingBtn != null)
+            {
+                buildingBtn.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 모든 버튼을 활성화
+    /// </summary>
+    private void EnableAllButtons()
+    {
+        foreach (BuildingBtn buildingBtn in m_bulidingBtnList)
+        {
+            if (buildingBtn != null)
+            {
+                buildingBtn.gameObject.SetActive(true);
             }
         }
     }
