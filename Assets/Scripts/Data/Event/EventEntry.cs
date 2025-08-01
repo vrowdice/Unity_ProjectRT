@@ -13,7 +13,7 @@ public class EventEntry
     public EventEntry(List<EventGroupData> argDataList, GameDataManager argDataManager)
     {
         m_gameDataManager = argDataManager;
-        //ÃßÈÄ º¯°æ ÇÊ¿ä
+        //ì´ë²¤íŠ¸ ìŠ¬ë¡¯ í•„ìš”
         m_state.m_maxEvent = m_gameDataManager.GameBalanceEntry.m_data.m_firstEventSlot;
 
         foreach (EventGroupData item in argDataList)
@@ -24,8 +24,8 @@ public class EventEntry
 
         foreach (ResourceType.TYPE argType in EnumUtils.GetAllEnumValues<ResourceType.TYPE>())
         {
-            m_state.m_territoryResourceModDic[argType] = 0;
-            m_state.m_buildingResourceModDic[argType] = 0;
+            m_state.m_territoryResourceModDic[argType] = 1.0f;
+            m_state.m_buildingResourceModDic[argType] = 1.0f;
         }
 
         foreach(KeyValuePair<int, EventGroupData> item in m_groupDataDic)
@@ -35,14 +35,14 @@ public class EventEntry
     }
 
     /// <summary>
-    /// ´ÙÀ½ ³¯ Ã³¸® È®·üÀ» ³ôÀÌ°í ÀÌº¥Æ® ¹ß»ı
+    /// ë‚ ì§œ ì¦ê°€ ì²˜ë¦¬ í™•ë¥ ì„± ì´ë²¤íŠ¸ ë°œìƒ
     /// </summary>
     /// <returns></returns>
     public bool AddDate()
     {
         bool _isAddEvent = false;
 
-        //Æ½À¸·Î ÀÌº¥Æ® Áö¼Ó½Ã°£À» °¨¼ÒÇÏ°í 0ÀÌ¸é ºñÈ°¼ºÈ­
+        //ì§„í–‰ì¤‘ì¸ ì´ë²¤íŠ¸ ì§€ì†ì‹œê°„ì„ ê°ì†Œì‹œí‚¤ê³  0ì´ë©´ ë¹„í™œì„±í™”
         for (int i = m_state.m_activeEventList.Count - 1; i >= 0; i--)
         {
             if (m_state.m_activeEventList[i].Tick(m_gameDataManager))
@@ -51,35 +51,35 @@ public class EventEntry
             }
         }
 
-        //±×·ì »óÅÂ µñ¼Å³Ê¸® °¡Á®¿È
+        //ê·¸ë£¹ë³„ ì´ë²¤íŠ¸ í™•ë¥ ì„ ì¦ê°€ì‹œí‚´
         foreach (KeyValuePair<int ,EventGroupState> groupStateitem in m_groupStateDic)
         {
-            //±×·ì »óÅÂ µñ¼Å³Ê¸® È®·ü¿¡ ³¯¸¶´Ù º¯ÇÏ´Â È®·ü Ãß°¡
+            //ê·¸ë£¹ë³„ ì´ë²¤íŠ¸ í™•ë¥ ì„ í™•ì¸í•˜ì—¬ ì¦ê°€ì‹œí‚´
             groupStateitem.Value.m_percent += m_groupDataDic[groupStateitem.Key].m_dateChangePercent;
             Debug.Log("Event Group Key: " + groupStateitem.Key + ", Percent: " + groupStateitem.Value.m_percent);
 
-            //¸¸¾à ÃÖ´ë ÀÌº¥Æ® °¹¼öÀÌ¸é ´ÙÀ½À¸·Î
+            //ì´ë¯¸ ì§„í–‰ì¤‘ì¸ ì´ë²¤íŠ¸ê°€ ìˆìœ¼ë©´ ê±´ë„ˆëœ€
             if (m_state.m_activeEventList.Count >= m_state.m_maxEvent)
             {
                 continue;
             }
 
-            //±× È®·üÀ» ÀÌ¿ëÇØ ±×·ì ÀÌº¥Æ® È°¼ºÈ­ ¿©ºÎ ÆÇ´Ü
+            //í™•ë¥  í™•ì¸í•˜ì—¬ ê·¸ë£¹ ì´ë²¤íŠ¸ í™œì„±í™” ì—¬ë¶€ ê²°ì •
             if (ProbabilityUtils.RollPercent(groupStateitem.Value.m_percent) == true)
             {
-                //½½·ÔÀÌ ¸ğµÎ Â÷ ÀÖÀ» ¶§ »ı¼ºµÈ °æ¿ì¿¡ »ı¼º ¹«½ÃÇÏ°í È®·ü ÃÊ±âÈ­
+                //ì´ë²¤íŠ¸ ìŠ¬ë¡¯ì´ ê°€ë“ ì°¬ ê²½ìš° í™•ë¥ ì„ ì´ˆê¸°í™”í•˜ê³  ê±´ë„ˆëœ€
                 if (m_state.m_activeEventList.Count >= m_state.m_maxEvent)
                 {
                     groupStateitem.Value.m_percent = m_groupDataDic[groupStateitem.Key].m_firstPercent;
                     continue;
                 }
 
-                //¸¸¾à È°¼ºÈ­ µÇ¸é ¿ø·¡ È®·ü·Î µ¹¾Æ°¨
+                //ì´ë²¤íŠ¸ í™œì„±í™”ë˜ë©´ í™•ë¥ ì„ ì´ˆê¸°í™”
                 groupStateitem.Value.m_percent = m_groupDataDic[groupStateitem.Key].m_firstPercent;
 
-                //±×·ìÀÇ ·£´ı ÀÌº¥Æ®ÀÇ ÀÌÆåÆ® È°¼ºÈ­
+                //ê·¸ë£¹ì—ì„œ ëœë¤ ì´ë²¤íŠ¸ë¥¼ ì„ íƒí•˜ì—¬ í™œì„±í™”
                 EventData _eventData = ProbabilityUtils.GetRandomElement(m_groupDataDic[groupStateitem.Key].m_dataList);
-                //Á¶°ÇÀ» È®ÀÎÇÏ°í Á¶°ÇÀ» ¸¸Á·ÇÏÁö ¾ÊÀ¸¸é ÀÌº¥Æ® Â÷´Ü
+                //ì¡°ê±´ì„ í™•ì¸í•˜ê³  ì¡°ê±´ì´ ë§Œì¡±ë˜ë©´ ì´ë²¤íŠ¸ë¥¼ í™œì„±í™”
                 foreach (ConditionBase condition in _eventData.m_conditionList)
                 {
                     condition.Initialize(m_gameDataManager);

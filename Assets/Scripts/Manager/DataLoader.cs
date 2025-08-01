@@ -15,9 +15,9 @@ public static class DataLoader
         List<ResearchData> commonResearchDataList,
         List<BuildingData> buildingDataList,
         List<RequestLineTemplate> requestLineTemplateList,
-        List<GameDataManager.ResourceIcon> resourceIconList,
-        List<GameDataManager.TokenIcon> tokenIconList,
-        List<GameDataManager.RequestIcon> requestIconList,
+        List<ResourceIcon> resourceIconList,
+        List<TokenIcon> tokenIconList,
+        List<RequestIcon> requestIconList,
         ref GameBalanceData gameBalanceData)
     {
         LoadEventGroupDataFromResources(eventGroupDataList);
@@ -81,7 +81,7 @@ public static class DataLoader
         Debug.Log($"{requestLineTemplateList.Count} request line templates loaded from Resources.");
     }
 
-    private static void LoadResourceIconsFromResources(List<GameDataManager.ResourceIcon> resourceIconList)
+    private static void LoadResourceIconsFromResources(List<ResourceIcon> resourceIconList)
     {
         Sprite[] sprites = Resources.LoadAll<Sprite>("");
         resourceIconList.Clear();
@@ -98,7 +98,7 @@ public static class DataLoader
                     sprite.name.ToLower().Contains("resource") ||
                     sprite.name.ToLower().Contains("icon"))
                 {
-                    GameDataManager.ResourceIcon icon = new GameDataManager.ResourceIcon
+                    ResourceIcon icon = new ResourceIcon
                     {
                         m_type = resourceType,
                         m_icon = sprite
@@ -112,7 +112,7 @@ public static class DataLoader
         Debug.Log($"{resourceIconList.Count} resource icons loaded from Resources.");
     }
 
-    private static void LoadTokenIconsFromResources(List<GameDataManager.TokenIcon> tokenIconList)
+    private static void LoadTokenIconsFromResources(List<TokenIcon> tokenIconList)
     {
         Sprite[] sprites = Resources.LoadAll<Sprite>("");
         tokenIconList.Clear();
@@ -129,7 +129,7 @@ public static class DataLoader
                     sprite.name.ToLower().Contains("token") ||
                     sprite.name.ToLower().Contains("icon"))
                 {
-                    GameDataManager.TokenIcon icon = new GameDataManager.TokenIcon
+                    TokenIcon icon = new TokenIcon
                     {
                         m_type = tokenType,
                         m_icon = sprite
@@ -143,7 +143,7 @@ public static class DataLoader
         Debug.Log($"{tokenIconList.Count} token icons loaded from Resources.");
     }
 
-    private static void LoadRequestIconsFromResources(List<GameDataManager.RequestIcon> requestIconList)
+    private static void LoadRequestIconsFromResources(List<RequestIcon> requestIconList)
     {
         Sprite[] sprites = Resources.LoadAll<Sprite>("");
         requestIconList.Clear();
@@ -160,7 +160,7 @@ public static class DataLoader
                     sprite.name.ToLower().Contains("request") ||
                     sprite.name.ToLower().Contains("icon"))
                 {
-                    GameDataManager.RequestIcon icon = new GameDataManager.RequestIcon
+                    RequestIcon icon = new RequestIcon
                     {
                         m_type = requestType,
                         m_icon = sprite
@@ -198,9 +198,9 @@ public static class DataLoader
         List<ResearchData> commonResearchDataList,
         List<BuildingData> buildingDataList,
         List<RequestLineTemplate> requestLineTemplateList,
-        List<GameDataManager.ResourceIcon> resourceIconList,
-        List<GameDataManager.TokenIcon> tokenIconList,
-        List<GameDataManager.RequestIcon> requestIconList,
+        List<ResourceIcon> resourceIconList,
+        List<TokenIcon> tokenIconList,
+        List<RequestIcon> requestIconList,
         ref GameBalanceData gameBalanceData)
     {
         LoadEventGroupDataFromAssets(eventGroupDataList);
@@ -306,7 +306,7 @@ public static class DataLoader
         Debug.Log($"{requestLineTemplateList.Count} request line templates loaded.");
     }
 
-    private static void LoadResourceIconsFromAssets(List<GameDataManager.ResourceIcon> resourceIconList)
+    private static void LoadResourceIconsFromAssets(List<ResourceIcon> resourceIconList)
     {
         string[] guids = UnityEditor.AssetDatabase.FindAssets("t:Sprite");
         resourceIconList.Clear();
@@ -327,7 +327,7 @@ public static class DataLoader
                      sprite.name.ToLower().Contains("resource") ||
                      sprite.name.ToLower().Contains("icon")))
                 {
-                    GameDataManager.ResourceIcon icon = new GameDataManager.ResourceIcon
+                    ResourceIcon icon = new ResourceIcon
                     {
                         m_type = resourceType,
                         m_icon = sprite
@@ -341,7 +341,7 @@ public static class DataLoader
         Debug.Log($"{resourceIconList.Count} resource icons auto-setup completed.");
     }
 
-    private static void LoadTokenIconsFromAssets(List<GameDataManager.TokenIcon> tokenIconList)
+    private static void LoadTokenIconsFromAssets(List<TokenIcon> tokenIconList)
     {
         string[] guids = UnityEditor.AssetDatabase.FindAssets("t:Sprite");
         tokenIconList.Clear();
@@ -362,7 +362,7 @@ public static class DataLoader
                      sprite.name.ToLower().Contains("token") ||
                      sprite.name.ToLower().Contains("icon")))
                 {
-                    GameDataManager.TokenIcon icon = new GameDataManager.TokenIcon
+                    TokenIcon icon = new TokenIcon
                     {
                         m_type = tokenType,
                         m_icon = sprite
@@ -376,7 +376,7 @@ public static class DataLoader
         Debug.Log($"{tokenIconList.Count} token icons auto-setup completed.");
     }
 
-    private static void LoadRequestIconsFromAssets(List<GameDataManager.RequestIcon> requestIconList)
+    private static void LoadRequestIconsFromAssets(List<RequestIcon> requestIconList)
     {
         string[] guids = UnityEditor.AssetDatabase.FindAssets("t:Sprite");
         requestIconList.Clear();
@@ -397,7 +397,7 @@ public static class DataLoader
                      sprite.name.ToLower().Contains("request") ||
                      sprite.name.ToLower().Contains("icon")))
                 {
-                    GameDataManager.RequestIcon icon = new GameDataManager.RequestIcon
+                    RequestIcon icon = new RequestIcon
                     {
                         m_type = requestType,
                         m_icon = sprite

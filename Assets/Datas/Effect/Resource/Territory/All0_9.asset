@@ -9,9 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 800af5ff74da9824380f7abd0b466e78, type: 3}
+  m_Script: {fileID: 11500000, guid: 32c5592df88dba24c9909e0f7b17e15d, type: 3}
   m_Name: All0_9
   m_EditorClassIdentifier: 
+  m_name: 
   m_description: Daily production of all resources in the territory is reduced by
     10%.
-  m_mod: 0.9
+  m_targetType: 1
+  m_scopeType: 1
+  m_resourceType: 0
+  m_modifier: 0.9
