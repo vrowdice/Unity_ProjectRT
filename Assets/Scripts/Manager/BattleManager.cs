@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Serialization;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,8 +15,12 @@ public class BattleManager : MonoBehaviour
 
     [Header("배틀 로딩 매니저")]
     [SerializeField] private BattleLoadingManager m_battleLoadingManager = null;
-    public bool isSettingClear = false;
-    public bool isAttackField = true;
+
+    [HideInInspector]  public bool isSettingClear = false;
+    [HideInInspector]  public bool isAttackField = true;
+    [HideInInspector]  public GameObject enemyBattleBeforeUI;
+    [HideInInspector]  public GameObject battleBeforeUI;
+
 
     // Start is called before the first frame update
     void Start()
@@ -26,7 +31,7 @@ public class BattleManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(isSettingClear == true)
+        if (isSettingClear == true)
         {
             MoveField();
         }
@@ -34,12 +39,11 @@ public class BattleManager : MonoBehaviour
 
     private void MoveField()
     {
-        if(isAttackField != true)
+        if (isAttackField != true)
         {
             m_battleLoadingManager.mainCamra.transform.position = m_battleLoadingManager.defenseCameraPoint;
-            Destroy(m_battleLoadingManager.deploymentUI);
         }
-        else
+        else if(isAttackField == true)
         {
             m_battleLoadingManager.mainCamra.transform.position = m_battleLoadingManager.attackCameraPoint;
         }

@@ -241,12 +241,12 @@ MonoBehaviour:
   defenseCameraPoint: {x: 0, y: 0, z: 0}
   attackCameraPoint: {x: 0, y: 0, z: 0}
   mainCamra: {fileID: 0}
-  deploymentUI: {fileID: 0}
+  battleBeforeUI: {fileID: 7749625856373780653, guid: e64dff44c55b1344f8a74da4b875fe4a, type: 3}
   m_gameDataManager: {fileID: 5797309783521029795, guid: 8540f6ed3d1eb4741ac146b911982a05, type: 3}
   allyArmyData: {fileID: 11400000, guid: 7455af548f99e144bb0df79eacd665c7, type: 2}
   enemyArmyData: {fileID: 11400000, guid: c5d9d7b02a979254f82f4f1e9e5dc142, type: 2}
+  allyArmyDataList: []
   DeploymentUI: {fileID: 7749625856373780653, guid: e64dff44c55b1344f8a74da4b875fe4a, type: 3}
-  armyBox: {fileID: 5597607669795916161, guid: bd0bfac43fb2f7b4d9b9fc4a394d7c2b, type: 3}
 --- !u!4 &612371876
 Transform:
   m_ObjectHideFlags: 0
@@ -555,6 +555,8 @@ MonoBehaviour:
   m_battleLoadingManager: {fileID: 612371875}
   isSettingClear: 0
   isAttackField: 1
+  enemyBattleBeforeUI: {fileID: 0}
+  battleBeforeUI: {fileID: 0}
 --- !u!4 &1863513244
 Transform:
   m_ObjectHideFlags: 0

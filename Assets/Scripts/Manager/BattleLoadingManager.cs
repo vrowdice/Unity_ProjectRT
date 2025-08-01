@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,30 +15,28 @@ public class BattleLoadingManager : MonoBehaviour
     [Header("게임 필드")]
     public GameObject battleField;
 
-    public Vector3 defenseCameraPoint;
-    public Vector3 attackCameraPoint;
-    public Camera mainCamra;
+    [HideInInspector]  public Vector3 defenseCameraPoint;
+    [HideInInspector]  public Vector3 attackCameraPoint;
+    [HideInInspector]  public Camera mainCamra;
     private Transform allySpawnArea;
     private Transform enemySpawnArea;
     private Vector3 spawnAreaSize;
-    public GameObject deploymentUI;
+    public GameObject battleBeforeUI;
 
     [Header("게임 데이터 매니저")]
     [SerializeField] private GameDataManager m_gameDataManager = null;
+
 
     [Header("유닛 데이터")]
     [SerializeField] private AllyArmyData allyArmyData = null;
     [SerializeField] private EnemyArmyData enemyArmyData = null;
 
-    private List<UnitStatBase> allyArmyDataList = new();
+    //수정필요
+    [HideInInspector] public List<UnitStatBase> allyArmyDataList = new();
     private List<UnitStatBase> enemyArmyDataList = new();
 
     [Header("병력 배치 UI")]
     [SerializeField] private GameObject DeploymentUI;
-
-    [Header("유닛 슬롯 UI")]
-    [SerializeField] private GameObject armyBox; // 병력 슬롯 UI 프리팹
-    private Transform contentParent;
 
     //테스트용 후에 실제 값으로 변경해야함
     private bool isAttack = true;
@@ -105,9 +104,10 @@ public class BattleLoadingManager : MonoBehaviour
     private IEnumerator LoadArmyData()
     {
         Debug.Log("병력 로딩 중...");
+
         // 이전 데이터 초기화
         allyArmyDataList.Clear();
-        enemyArmyDataList.Clear();
+        enemyArmyDataList.Clear();//수정해야함
 
         //아군 병력 로딩
         foreach (var unit in allyArmyData.units)
@@ -166,7 +166,8 @@ public class BattleLoadingManager : MonoBehaviour
     private IEnumerator LoadMapSetting()
     {
         Debug.Log("맵 설정 중...");
-        //배경세팅
+
+        // 배경 세팅
         battleField = Instantiate(battleField);
         allySpawnArea = GameObject.Find("AttackSpawnArea").transform;
         enemySpawnArea = GameObject.Find("DefenseSpawnArea").transform;
@@ -182,8 +183,27 @@ public class BattleLoadingManager : MonoBehaviour
                 continue;
             }
 
-            GameObject test = Instantiate(unitData.prefab, GetRandomPositionInArea(mySpawnArea, spawnAreaSize), Quaternion.identity);
-            test.GetComponent<UnitBase>().Initialize(unitData);
+            // 유닛 생성
+            Vector3 spawnPos = GetRandomPositionInArea(mySpawnArea, spawnAreaSize);
+            GameObject enemyUnit = Instantiate(unitData.prefab, spawnPos, Quaternion.identity);
+
+            // 유닛 초기화
+            UnitBase unitBase = enemyUnit.GetComponent<UnitBase>();
+            if (unitBase != null)
+            {
+                unitBase.Initialize(unitData);
+            }
+
+            // 스프라이트 설정
+            SpriteRenderer sr = enemyUnit.GetComponent<SpriteRenderer>();
+            if (sr != null && unitData.unitIllustration != null)
+            {
+                sr.sprite = unitData.unitIllustration.sprite;
+            }
+            else
+            {
+                Debug.LogWarning($"{unitData.unitName}에 SpriteRenderer가 없거나 unitSprite가 비어있습니다.");
+            }
         }
 
         yield return new WaitForSeconds(0.5f);
@@ -231,41 +251,9 @@ public class BattleLoadingManager : MonoBehaviour
             return;
         }
 
-        deploymentUI = Instantiate(DeploymentUI, canvas.transform);
+        battleBeforeUI = Instantiate(DeploymentUI, canvas.transform);
 
-        deploymentUI.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        deploymentUI.SetActive(true);
-        GenerateList();
-    }
-
-    private void GenerateList()
-    {
-        contentParent = GameObject.Find("Content").GetComponent<Transform>();
-
-        // 기존 자식 제거
-        foreach (Transform child in contentParent)
-        {
-            Destroy(child.gameObject);
-        }
-
-        // 유닛 데이터 기반 프리팹 생성
-        foreach (var unit in allyArmyDataList)
-        {
-            GameObject myUnit = Instantiate(armyBox, contentParent);
-            myUnit.transform.localScale = Vector3.one;
-
-            // 유닛 아이콘 설정
-            Image icon = myUnit.transform.Find("ArmyImage").GetComponent<Image>();
-            if (icon != null && unit.unitIllustration != null)
-                icon = unit.unitIllustration;
-
-            // 유닛 이름 텍스트 설정
-            TextMeshProUGUI nameText = myUnit.transform.Find("AmryTexts").transform.Find("AmryNameText").GetComponent<TextMeshProUGUI>();
-            if (nameText != null)
-            {
-                Debug.Log($"unitName: {unit.unitName}");
-                nameText.text = unit.unitName;
-            }
-        }
+        battleBeforeUI.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        battleBeforeUI.SetActive(true);
     }
 }

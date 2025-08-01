@@ -977,50 +977,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!1 &5854108454486051083
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1151669512572608728}
-  - component: {fileID: 7603190127920983075}
-  m_Layer: 0
-  m_Name: S_MoveleftBut
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1151669512572608728
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5854108454486051083}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2114816112914258211}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7603190127920983075
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5854108454486051083}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90302aa0003805e45bb8be2d7e8702c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &6212856828684058974
 GameObject:
   m_ObjectHideFlags: 0
@@ -1109,7 +1065,7 @@ GameObject:
   - component: {fileID: 5949164813160101630}
   - component: {fileID: 3227324108812997060}
   m_Layer: 5
-  m_Name: Scroll View
+  m_Name: UnitPlacementPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1497,9 +1453,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2114816112914258211}
+  - component: {fileID: 8805960849408613018}
   m_Layer: 5
-  m_Name: DeploymentUI
-  m_TagString: Untagged
+  m_Name: BattleBeforeUI
+  m_TagString: BBUI
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1523,7 +1480,6 @@ RectTransform:
   - {fileID: 8706926392902211914}
   - {fileID: 9215064333245846115}
   - {fileID: 5183524810492097436}
-  - {fileID: 1151669512572608728}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1531,6 +1487,20 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &8805960849408613018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7749625856373780653}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc13cb42f0ac63a4f8add6899e636f85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  allyArmyDataList: []
+  armyBox: {fileID: 5597607669795916161, guid: bd0bfac43fb2f7b4d9b9fc4a394d7c2b, type: 3}
 --- !u!1 &8012647245118973452
 GameObject:
   m_ObjectHideFlags: 0
@@ -1618,6 +1588,7 @@ GameObject:
   - component: {fileID: 8862767946659908340}
   - component: {fileID: 7266387242214970609}
   - component: {fileID: 3015077558900026548}
+  - component: {fileID: 7426754664326721468}
   m_Layer: 5
   m_Name: MoveleftBut
   m_TagString: Untagged
@@ -1726,7 +1697,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7603190127920983075}
+      - m_Target: {fileID: 7426754664326721468}
         m_TargetAssemblyTypeName: MoveleftBut, Assembly-CSharp
         m_MethodName: MoveLeftCamera
         m_Mode: 1
@@ -1738,6 +1709,19 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &7426754664326721468
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8343782060823575429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90302aa0003805e45bb8be2d7e8702c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyBattleBeforeUIFeb: {fileID: 7192299988687337279, guid: 0bc050b2e376039498141b20dbef42f8, type: 3}
 --- !u!1 &8381078122991504439
 GameObject:
   m_ObjectHideFlags: 0
