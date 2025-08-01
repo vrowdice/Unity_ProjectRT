@@ -9,10 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f42c5b3a82ac9d04096f962b348d9866, type: 3}
+  m_Script: {fileID: 11500000, guid: 32c5592df88dba24c9909e0f7b17e15d, type: 3}
   m_Name: Tech1_25
   m_EditorClassIdentifier: 
-  m_duration: -1
-  m_type: 3
-  m_description: "Daily research production in buildings increases by 25%"
-  m_mod: 1.25
+  m_name: 
+  m_description: Daily research production in buildings increases by 25%
+  m_targetType: 0
+  m_scopeType: 0
+  m_resourceType: 3
+  m_modifier: 1.25

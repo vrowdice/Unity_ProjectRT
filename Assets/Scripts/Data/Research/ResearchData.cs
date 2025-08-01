@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,13 +10,39 @@ public class ResearchData : ScriptableObject
     public string m_description;
 
     public int m_cost;
-    public float m_duration; // ¿¬±¸ ¼Ò¿ä ½Ã°£
+    public float m_duration; // ì—°êµ¬ ì™„ë£Œ ì‹œê°„
 
-    public List<ResearchData> m_prerequisites; // ¼±Çà ¿¬±¸ ID ¸ñ·Ï
-    public List<ResearchData> m_unlocks;       // ÇØ±İµÇ´Â ¿ä¼Ò ID ¸ñ·Ï
+    public List<ResearchData> m_prerequisites; // ì„ í–‰ ì—°êµ¬ ID ëª©ë¡
+    public List<ResearchData> m_unlocks;       // í•´ê¸ˆë˜ëŠ” ì—°êµ¬ ID ëª©ë¡
 
-    public Sprite m_icon;                // ¿¬±¸ ¾ÆÀÌÄÜ
+    public List<EffectBase> m_effects; //ì—°êµ¬ ì™„ë£Œ ì‹œ í™œì„±í™”ë˜ëŠ” ì´í™íŠ¸
+
+    public Sprite m_icon;                // ì—°êµ¬ ì•„ì´ì½˜
     public bool m_isFirstLocked = false;
 
-    public FactionType.TYPE m_factionType; //Ãß°¡: ÇØ´ç ¿¬±¸°¡ ¼ÓÇÑ ÆÑ¼Ç
+    public FactionType.TYPE m_factionType; //ì¶”ê°€: í•´ë‹¹ ì—°êµ¬ì˜ ì§„ì˜ íƒ€ì…
+
+    /// <summary>
+    /// ì—°êµ¬ ì™„ë£Œ ì‹œ ëª¨ë“  ì´í™íŠ¸ í™œì„±í™”
+    /// </summary>
+    /// <param name="dataManager">ê²Œì„ ë°ì´í„° ë§¤ë‹ˆì €</param>
+    public void ActivateAllEffect(GameDataManager dataManager)
+    {
+        foreach(EffectBase item in m_effects)
+        {
+            item.Activate(dataManager);
+        }
+    }
+
+    /// <summary>
+    /// ì—°êµ¬ íš¨ê³¼ ë¹„í™œì„±í™” (í•„ìš”ì‹œ ì‚¬ìš©)
+    /// </summary>
+    /// <param name="dataManager">ê²Œì„ ë°ì´í„° ë§¤ë‹ˆì €</param>
+    public void DeactivateAllEffect(GameDataManager dataManager)
+    {
+        foreach (EffectBase item in m_effects)
+        {
+            item.Deactivate(dataManager);
+        }
+    }
 }
