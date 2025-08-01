@@ -57,7 +57,6 @@ public class BattleBeforeUI : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        // 이름별로 1번씩만 슬롯 생성
         foreach (var entry in unitCountMap)
         {
             string unitName = entry.Key;
@@ -70,7 +69,7 @@ public class BattleBeforeUI : MonoBehaviour
             // 유닛 아이콘 설정
             Image icon = myUnit.transform.Find("UnitImage").GetComponent<Image>();
             if (icon != null && unit.unitIllustration != null)
-                icon = unit.unitIllustration;
+                icon.sprite = unit.unitIllustration.sprite;
 
             // 유닛 이름 텍스트
             TextMeshProUGUI nameText = myUnit.transform.Find("UnitTexts/UnitNameText").GetComponent<TextMeshProUGUI>();
@@ -79,8 +78,14 @@ public class BattleBeforeUI : MonoBehaviour
 
             // 유닛 수량 텍스트
             TextMeshProUGUI countText = myUnit.transform.Find("UnitTexts/UnitCountText").GetComponent<TextMeshProUGUI>();
-            if (countText != null)
-                countText.text = $"{count}";
+
+            // 유닛 버튼 기능 연결
+            UnitBox unitButton = myUnit.GetComponent<UnitBox>();
+            if (unitButton != null)
+            {
+                unitButton.Init(unit, count, countText);
+            }
         }
     }
 }
+

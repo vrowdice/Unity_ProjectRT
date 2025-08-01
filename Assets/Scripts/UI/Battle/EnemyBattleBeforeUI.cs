@@ -17,11 +17,6 @@ public class EnemyBattleBeforeUI : MonoBehaviour
 
     private string defaultNum = "0000";
 
-    //태그 이름
-    //private string LongUnitTag = "LongUnit";
-    //private string ShortUnitTag = "ShortUnit";
-    //private string DefenseUnitTag = "DefenseUnit";
-
     public enum UnitTagType
     {
         Long,

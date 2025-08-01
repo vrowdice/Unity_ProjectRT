@@ -31,7 +31,7 @@ public class BattleLoadingManager : MonoBehaviour
     [SerializeField] private AllyArmyData allyArmyData = null;
     [SerializeField] private EnemyArmyData enemyArmyData = null;
 
-    //수정필요
+
     [HideInInspector] public List<UnitStatBase> allyArmyDataList = new();
     private List<UnitStatBase> enemyArmyDataList = new();
 
@@ -49,7 +49,7 @@ public class BattleLoadingManager : MonoBehaviour
         // 로드 단계 리스트 구성
         List<IEnumerator> initSteps = new()
     {
-        LoadArmyData(),
+        LoadUnitData(),
         CombatTypeCheck(),
         LoadEvent(),
         LoadMapSetting(),
@@ -101,13 +101,13 @@ public class BattleLoadingManager : MonoBehaviour
         }
     }
 
-    private IEnumerator LoadArmyData()
+    private IEnumerator LoadUnitData()
     {
         Debug.Log("병력 로딩 중...");
 
         // 이전 데이터 초기화
         allyArmyDataList.Clear();
-        enemyArmyDataList.Clear();//수정해야함
+        enemyArmyDataList.Clear();
 
         //아군 병력 로딩
         foreach (var unit in allyArmyData.units)
