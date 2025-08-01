@@ -194,6 +194,23 @@ public class BattleLoadingManager : MonoBehaviour
                 unitBase.Initialize(unitData);
             }
 
+            if (enemyUnit.GetComponent<UnitBase>().unitType == "근거리")
+            {
+                enemyUnit.tag = "ShortUnit";
+            }
+            else if (enemyUnit.GetComponent<UnitBase>().unitType == "원거리")
+            {
+                enemyUnit.tag = "LongUnit";
+            }
+            else if (enemyUnit.GetComponent<UnitBase>().unitType == "방어")
+            {
+                enemyUnit.tag = "DefenseUnit";
+            }
+            else
+            {
+                Debug.LogWarning($"{unitData.unitName}에 태그 정보가 없습니다.");
+            }
+
             // 스프라이트 설정
             SpriteRenderer sr = enemyUnit.GetComponent<SpriteRenderer>();
             if (sr != null && unitData.unitIllustration != null)

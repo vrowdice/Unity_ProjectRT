@@ -281,7 +281,7 @@ GameObject:
   - component: {fileID: 3828585179722160295}
   - component: {fileID: 8516821366134555111}
   m_Layer: 5
-  m_Name: ArmyCountText
+  m_Name: DefenseUnitCountText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -535,7 +535,7 @@ GameObject:
   - component: {fileID: 6186236877932122414}
   - component: {fileID: 7654239318947149159}
   m_Layer: 5
-  m_Name: ArmyCountText
+  m_Name: ShortUnitCountText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -999,6 +999,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5594664650660787717}
+  - component: {fileID: 7466919915709021944}
   m_Layer: 5
   m_Name: EnemyBattleBeforeUI
   m_TagString: EBBUI
@@ -1031,6 +1032,21 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &7466919915709021944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7192299988687337279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19cf4f3518b1b37489c2b162f73bbd18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LongUnitCountText: {fileID: 7681922336714377987}
+  ShortUnitCountText: {fileID: 5084867596612087696}
+  DefenseUnitCountText: {fileID: 3065767417189904444}
 --- !u!1 &7681922336714377987
 GameObject:
   m_ObjectHideFlags: 0
@@ -1043,7 +1059,7 @@ GameObject:
   - component: {fileID: 2571659570163101286}
   - component: {fileID: 3778364380500526303}
   m_Layer: 5
-  m_Name: ArmyCountText
+  m_Name: LongUnitCountText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
