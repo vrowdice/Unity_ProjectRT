@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Serialization;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// 전투 시스템을 관리하는 매니저 클래스
@@ -9,15 +12,40 @@ using UnityEngine;
 /// </summary>
 public class BattleManager : MonoBehaviour
 {
+
+    [Header("배틀 로딩 매니저")]
+    [SerializeField] private BattleLoadingManager m_battleLoadingManager = null;
+
+    [HideInInspector]  public bool isSettingClear = false;
+    [HideInInspector]  public bool isAttackField = true;
+    [HideInInspector]  public GameObject enemyBattleBeforeUI;
+    [HideInInspector]  public GameObject battleBeforeUI;
+
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        StartCoroutine(m_battleLoadingManager.InitializeBattleScene());
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (isSettingClear == true)
+        {
+            MoveField();
+        }
+    }
+
+    private void MoveField()
+    {
+        if (isAttackField != true)
+        {
+            m_battleLoadingManager.mainCamra.transform.position = m_battleLoadingManager.defenseCameraPoint;
+        }
+        else if(isAttackField == true)
+        {
+            m_battleLoadingManager.mainCamra.transform.position = m_battleLoadingManager.attackCameraPoint;
+        }
     }
 }
