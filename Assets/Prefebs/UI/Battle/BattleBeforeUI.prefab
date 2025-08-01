@@ -1499,8 +1499,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc13cb42f0ac63a4f8add6899e636f85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  allyArmyDataList: []
-  armyBox: {fileID: 5597607669795916161, guid: bd0bfac43fb2f7b4d9b9fc4a394d7c2b, type: 3}
+  allyUnitDataList: []
+  unitBox: {fileID: 5597607669795916161, guid: bd0bfac43fb2f7b4d9b9fc4a394d7c2b, type: 3}
 --- !u!1 &8012647245118973452
 GameObject:
   m_ObjectHideFlags: 0

@@ -13,7 +13,7 @@ public class BattleBeforeUI : MonoBehaviour
     [HideInInspector] public List<UnitStatBase> allyUnitDataList = new();
 
     [Header("유닛 슬롯 UI")]
-    [SerializeField] private GameObject armyBox; // 병력 슬롯 UI 프리팹
+    [SerializeField] private GameObject unitBox; // 병력 슬롯 UI 프리팹
 
     // Start is called before the first frame update
     void Start()
@@ -31,10 +31,24 @@ public class BattleBeforeUI : MonoBehaviour
     {
         contentParent = GameObject.Find("Content").GetComponent<Transform>();
         m_battleLoadingManager = FindObjectOfType<BattleLoadingManager>();
+
+        allyUnitDataList.Clear();
+
+        // 이름 기준으로 유닛 개수 세기
+        Dictionary<string, (UnitStatBase data, int count)> unitCountMap = new();
+
         foreach (UnitStatBase unit in m_battleLoadingManager.allyArmyDataList)
         {
+            if (unitCountMap.ContainsKey(unit.unitName))
+            {
+                unitCountMap[unit.unitName] = (unit, unitCountMap[unit.unitName].count + 1);
+            }
+            else
+            {
+                unitCountMap[unit.unitName] = (unit, 1);
+            }
+
             allyUnitDataList.Add(unit);
-            Debug.Log($"아군 유닛 이름: {unit.unitName}");
         }
 
         // 기존 자식 제거
@@ -43,24 +57,30 @@ public class BattleBeforeUI : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        // 유닛 데이터 기반 프리팹 생성
-        foreach (var unit in allyUnitDataList)
+        // 이름별로 1번씩만 슬롯 생성
+        foreach (var entry in unitCountMap)
         {
-            GameObject myUnit = Instantiate(armyBox, contentParent);
+            string unitName = entry.Key;
+            UnitStatBase unit = entry.Value.data;
+            int count = entry.Value.count;
+
+            GameObject myUnit = Instantiate(unitBox, contentParent);
             myUnit.transform.localScale = Vector3.one;
 
             // 유닛 아이콘 설정
-            Image icon = myUnit.transform.Find("ArmyImage").GetComponent<Image>();
+            Image icon = myUnit.transform.Find("UnitImage").GetComponent<Image>();
             if (icon != null && unit.unitIllustration != null)
                 icon = unit.unitIllustration;
 
-            // 유닛 이름 텍스트 설정
-            TextMeshProUGUI nameText = myUnit.transform.Find("AmryTexts").transform.Find("AmryNameText").GetComponent<TextMeshProUGUI>();
+            // 유닛 이름 텍스트
+            TextMeshProUGUI nameText = myUnit.transform.Find("UnitTexts/UnitNameText").GetComponent<TextMeshProUGUI>();
             if (nameText != null)
-            {
-                Debug.Log($"unitName: {unit.unitName}");
                 nameText.text = unit.unitName;
-            }
+
+            // 유닛 수량 텍스트
+            TextMeshProUGUI countText = myUnit.transform.Find("UnitTexts/UnitCountText").GetComponent<TextMeshProUGUI>();
+            if (countText != null)
+                countText.text = $"{count}";
         }
     }
 }
