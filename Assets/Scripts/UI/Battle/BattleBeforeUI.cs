@@ -15,7 +15,6 @@ public class BattleBeforeUI : MonoBehaviour
     [Header("유닛 슬롯 UI")]
     [SerializeField] private GameObject unitBox; // 병력 슬롯 UI 프리팹
 
-
     [Header("적 유닛 개수 텍스트")]
     [SerializeField] private GameObject LongUnitCountText;
     [SerializeField] private GameObject ShortUnitCountText;
@@ -26,6 +25,9 @@ public class BattleBeforeUI : MonoBehaviour
     private TextMeshProUGUI DefenseUnitCountTextMesh;
 
     private string defaultNum = "0000";
+    private string placementModeText = "Placement mode";
+
+    public static bool IsInPlacementMode { get; private set; } = false;
 
     public enum UnitTagType
     {
@@ -36,6 +38,11 @@ public class BattleBeforeUI : MonoBehaviour
 
     private Dictionary<UnitTagType, string> tagNames;
     private Dictionary<UnitTagType, TextMeshProUGUI> tagTexts;
+
+    //배치 모드 텍스트와 회수 버튼
+    [Header("배치 모드 관련 UI")]
+    [SerializeField] private GameObject PlacementStatusText;
+    [SerializeField] private GameObject UnitRecallBtn;
 
     // Start is called before the first frame update
     void Start()
@@ -122,22 +129,28 @@ public class BattleBeforeUI : MonoBehaviour
         DefenseUnitCountTextMesh.text = defaultNum;
 
         tagNames = new Dictionary<UnitTagType, string>
-    {
-        { UnitTagType.Long, "MyLongUnit"},
-        { UnitTagType.Short, "MyShortUnit" },
-        { UnitTagType.Defense, "MyDefenseUnit"}
-    };
+        {
+            { UnitTagType.Long, "MyLongUnit"},
+            { UnitTagType.Short, "MyShortUnit" },
+            { UnitTagType.Defense, "MyDefenseUnit"}
+        };
 
         tagTexts = new Dictionary<UnitTagType, TextMeshProUGUI>
-    {
-        { UnitTagType.Long, LongUnitCountTextMesh},
-        { UnitTagType.Short, ShortUnitCountTextMesh},
-        { UnitTagType.Defense, DefenseUnitCountTextMesh}
-    };
+        {
+            { UnitTagType.Long, LongUnitCountTextMesh},
+            { UnitTagType.Short, ShortUnitCountTextMesh},
+            { UnitTagType.Defense, DefenseUnitCountTextMesh}
+        };
+
+        //초기 비활성화
+        PlacementStatusText.GetComponent<TextMeshProUGUI>().text = placementModeText;
+        if (UnitRecallBtn != null) UnitRecallBtn.SetActive(false);
     }
 
     private void CountMyUnit()
     {
+        int totalCount = 0;
+
         foreach (UnitTagType tagType in System.Enum.GetValues(typeof(UnitTagType)))
         {
             string tagName = tagNames[tagType];
@@ -150,12 +163,21 @@ public class BattleBeforeUI : MonoBehaviour
             }
             catch (UnityException)
             {
-                // 태그가 존재하지 않는 경우 (에디터에서 태그 설정이 안 되어 있을 때 등)
                 count = 0;
             }
 
-            tagTexts[tagType].text = count.ToString("D4"); // 네 자리 0으로 채움 (ex: 0003)
+            tagTexts[tagType].text = count.ToString();
+            totalCount += count;
         }
+
+        //배치된 유닛이 하나라도 있으면 UI 활성화
+        bool hasAnyUnit = totalCount > 0;
+        IsInPlacementMode = totalCount > 0;
+        if (UnitRecallBtn != null)
+        {
+            UnitRecallBtn.SetActive(hasAnyUnit);
+        }
+
     }
 }
 

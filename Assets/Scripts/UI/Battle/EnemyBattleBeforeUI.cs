@@ -69,7 +69,19 @@ public class EnemyBattleBeforeUI : MonoBehaviour
         foreach (UnitTagType tagType in System.Enum.GetValues(typeof(UnitTagType)))
         {
             string tagName = tagNames[tagType];
-            int count = GameObject.FindGameObjectsWithTag(tagName).Length;
+
+            int count = 0;
+            try
+            {
+                GameObject[] foundUnits = GameObject.FindGameObjectsWithTag(tagName);
+                count = foundUnits?.Length ?? 0;
+            }
+            catch (UnityException)
+            {
+                // 태그가 존재하지 않는 경우 (에디터에서 태그 설정이 안 되어 있을 때 등)
+                count = 0;
+            }
+
             tagTexts[tagType].text = count.ToString();
         }
     }

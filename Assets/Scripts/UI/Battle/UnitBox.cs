@@ -90,6 +90,15 @@ public class UnitBox : MonoBehaviour
             Debug.LogWarning("[생성 실패] 생성된 유닛에 UnitBase 컴포넌트가 없습니다.");
         }
 
+        if (unitBase != null && unitBase.affiliation == "owl")
+        {
+            // 아군인 경우에만 드래그 스크립트 추가
+            if (newUnit.GetComponent<UnitDragHandler>() == null)
+            {
+                UnitDragHandler dragHandler = newUnit.AddComponent<UnitDragHandler>();
+            }
+        }
+
         // 수량 및 UI 처리
         unitCount--;
         createdCount++;

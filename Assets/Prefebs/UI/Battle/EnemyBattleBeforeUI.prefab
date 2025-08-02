@@ -49,7 +49,7 @@ GameObject:
   - component: {fileID: 8383192397640516752}
   - component: {fileID: 8323524760255898994}
   m_Layer: 5
-  m_Name: ArmyIcon
+  m_Name: DefenseUnitIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -102,7 +102,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: 7d8ec315904a9454f8f98e9de338b02d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -852,7 +852,7 @@ GameObject:
   - component: {fileID: 1493316793279493310}
   - component: {fileID: 4672938545082624611}
   m_Layer: 5
-  m_Name: ArmyIcon
+  m_Name: LongUnitIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -905,7 +905,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: e4c79bc949c35df4a9a5d08f5b016854, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -927,7 +927,7 @@ GameObject:
   - component: {fileID: 1402903785869389849}
   - component: {fileID: 2922563782441367411}
   m_Layer: 5
-  m_Name: ArmyIcon
+  m_Name: ShortUnitIocn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -980,7 +980,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: b3fa3a4e47bfe1a47970ca178ec68e73, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
