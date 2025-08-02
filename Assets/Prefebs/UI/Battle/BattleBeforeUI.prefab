@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1759408251666878447}
   - component: {fileID: 3132234282074495574}
   m_Layer: 5
-  m_Name: ArmyCountText
+  m_Name: LongUnitCountText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -298,7 +298,7 @@ GameObject:
   - component: {fileID: 6919045543767950119}
   - component: {fileID: 5226714680284119941}
   m_Layer: 5
-  m_Name: ArmyIcon
+  m_Name: UnitIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -371,7 +371,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9215064333245846115}
   m_Layer: 5
-  m_Name: ArmyCountUIDefense
+  m_Name: UnitCountUIDefense
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -536,7 +536,7 @@ GameObject:
   - component: {fileID: 56964389114628902}
   - component: {fileID: 6537802729791961998}
   m_Layer: 5
-  m_Name: ArmyCountText
+  m_Name: DefenseUnitCountText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -794,7 +794,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8706926392902211914}
   m_Layer: 5
-  m_Name: ArmyCountUIShort
+  m_Name: UnitCountUIShort
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -989,7 +989,7 @@ GameObject:
   - component: {fileID: 5314165313911887210}
   - component: {fileID: 6221329013936628710}
   m_Layer: 5
-  m_Name: ArmyIcon
+  m_Name: UnitIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1417,7 +1417,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6999853475558203514}
   m_Layer: 5
-  m_Name: ArmyCountUILong
+  m_Name: UnitCountUILong
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1501,6 +1501,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allyUnitDataList: []
   unitBox: {fileID: 5597607669795916161, guid: bd0bfac43fb2f7b4d9b9fc4a394d7c2b, type: 3}
+  LongUnitCountText: {fileID: 442485955693970378}
+  ShortUnitCountText: {fileID: 9183931635043669275}
+  DefenseUnitCountText: {fileID: 3310160577774566885}
 --- !u!1 &8012647245118973452
 GameObject:
   m_ObjectHideFlags: 0
@@ -1513,7 +1516,7 @@ GameObject:
   - component: {fileID: 924822699415638664}
   - component: {fileID: 2243945905693565497}
   m_Layer: 5
-  m_Name: ArmyIcon
+  m_Name: UnitIcon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1809,7 +1812,7 @@ GameObject:
   - component: {fileID: 3803872737760260438}
   - component: {fileID: 3051771696877952171}
   m_Layer: 5
-  m_Name: ArmyCountText
+  m_Name: ShortUnitCountText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

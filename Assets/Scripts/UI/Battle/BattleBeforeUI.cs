@@ -15,16 +15,39 @@ public class BattleBeforeUI : MonoBehaviour
     [Header("유닛 슬롯 UI")]
     [SerializeField] private GameObject unitBox; // 병력 슬롯 UI 프리팹
 
+
+    [Header("적 유닛 개수 텍스트")]
+    [SerializeField] private GameObject LongUnitCountText;
+    [SerializeField] private GameObject ShortUnitCountText;
+    [SerializeField] private GameObject DefenseUnitCountText;
+
+    private TextMeshProUGUI LongUnitCountTextMesh;
+    private TextMeshProUGUI ShortUnitCountTextMesh;
+    private TextMeshProUGUI DefenseUnitCountTextMesh;
+
+    private string defaultNum = "0000";
+
+    public enum UnitTagType
+    {
+        Long,
+        Short,
+        Defense
+    }
+
+    private Dictionary<UnitTagType, string> tagNames;
+    private Dictionary<UnitTagType, TextMeshProUGUI> tagTexts;
+
     // Start is called before the first frame update
     void Start()
     {
         GenerateList();
+        FirstSettingCountText();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        CountMyUnit();
     }
 
     private void GenerateList()
@@ -85,6 +108,53 @@ public class BattleBeforeUI : MonoBehaviour
             {
                 unitButton.Init(unit, count, countText);
             }
+        }
+    }
+
+    private void FirstSettingCountText()
+    {
+        LongUnitCountTextMesh = LongUnitCountText.GetComponent<TextMeshProUGUI>();
+        ShortUnitCountTextMesh = ShortUnitCountText.GetComponent<TextMeshProUGUI>();
+        DefenseUnitCountTextMesh = DefenseUnitCountText.GetComponent<TextMeshProUGUI>();
+
+        LongUnitCountTextMesh.text = defaultNum;
+        ShortUnitCountTextMesh.text = defaultNum;
+        DefenseUnitCountTextMesh.text = defaultNum;
+
+        tagNames = new Dictionary<UnitTagType, string>
+    {
+        { UnitTagType.Long, "MyLongUnit"},
+        { UnitTagType.Short, "MyShortUnit" },
+        { UnitTagType.Defense, "MyDefenseUnit"}
+    };
+
+        tagTexts = new Dictionary<UnitTagType, TextMeshProUGUI>
+    {
+        { UnitTagType.Long, LongUnitCountTextMesh},
+        { UnitTagType.Short, ShortUnitCountTextMesh},
+        { UnitTagType.Defense, DefenseUnitCountTextMesh}
+    };
+    }
+
+    private void CountMyUnit()
+    {
+        foreach (UnitTagType tagType in System.Enum.GetValues(typeof(UnitTagType)))
+        {
+            string tagName = tagNames[tagType];
+
+            int count = 0;
+            try
+            {
+                GameObject[] foundUnits = GameObject.FindGameObjectsWithTag(tagName);
+                count = foundUnits?.Length ?? 0;
+            }
+            catch (UnityException)
+            {
+                // 태그가 존재하지 않는 경우 (에디터에서 태그 설정이 안 되어 있을 때 등)
+                count = 0;
+            }
+
+            tagTexts[tagType].text = count.ToString("D4"); // 네 자리 0으로 채움 (ex: 0003)
         }
     }
 }

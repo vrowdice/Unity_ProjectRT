@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class UnitBox : MonoBehaviour
 {
     [SerializeField] private GameObject unitPrefab;
-    [SerializeField] private GameObject attackSpawnArea;
+     private GameObject attackSpawnArea;
 
     private UnitStatBase unitData;
     private int unitCount;
@@ -53,9 +53,9 @@ public class UnitBox : MonoBehaviour
         //unitType → 태그명 변환 매핑
         Dictionary<string, string> typeToTagMap = new()
     {
-        { "근거리", "ShortUnit" },
-        { "원거리", "LongUnit" },
-        { "방어", "DefenseUnit" }
+        { "근거리", "MyShortUnit" },
+        { "원거리", "MyLongUnit" },
+        { "방어", "MyDefenseUnit" }
         
     };
 

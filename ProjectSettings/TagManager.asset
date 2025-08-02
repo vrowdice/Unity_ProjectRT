@@ -9,6 +9,9 @@ TagManager:
   - ShortUnit
   - LongUnit
   - DefenseUnit
+  - MyShortUnit
+  - MyLongUnit
+  - MyDefenseUnit
   layers:
   - Default
   - TransparentFX
