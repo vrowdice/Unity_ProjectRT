@@ -1414,7 +1414,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2928139330559088426}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 8805960849408613018}
+        m_TargetAssemblyTypeName: BattleBeforeUI, Assembly-CSharp
+        m_MethodName: TogglePlacementMode
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &7099251867743559573
 GameObject:
   m_ObjectHideFlags: 0
@@ -1756,7 +1768,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allyUnitDataList: []
-  unitBox: {fileID: 5597607669795916161, guid: bd0bfac43fb2f7b4d9b9fc4a394d7c2b, type: 3}
+  unitBoxPrefab: {fileID: 5597607669795916161, guid: bd0bfac43fb2f7b4d9b9fc4a394d7c2b, type: 3}
   LongUnitCountText: {fileID: 442485955693970378}
   ShortUnitCountText: {fileID: 9183931635043669275}
   DefenseUnitCountText: {fileID: 3310160577774566885}

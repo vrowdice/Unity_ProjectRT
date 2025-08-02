@@ -53,15 +53,16 @@ public class UnitBox : MonoBehaviour
         //unitType → 태그명 변환 매핑
         Dictionary<string, string> typeToTagMap = new()
     {
-        { "근거리", "MyShortUnit" },
-        { "원거리", "MyLongUnit" },
-        { "방어", "MyDefenseUnit" }
+        { "Short", "MyShortUnit" },
+        { "Long", "MyLongUnit" },
+        { "Defense", "MyDefenseUnit" }
         
     };
 
         //태그 설정
         if (!string.IsNullOrEmpty(unitData.unitType))
         {
+
             if (typeToTagMap.TryGetValue(unitData.unitType, out string tagName))
             {
                 try
@@ -93,10 +94,14 @@ public class UnitBox : MonoBehaviour
         if (unitBase != null && unitBase.affiliation == "owl")
         {
             // 아군인 경우에만 드래그 스크립트 추가
-            if (newUnit.GetComponent<UnitDragHandler>() == null)
+            UnitDragHandler dragHandler = newUnit.GetComponent<UnitDragHandler>();
+            if (dragHandler == null)
             {
-                UnitDragHandler dragHandler = newUnit.AddComponent<UnitDragHandler>();
+                dragHandler = newUnit.AddComponent<UnitDragHandler>();
             }
+
+            // 유닛 정보 전달
+            dragHandler.unitStatData = unitData;
         }
 
         // 수량 및 UI 처리
@@ -114,6 +119,8 @@ public class UnitBox : MonoBehaviour
         {
             GetComponent<Button>().interactable = false;
         }
+            
+
     }
 
     private void UpdateCountText()
@@ -137,5 +144,11 @@ public class UnitBox : MonoBehaviour
         float x = Random.Range(bounds.min.x, bounds.max.x);
         float y = Random.Range(bounds.min.y, bounds.max.y);
         return new Vector3(x, y, 0f);
+    }
+
+    public void IncreaseUnitCount(int amount)
+    {
+        unitCount += amount;
+        UpdateCountText();
     }
 }

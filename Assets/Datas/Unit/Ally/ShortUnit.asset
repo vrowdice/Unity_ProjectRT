@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefab: {fileID: 8758676270530081962, guid: 682625c063ffee64fb3e4ee70e175600, type: 3}
   unitName: Short
-  unitType: "\uADFC\uAC70\uB9AC"
+  unitType: Short
   affiliation: owl
   attackPower: 100
   defensePower: 10

@@ -13,7 +13,7 @@ public class BattleBeforeUI : MonoBehaviour
     [HideInInspector] public List<UnitStatBase> allyUnitDataList = new();
 
     [Header("유닛 슬롯 UI")]
-    [SerializeField] private GameObject unitBox; // 병력 슬롯 UI 프리팹
+    [SerializeField] private GameObject unitBoxPrefab; // 병력 슬롯 UI 프리팹
 
     [Header("적 유닛 개수 텍스트")]
     [SerializeField] private GameObject LongUnitCountText;
@@ -26,6 +26,12 @@ public class BattleBeforeUI : MonoBehaviour
 
     private string defaultNum = "0000";
     private string placementModeText = "Placement mode";
+    private string recallModeText = "Recall mode";
+
+    private Color PlacementModeColor = new Color(0.2f, 0.6f, 1f); // 파란색
+    private Color RecallModeColor = new Color(1f, 0.8f, 0.2f);     // 노란색
+
+    private Dictionary<string, GameObject> unitBoxMap = new();
 
     public static bool IsInPlacementMode { get; private set; } = false;
 
@@ -57,12 +63,27 @@ public class BattleBeforeUI : MonoBehaviour
         CountMyUnit();
     }
 
+    public void TogglePlacementMode()
+    {
+        IsInPlacementMode = !IsInPlacementMode;
+
+        var text = PlacementStatusText.GetComponent<TextMeshProUGUI>();
+        text.text = IsInPlacementMode ? placementModeText : recallModeText;
+
+        var buttonImage = UnitRecallBtn.GetComponent<Image>();
+        if (buttonImage != null)
+        {
+            buttonImage.color = IsInPlacementMode ? PlacementModeColor : RecallModeColor;
+        }
+    }
+
     private void GenerateList()
     {
         contentParent = GameObject.Find("Content").GetComponent<Transform>();
         m_battleLoadingManager = FindObjectOfType<BattleLoadingManager>();
 
         allyUnitDataList.Clear();
+        unitBoxMap.Clear(); // 딕셔너리 초기화
 
         // 이름 기준으로 유닛 개수 세기
         Dictionary<string, (UnitStatBase data, int count)> unitCountMap = new();
@@ -93,7 +114,7 @@ public class BattleBeforeUI : MonoBehaviour
             UnitStatBase unit = entry.Value.data;
             int count = entry.Value.count;
 
-            GameObject myUnit = Instantiate(unitBox, contentParent);
+            GameObject myUnit = Instantiate(unitBoxPrefab, contentParent);
             myUnit.transform.localScale = Vector3.one;
 
             // 유닛 아이콘 설정
@@ -115,6 +136,9 @@ public class BattleBeforeUI : MonoBehaviour
             {
                 unitButton.Init(unit, count, countText);
             }
+
+            // 딕셔너리에 유닛 이름으로 저장
+            unitBoxMap[unit.unitName] = myUnit;
         }
     }
 
@@ -143,8 +167,16 @@ public class BattleBeforeUI : MonoBehaviour
         };
 
         //초기 비활성화
-        PlacementStatusText.GetComponent<TextMeshProUGUI>().text = placementModeText;
+        var text = PlacementStatusText.GetComponent<TextMeshProUGUI>();
+        if (text != null)
+            text.text = placementModeText;
+
+        var image = UnitRecallBtn.GetComponent<Image>();
+        if (image != null)
+            image.color = PlacementModeColor;
+
         if (UnitRecallBtn != null) UnitRecallBtn.SetActive(false);
+        IsInPlacementMode = true; // 기본은 배치 모드
     }
 
     private void CountMyUnit()
@@ -170,14 +202,90 @@ public class BattleBeforeUI : MonoBehaviour
             totalCount += count;
         }
 
-        //배치된 유닛이 하나라도 있으면 UI 활성화
         bool hasAnyUnit = totalCount > 0;
-        IsInPlacementMode = totalCount > 0;
+
         if (UnitRecallBtn != null)
         {
             UnitRecallBtn.SetActive(hasAnyUnit);
         }
 
+        //유닛이 하나도 없으면 모드 초기화
+        if (!hasAnyUnit)
+        {
+            IsInPlacementMode = true;
+
+            // 모드 텍스트 내용만 초기화
+            if (PlacementStatusText != null)
+            {
+                var text = PlacementStatusText.GetComponent<TextMeshProUGUI>();
+                if (text != null)
+                    text.text = placementModeText;
+            }
+
+            // 버튼 색상 초기화
+            var image = UnitRecallBtn.GetComponent<Image>();
+            if (image != null)
+                image.color = PlacementModeColor;
+
+            // 버튼은 비활성화
+            UnitRecallBtn.SetActive(false);
+        }
+    }
+
+    public void AddUnitToList(UnitStatBase unit)
+    {
+        if (unit == null || unitBoxPrefab == null || contentParent == null)
+        {
+            Debug.LogError("unit, unitBoxPrefab 또는 contentParent가 null입니다.");
+            return;
+        }
+
+        string unitKey = unit.unitName.Trim().ToLower();
+
+        // 이미 UI에 존재하는 유닛이라면 수량만 증가
+        if (unitBoxMap.TryGetValue(unitKey, out GameObject existingBox))
+        {
+            UnitBox boxComponent = existingBox.GetComponent<UnitBox>();
+            if (boxComponent != null)
+            {
+                boxComponent.IncreaseUnitCount(1);
+            }
+            else
+            {
+                Debug.LogWarning($"[UnitBox 누락] {unit.unitName} 오브젝트에 UnitBox 컴포넌트가 없습니다.");
+            }
+            return;
+        }
+        
+
+        // UI 프리팹 생성
+        GameObject newBox = Instantiate(unitBoxPrefab, contentParent);
+        if (newBox == null)
+        {
+            Debug.LogError($"[생성 실패] UnitBox 프리팹 생성 실패: {unit.unitName}");
+            return;
+        }
+
+        // 수량 표시용 텍스트 찾기
+        TextMeshProUGUI countText = newBox.GetComponentInChildren<TextMeshProUGUI>();
+        if (countText == null)
+        {
+            Debug.LogWarning($"[UI 오류] {unit.unitName}에 수량 표시용 TextMeshProUGUI가 없습니다.");
+        }
+
+        // UnitBox 초기화
+        UnitBox boxComponentNew = newBox.GetComponent<UnitBox>();
+        if (boxComponentNew != null)
+        {
+            boxComponentNew.Init(unit, 1, countText);
+        }
+        else
+        {
+            Debug.LogWarning($"[UnitBox 누락] {unit.unitName} 오브젝트에 UnitBox 컴포넌트가 없습니다.");
+        }
+
+        // 사전 등록
+        unitBoxMap[unitKey] = newBox;
     }
 }
 

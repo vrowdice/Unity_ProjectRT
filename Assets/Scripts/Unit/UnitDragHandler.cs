@@ -9,20 +9,22 @@ public class UnitDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     private Camera mainCamera;
 
     private BoxCollider2D attackSpawnArea;
-    private Collider2D myCollider;
 
-    // 드래그 중 다른 유닛과 겹침 방지용 거리
-    private float minDistance = 2.0f;
+    public UnitStatBase unitStatData;
 
     private void Awake()
     {
         mainCamera = Camera.main;
         attackSpawnArea = GameObject.Find("AttackSpawnArea").GetComponent<BoxCollider2D>();
-        myCollider = GetComponent<Collider2D>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (!BattleBeforeUI.IsInPlacementMode)
+        {
+            return;
+        }
+
         Vector2 worldPoint = mainCamera.ScreenToWorldPoint(eventData.position);
 
         Collider2D collider = GetComponent<CircleCollider2D>();
@@ -46,32 +48,61 @@ public class UnitDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (myCollider != null)
-            myCollider.enabled = true;
+        if (BattleBeforeUI.IsInPlacementMode)
+        {
+            TryPlacement();
+        }
+        else
+        {
+            TryRecall();
+        }
+    }
+
+    private void TryPlacement()
+    {
+        float minDistance = 2.0f;
 
         if (attackSpawnArea != null && attackSpawnArea.OverlapPoint(transform.position))
         {
             Collider2D[] overlaps = Physics2D.OverlapCircleAll(transform.position, minDistance);
-            bool tooCloseToOtherUnits = overlaps.Any(collider =>
-                collider.gameObject != this.gameObject &&
-                collider.GetComponent<UnitBase>() != null &&
-                Vector2.Distance(transform.position, collider.transform.position) < minDistance);
+            bool overlapped = overlaps.Any(c =>
+                c.gameObject != this.gameObject &&
+                c.GetComponent<UnitBase>() != null &&
+                Vector2.Distance(transform.position, c.transform.position) < minDistance);
 
-            if (tooCloseToOtherUnits)
+            if (overlapped)
             {
-                Debug.LogWarning($"{gameObject.name}은(는) 다른 유닛과 너무 가까움! 원위치로 이동");
+                Debug.LogWarning("다른 유닛과 너무 가까움! 원위치 복귀");
                 transform.position = originalPosition;
             }
             else
             {
-                Debug.Log($"{gameObject.name} 정상적으로 배치됨");
-                // 배치 확정 처리 (필요 시 여기서 로직 추가)
+                Debug.Log("정상 배치");
+                // 배치 확정
             }
         }
         else
         {
-            Debug.LogWarning($"{gameObject.name}은(는) 배치 가능 영역 밖에 있음. 원위치로 이동");
+            Debug.LogWarning("배치 가능 영역 아님. 원위치 복귀");
             transform.position = originalPosition;
         }
+    }
+
+    private void TryRecall()
+    {
+        Debug.Log("유닛 회수됨");
+
+        // BattleBeforeUI에 유닛 정보 되돌리기
+        BattleBeforeUI battleBeforeUI = FindObjectOfType<BattleBeforeUI>();
+        if (battleBeforeUI != null)
+        {
+            battleBeforeUI.AddUnitToList(unitStatData);
+        }
+        else
+        {
+            Debug.LogWarning("BattleBeforeUI를 찾을 수 없습니다.");
+        }
+
+        Destroy(this.gameObject); // 또는 풀링 방식 반환
     }
 }
