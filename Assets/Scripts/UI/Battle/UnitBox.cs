@@ -150,5 +150,24 @@ public class UnitBox : MonoBehaviour
     {
         unitCount += amount;
         UpdateCountText();
+
+        // 버튼 다시 활성화
+        if (unitCount > 0)
+        {
+            Button btn = GetComponent<Button>();
+            if (btn != null)
+            {
+                btn.interactable = true;
+
+                // 버튼 색상도 다시 진하게 설정 (선택 사항)
+                if (buttonImage != null)
+                {
+                    buttonImage.color = defaultColor;
+                }
+
+                hasColorChanged = true;
+            }
+        }
     }
+
 }

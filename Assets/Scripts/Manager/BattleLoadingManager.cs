@@ -194,15 +194,15 @@ public class BattleLoadingManager : MonoBehaviour
                 unitBase.Initialize(unitData);
             }
 
-            if (enemyUnit.GetComponent<UnitBase>().unitType == "근거리")
+            if (enemyUnit.GetComponent<UnitBase>().unitType == "Short")
             {
                 enemyUnit.tag = "ShortUnit";
             }
-            else if (enemyUnit.GetComponent<UnitBase>().unitType == "원거리")
+            else if (enemyUnit.GetComponent<UnitBase>().unitType == "Long")
             {
                 enemyUnit.tag = "LongUnit";
             }
-            else if (enemyUnit.GetComponent<UnitBase>().unitType == "방어")
+            else if (enemyUnit.GetComponent<UnitBase>().unitType == "Defense")
             {
                 enemyUnit.tag = "DefenseUnit";
             }

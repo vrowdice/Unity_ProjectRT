@@ -33,6 +33,9 @@ public class BattleBeforeUI : MonoBehaviour
 
     private Dictionary<string, GameObject> unitBoxMap = new();
 
+    [SerializeField] private GameObject BattleStartBtn; // 전투 시작 버튼
+    private int totalUnitToPlaceCount = 0; // 총 배치해야 할 유닛 수
+
     public static bool IsInPlacementMode { get; private set; } = false;
 
     public enum UnitTagType
@@ -81,6 +84,8 @@ public class BattleBeforeUI : MonoBehaviour
     {
         contentParent = GameObject.Find("Content").GetComponent<Transform>();
         m_battleLoadingManager = FindObjectOfType<BattleLoadingManager>();
+
+        totalUnitToPlaceCount = m_battleLoadingManager.allyArmyDataList.Count;
 
         allyUnitDataList.Clear();
         unitBoxMap.Clear(); // 딕셔너리 초기화
@@ -138,7 +143,8 @@ public class BattleBeforeUI : MonoBehaviour
             }
 
             // 딕셔너리에 유닛 이름으로 저장
-            unitBoxMap[unit.unitName] = myUnit;
+            string unitKey = unitName.Trim().ToLower();
+            unitBoxMap[unitKey] = myUnit;
         }
     }
 
@@ -182,6 +188,8 @@ public class BattleBeforeUI : MonoBehaviour
     private void CountMyUnit()
     {
         int totalCount = 0;
+
+
 
         foreach (UnitTagType tagType in System.Enum.GetValues(typeof(UnitTagType)))
         {
@@ -230,6 +238,11 @@ public class BattleBeforeUI : MonoBehaviour
             // 버튼은 비활성화
             UnitRecallBtn.SetActive(false);
         }
+
+        if (BattleStartBtn != null)
+        {
+            BattleStartBtn.SetActive(totalCount >= totalUnitToPlaceCount && totalUnitToPlaceCount > 0);
+        }
     }
 
     public void AddUnitToList(UnitStatBase unit)
@@ -242,7 +255,7 @@ public class BattleBeforeUI : MonoBehaviour
 
         string unitKey = unit.unitName.Trim().ToLower();
 
-        // 이미 UI에 존재하는 유닛이라면 수량만 증가
+        // 이미 존재하는 유닛 박스라면 수량만 증가
         if (unitBoxMap.TryGetValue(unitKey, out GameObject existingBox))
         {
             UnitBox boxComponent = existingBox.GetComponent<UnitBox>();
@@ -256,21 +269,31 @@ public class BattleBeforeUI : MonoBehaviour
             }
             return;
         }
-        
 
-        // UI 프리팹 생성
+        // 새로운 박스 생성
         GameObject newBox = Instantiate(unitBoxPrefab, contentParent);
         if (newBox == null)
         {
             Debug.LogError($"[생성 실패] UnitBox 프리팹 생성 실패: {unit.unitName}");
             return;
         }
+        newBox.transform.localScale = Vector3.one;
 
-        // 수량 표시용 텍스트 찾기
-        TextMeshProUGUI countText = newBox.GetComponentInChildren<TextMeshProUGUI>();
+        // 아이콘 설정
+        Image icon = newBox.transform.Find("UnitImage").GetComponent<Image>();
+        if (icon != null && unit.unitIllustration != null)
+            icon.sprite = unit.unitIllustration.sprite;
+
+        // 유닛 이름 설정
+        TextMeshProUGUI nameText = newBox.transform.Find("UnitTexts/UnitNameText").GetComponent<TextMeshProUGUI>();
+        if (nameText != null)
+            nameText.text = unit.unitName;
+
+        // 수량 텍스트
+        TextMeshProUGUI countText = newBox.transform.Find("UnitTexts/UnitCountText").GetComponent<TextMeshProUGUI>();
         if (countText == null)
         {
-            Debug.LogWarning($"[UI 오류] {unit.unitName}에 수량 표시용 TextMeshProUGUI가 없습니다.");
+            Debug.LogWarning($"[UI 오류] {unit.unitName}에 UnitCountText가 없습니다.");
         }
 
         // UnitBox 초기화
@@ -284,7 +307,7 @@ public class BattleBeforeUI : MonoBehaviour
             Debug.LogWarning($"[UnitBox 누락] {unit.unitName} 오브젝트에 UnitBox 컴포넌트가 없습니다.");
         }
 
-        // 사전 등록
+        // 딕셔너리에 저장 (정규화된 키)
         unitBoxMap[unitKey] = newBox;
     }
 }
