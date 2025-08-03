@@ -132,7 +132,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 36654567}
-  - component: {fileID: 36654569}
   - component: {fileID: 36654568}
   m_Layer: 0
   m_Name: Sample
@@ -168,30 +167,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8e384aadf939ef4b915ba2620df135f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  grid: {fileID: 36654569}
-  tilePrefabs:
-  - normalBlock: {fileID: 7397298340344657089, guid: d4da973000c455843838943e23e179f2, type: 3}
-    highBlock: {fileID: 7213263926266496013, guid: c3b40efe14060854381b2670a1607117, type: 3}
-  - normalBlock: {fileID: 7213263926266496013, guid: 60c55bef0569dff4bb091b75ddcbf1e0, type: 3}
-    highBlock: {fileID: 7213263926266496013, guid: 91f8e42d3b3d1df4fa36963357744d1e, type: 3}
+  defaultTilePrefab: {fileID: 7397298340344657089, guid: d4da973000c455843838943e23e179f2, type: 3}
+  mapSize: {x: 10, y: 10}
   seed: 
   useRandomSeed: 1
-  size: {x: 10, y: 10}
-  normalBlockPercent: 50
-  normalBiomePercent: 40
-  smoothingFactor: 0
---- !u!156049354 &36654569
-Grid:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 36654566}
-  m_Enabled: 1
-  m_CellSize: {x: 1, y: 1, z: 1}
-  m_CellGap: {x: 0, y: 0, z: 0}
-  m_CellLayout: 0
-  m_CellSwizzle: 0
+  friendlyAreaColor: {r: 0, g: 1, b: 1, a: 1}
+  enemyTerritoryColor: {r: 0.8, g: 0.2, b: 0.2, a: 1}
+  friendlySettlementColor: {r: 0, g: 0, b: 1, a: 1}
+  enemyStrongholdColor: {r: 1, g: 0, b: 1, a: 1}
+  roadColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  plainColor: {r: 0, g: 1, b: 0, a: 1}
+  forestColor: {r: 0.1, g: 0.5, b: 0.1, a: 1}
+  mountainColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  riverColor: {r: 0, g: 0, b: 1, a: 1}
+  volcanoColor: {r: 0.4, g: 0.2, b: 0, a: 1}
 --- !u!1 &1464733192
 GameObject:
   m_ObjectHideFlags: 0
