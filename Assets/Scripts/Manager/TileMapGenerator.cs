@@ -504,9 +504,6 @@ public class TileMapGenerator : MonoBehaviour
                             EnemyCombatPower[x, y] = pseudoRandom.Next(10, 15); // Very high combat power
                             break;
                         case TerrainType.None: // Special tiles might not have a terrain type explicitly assigned
-                        case TerrainType.Settlement:
-                        case TerrainType.Stronghold:
-                        case TerrainType.Road:
                             // Handle cases for special tiles if needed, maybe fixed combat power or no enemies
                             EnemyCombatPower[x, y] = 0;
                             break;
@@ -621,9 +618,5 @@ public enum TerrainType
     Forest, // 숲
     Mountain, // 산
     River, // 강
-    Volcano,
-    Settlement,
-    Stronghold,
-    Road// 휴화산
-    // Settlement, Stronghold, Road는 이제 TileType에서 직접 처리하고 TerrainType에서는 제거
+    Volcano // 휴화산
 }
