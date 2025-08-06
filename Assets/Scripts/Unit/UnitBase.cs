@@ -84,7 +84,6 @@ public class UnitBase : MonoBehaviour
     public PassiveSkillHandler passiveLogic;
     public UnitMovementController movementLogic;
 
-    private float attackTimer = 0f;
 
     protected virtual void Awake()
     {
