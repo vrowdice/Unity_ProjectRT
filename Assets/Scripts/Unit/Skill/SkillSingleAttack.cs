@@ -1,8 +1,8 @@
 using System.Collections;
 using UnityEngine;
 
-// 공격형 스킬 코어 -> 단일 공격 스킬로 역할 변경
-public class OffensiveSkill : BaseSkill
+// 단일 공격 스킬
+public class SkillSingleAttack : BaseSkill
 {
     protected override IEnumerator PerformSkillRoutine(UnitBase caster, GameObject target)
     {

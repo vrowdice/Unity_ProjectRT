@@ -10,11 +10,14 @@ GameObject:
   m_Component:
   - component: {fileID: 5213483530410601466}
   - component: {fileID: 101454159121852262}
-  - component: {fileID: -3729096666787179154}
   - component: {fileID: -2074864903287065270}
+  - component: {fileID: -8633280267790568427}
+  - component: {fileID: -183305467698590576}
+  - component: {fileID: -6322095541554216293}
+  - component: {fileID: 3770192727010725048}
   m_Layer: 0
-  m_Name: UnitSample
-  m_TagString: Untagged
+  m_Name: Enemy_Test
+  m_TagString: LongUnit
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -46,59 +49,69 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658834302946056439df5936296b03a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stat: {fileID: 0}
   unitName: 
-  unitType: 
-  affiliation: 
-  attackPower: 0
-  defensePower: 0
-  maxHealth: 0
-  moveSpeed: 0
-  maxMana: 0
-  manaRecoveryOnBasicAttack: 0
-  manaRecoveryPerSecond: 0
-  isAttack: 0
+  unitType: 0
+  factionType: 0
+  attackPower: 20
+  defensePower: 20
+  maxHealth: 20
+  movementSpeed: 0
+  maxMana: 20
+  manaRecoveryOnBasicAttack: 20
+  manaRecoveryPerSecond: 20
+  attackFrequency: 1
+  attackCount: 2
+  damageCoefficient: 5
+  isAttacker: 0
   activatedResearchList: []
   unitIllustration: {fileID: 0}
-  basicAttackName: 0
-  basicAttackType: 0
-  damageCoefficient: 0
-  attackFrequency: 0
-  attackCount: 0
-  attackRange: 0
-  multiTargetRange: 0
-  maxMultiTargets: 0
-  areaAttackPrefab: {fileID: 0}
-  areaAttackDirection: {x: 0, y: 0}
-  areaAttackSpawnPosition: {x: 0, y: 0}
-  isAreaAttackFlipped: 0
-  activeSkillName: 
-  activeSkillType: 
-  activeSkillCooldown: 0
-  isSkillFinished: 0
-  activeSkillDamageCoefficient: 0
-  activeSkillAttackCount: 0
-  activeMultiTargetRange: 0
-  activeMaxMultiTargets: 0
-  activeAreaAttackPrefab: {fileID: 0}
-  activeAreaAttackDirection: {x: 0, y: 0}
-  activeAreaAttackSpawnPosition: {x: 0, y: 0}
-  isActiveAreaAttackFlipped: 0
-  otherSkillCoefficient: 0
-  otherSkillRange: 0
-  passiveSkillCoefficient: 0
-  passiveSkillRange: 0
-  isAttacker: 0
   isCombatInProgress: 0
   isTargetingAvailable: 0
-  targetedEnemy: {fileID: 0}
+  targetedEnemy: {fileID: 8758676270530081962}
   isTargetEliminated: 0
-  enemySearchRange: 0
-  distanceToTargetedEnemy: 0
-  attackLogic: {fileID: 0}
-  skillLogic: {fileID: 0}
+  enemySearchRange: 1000
+  distanceToTargetedEnemy: 1000
+  attackLogic: {fileID: -183305467698590576}
+  skillLogic: {fileID: -6322095541554216293}
   passiveLogic: {fileID: 0}
-  movementLogic: {fileID: 0}
---- !u!212 &-3729096666787179154
+  movementLogic: {fileID: 3770192727010725048}
+--- !u!58 &-2074864903287065270
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8758676270530081962}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 1
+--- !u!212 &-8633280267790568427
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -138,50 +151,58 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
-  m_Sprite: {fileID: 21300000, guid: b88c4fd42e1dc0b47a588d3626b93174, type: 3}
-  m_Color: {r: 1, g: 0.504717, b: 0.504717, a: 1}
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 21300000, guid: ad65963212e8e4a43a106f2bcacf3c0f, type: 3}
+  m_Color: {r: 1, g: 0.58679235, b: 0.58679235, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.16, y: 0.16}
+  m_Size: {x: 1.15, y: 0.98}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!58 &-2074864903287065270
-CircleCollider2D:
+--- !u!114 &-183305467698590576
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8758676270530081962}
   m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
-  m_Radius: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37896842628c5a34089899a311cfd1a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackRange: 0
+--- !u!114 &-6322095541554216293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8758676270530081962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dab8d26cdcce0ca4fbcaa51b21dbb7f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  skillName: 
+  manaCost: 5
+  skillDamageCoefficient: 0
+  skillAttackCount: 0
+  otherSkillCoefficient: 0
+  otherSkillRange: 0
+--- !u!114 &3770192727010725048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8758676270530081962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6636097cdad98134baf7a135fb9c2ffb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

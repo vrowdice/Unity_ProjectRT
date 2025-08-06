@@ -1,47 +1,54 @@
 using System.Collections;
 using UnityEngine;
 
-// 기본 공격(추상)
 public abstract class BaseAttack : MonoBehaviour
 {
-    protected bool _isAttacking = false;
-    public bool IsAttacking => _isAttacking;
+    [Header("공격 데이터")]
+    public float attackRange;
 
-    public void StartAttack(UnitBase attacker, GameObject target)
+    // 공격 상태
+    public bool IsAttacking { get; protected set; } = false;
+
+    protected UnitBase owner;
+    protected GameObject target;
+    private Coroutine attackCoroutine;
+
+    // 공격 로직을 코루틴으로 실행하기 위한 메서드
+    public void StartAttack(UnitBase attacker, GameObject targetEnemy)
     {
-        if (_isAttacking)
-        {
-            Debug.LogWarning($"{attacker.unitName}의 공격 로직이 이미 진행 중");
-            return;
-        }
-        if (target == null)
-        {
-            Debug.LogWarning($"{attacker.unitName}의 공격 대상이 없음");
-            return;
-        }
+        if (IsAttacking) return;
 
-        StopAllCoroutines();
-        StartCoroutine(PerformAttackRoutine(attacker, target));
+        owner = attacker;
+        target = targetEnemy;
+        attackCoroutine = StartCoroutine(PerformAttackRoutine(owner, target));
     }
-
-    protected abstract IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject target);
 
     public void StopAttack()
     {
-        StopAllCoroutines();
-        _isAttacking = false; 
-        Debug.Log("공격 루틴 강제 중지.");
+        if (attackCoroutine != null)
+        {
+            StopCoroutine(attackCoroutine);
+        }
+        IsAttacking = false;
+        owner = null;
+        target = null;
     }
 
-    protected virtual void ApplyDamage(UnitBase attacker, GameObject target, float rawDamage)
+    // 하위 클래스에서 반드시 구현해야 할 추상 코루틴 메서드
+    protected abstract IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject target);
+
+    // ApplyDamage 메서드는 BaseAttack 클래스에 구현
+    protected void ApplyDamage(UnitBase attacker, GameObject target, float rawDamage)
     {
-        if (target == null) return;
+        if (target == null || !target.activeSelf) return;
 
         UnitBase targetUnit = target.GetComponent<UnitBase>();
         if (targetUnit != null)
         {
             targetUnit.TakeDamage(rawDamage);
-            Debug.Log($"-> {targetUnit.unitName}에게 {rawDamage:F2} 피해를 입힘. (공격자: {attacker.unitName})");
+            Debug.Log($"{attacker.unitName}이(가) {targetUnit.unitName}에게 {rawDamage}의 피해를 입혔습니다.");
+
+            attacker.currentMana += attacker.manaRecoveryOnBasicAttack;
         }
     }
 }

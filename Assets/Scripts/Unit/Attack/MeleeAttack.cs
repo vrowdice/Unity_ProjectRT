@@ -1,21 +1,32 @@
 using System.Collections;
 using UnityEngine;
 
-// 근접 공격 
+// 근접 공격
 public class MeleeAttack : BaseAttack
 {
     protected override IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject target)
     {
-        _isAttacking = true; 
+        IsAttacking = true;
 
-        float rawDamage = attacker.attackPower * attacker.damageCoefficient * attacker.attackCount;
-        ApplyDamage(attacker, target, rawDamage); 
+        float intervalBetweenHits = attacker.attackFrequency / attacker.attackCount;
 
-        attacker.currentMana += attacker.manaRecoveryOnBasicAttack;
+        Debug.Log($"{attacker.unitName} 근접 공격을 시작");
 
-        yield return new WaitForSeconds(attacker.attackFrequency);
+        for (int i = 0; i < attacker.attackCount; i++)
+        {
+            if (target == null || !target.activeSelf)
+            {
+                StopAttack();
+                yield break;
+            }
 
-        _isAttacking = false; 
-        Debug.Log($"{attacker.unitName}의 근접 공격 쿨다운 종료.");
+            float rawDamage = attacker.attackPower * attacker.damageCoefficient;
+            ApplyDamage(attacker, target, rawDamage);
+
+            yield return new WaitForSeconds(intervalBetweenHits);
+        }
+
+        IsAttacking = false;
+        Debug.Log($"{attacker.unitName}의 근접 공격이 끝.");
     }
 }

@@ -19,16 +19,16 @@ public class UnitMovementController : MonoBehaviour
         }
     }
 
-    public void StartMove(Vector3 destination, float moveSpeed)
+    public void StartMove(Vector3 destination, float movementSpeed)
     {
         if (moveRoutine != null)
         {
             StopCoroutine(moveRoutine);
         }
 
-        currentDestination = destination; // 새로운 목적지 설정
-        currentMoveSpeed = moveSpeed;     // 새로운 이동 속도 설정
-        moveRoutine = StartCoroutine(MoveToRoutine()); // 이동 코루틴 시작
+        currentDestination = destination;
+        currentMoveSpeed = movementSpeed;
+        moveRoutine = StartCoroutine(MoveToRoutine());
     }
 
     protected IEnumerator MoveToRoutine()
@@ -40,8 +40,8 @@ public class UnitMovementController : MonoBehaviour
             yield return null;
         }
 
-        transform.position = currentDestination; 
-        moveRoutine = null; 
+        transform.position = currentDestination;
+        moveRoutine = null;
     }
 
     public void StopMoveRoutine()
@@ -49,7 +49,7 @@ public class UnitMovementController : MonoBehaviour
         if (moveRoutine != null)
         {
             StopCoroutine(moveRoutine);
-            moveRoutine = null;        
+            moveRoutine = null;
         }
     }
 }
