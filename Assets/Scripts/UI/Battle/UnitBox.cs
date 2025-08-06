@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class UnitBox : MonoBehaviour
 {
     [SerializeField] private GameObject unitPrefab;
-     private GameObject attackSpawnArea;
+    private GameObject attackSpawnArea;
 
     private UnitStatBase unitData;
     private int unitCount;
@@ -52,18 +52,16 @@ public class UnitBox : MonoBehaviour
 
         //unitType → 태그명 변환 매핑
         Dictionary<string, string> typeToTagMap = new()
-    {
-        { "Short", "MyShortUnit" },
-        { "Long", "MyLongUnit" },
-        { "Defense", "MyDefenseUnit" }
-        
-    };
+        {
+            { "Short", "MyShortUnit" },
+            { "Long", "MyLongUnit" },
+            { "Defense", "MyDefenseUnit" }
+        };
 
         //태그 설정
-        if (!string.IsNullOrEmpty(unitData.unitType))
+        if (unitData.unitType.ToString() != null) // [수정] ToString()으로 enum을 string으로 변환
         {
-
-            if (typeToTagMap.TryGetValue(unitData.unitType, out string tagName))
+            if (typeToTagMap.TryGetValue(unitData.unitType.ToString(), out string tagName)) // [수정] unitData.unitType을 string으로 변환
             {
                 try
                 {
@@ -91,7 +89,8 @@ public class UnitBox : MonoBehaviour
             Debug.LogWarning("[생성 실패] 생성된 유닛에 UnitBase 컴포넌트가 없습니다.");
         }
 
-        if (unitBase != null && unitBase.affiliation == "owl")
+        // [수정] affiliation 변수 대신 factionType 변수와 enum을 사용
+        if (unitBase != null && unitBase.factionType == FactionType.TYPE.Owl)
         {
             // 아군인 경우에만 드래그 스크립트 추가
             UnitDragHandler dragHandler = newUnit.GetComponent<UnitDragHandler>();
@@ -119,8 +118,6 @@ public class UnitBox : MonoBehaviour
         {
             GetComponent<Button>().interactable = false;
         }
-            
-
     }
 
     private void UpdateCountText()
@@ -169,5 +166,4 @@ public class UnitBox : MonoBehaviour
             }
         }
     }
-
 }

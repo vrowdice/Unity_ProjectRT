@@ -15,9 +15,9 @@ public class BattleLoadingManager : MonoBehaviour
     [Header("게임 필드")]
     public GameObject battleField;
 
-    [HideInInspector]  public Vector3 defenseCameraPoint;
-    [HideInInspector]  public Vector3 attackCameraPoint;
-    [HideInInspector]  public Camera mainCamra;
+    [HideInInspector] public Vector3 defenseCameraPoint;
+    [HideInInspector] public Vector3 attackCameraPoint;
+    [HideInInspector] public Camera mainCamra;
     private Transform allySpawnArea;
     private Transform enemySpawnArea;
     private Vector3 spawnAreaSize;
@@ -183,26 +183,25 @@ public class BattleLoadingManager : MonoBehaviour
                 continue;
             }
 
-            // 유닛 생성
             Vector3 spawnPos = GetRandomPositionInArea(mySpawnArea, spawnAreaSize);
             GameObject enemyUnit = Instantiate(unitData.prefab, spawnPos, Quaternion.identity);
 
-            // 유닛 초기화
             UnitBase unitBase = enemyUnit.GetComponent<UnitBase>();
             if (unitBase != null)
             {
                 unitBase.Initialize(unitData);
             }
 
-            if (enemyUnit.GetComponent<UnitBase>().unitType == "Short")
+            if (unitBase.unitType == UnitType.Melee)
             {
                 enemyUnit.tag = "ShortUnit";
             }
-            else if (enemyUnit.GetComponent<UnitBase>().unitType == "Long")
+
+            else if (unitBase.unitType == UnitType.Range)
             {
                 enemyUnit.tag = "LongUnit";
             }
-            else if (enemyUnit.GetComponent<UnitBase>().unitType == "Defense")
+            else if (unitBase.unitType == UnitType.Defense)
             {
                 enemyUnit.tag = "DefenseUnit";
             }
@@ -215,11 +214,12 @@ public class BattleLoadingManager : MonoBehaviour
             SpriteRenderer sr = enemyUnit.GetComponent<SpriteRenderer>();
             if (sr != null && unitData.unitIllustration != null)
             {
-                sr.sprite = unitData.unitIllustration.sprite;
+                // [수정] Sprite 에셋에 .sprite를 사용하지 않고 직접 할당
+                sr.sprite = unitData.unitIllustration;
             }
             else
             {
-                Debug.LogWarning($"{unitData.unitName}에 SpriteRenderer가 없거나 unitSprite가 비어있습니다.");
+                Debug.LogWarning($"{unitData.unitName}에 SpriteRenderer가 없거나 unitIllustration이 비어있습니다.");
             }
         }
 

@@ -1,34 +1,46 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml.Serialization;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.UI;
 
-/// <summary>
-/// 전투 시스템을 관리하는 매니저 클래스
-/// 현재는 기본 구조만 구현되어 있음
-/// 향후 전투 로직 구현 시 확장 예정
-/// </summary>
+
 public class BattleManager : MonoBehaviour
 {
+    public static BattleManager Instance { get; private set; }
 
     [Header("배틀 로딩 매니저")]
     [SerializeField] private BattleLoadingManager m_battleLoadingManager = null;
 
-    [HideInInspector]  public bool isSettingClear = false;
-    [HideInInspector]  public bool isAttackField = true;
-    [HideInInspector]  public GameObject enemyBattleBeforeUI;
-    [HideInInspector]  public GameObject battleBeforeUI;
+    [HideInInspector] public bool isSettingClear = false;
+    [HideInInspector] public bool isAttackField = true;
+    [HideInInspector] public GameObject enemyBattleBeforeUI;
+    [HideInInspector] public GameObject battleBeforeUI;
 
+    [Header("전진 목표 지점")]
+    public Transform enemyForwardPoint; // 적군 전진 목표 지점
+    public Transform allyForwardPoint;
 
-    // Start is called before the first frame update
+    // 전투중 유닛   
+    public List<UnitBase> allyUnits = new List<UnitBase>();
+    public List<UnitBase> enemyUnits = new List<UnitBase>();
+
+    // Start -> Awake로 변경 / 싱글톤을 먼저 초기화
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     void Start()
     {
         StartCoroutine(m_battleLoadingManager.InitializeBattleScene());
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (isSettingClear == true)
@@ -37,15 +49,65 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    private void MoveField()
+    // 실제 전투를 시작하는 함수
+    public void StartBattle()
     {
+        Debug.Log("전투 시작! StartBattle() 함수 호출됨. 이 BattleManager 오브젝트의 이름은: " + this.gameObject.name);
+
+        allyUnits.Clear();
+        enemyUnits.Clear();
+
+        if (battleBeforeUI != null)
+        {
+            battleBeforeUI.SetActive(false);
+        }
+        if (enemyBattleBeforeUI != null)
+        {
+            enemyBattleBeforeUI.SetActive(false);
+        }
+    }
+
+    public void OnUnitDied(UnitBase unit)
+    {
+        Debug.Log($"[BattleManager] {unit.unitName} 사망. 리스트에서 제거.");
+        if (unit.factionType == FactionType.TYPE.Owl)
+        {
+            allyUnits.Remove(unit);
+        }
+        else
+        {
+            enemyUnits.Remove(unit);
+        }
+
+        CheckWinCondition();
+    }
+
+    private void CheckWinCondition()
+    {
+        if (allyUnits.Count == 0)
+        {
+            Debug.Log("패배~ 아군 병력 전멸했습니다.");
+        }
+        else if (enemyUnits.Count == 0)
+        {
+            Debug.Log("승리! 적군 병력이 전멸했습니다.");
+        }
+    }
+
+    private void MoveField()
+
+    {
+
         if (isAttackField != true)
+
         {
             m_battleLoadingManager.mainCamra.transform.position = m_battleLoadingManager.defenseCameraPoint;
         }
-        else if(isAttackField == true)
+        else if (isAttackField == true)
+
         {
             m_battleLoadingManager.mainCamra.transform.position = m_battleLoadingManager.attackCameraPoint;
         }
+
     }
 }

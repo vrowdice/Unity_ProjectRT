@@ -64,6 +64,7 @@ public class BattleBeforeUI : MonoBehaviour
     void Update()
     {
         CountMyUnit();
+
     }
 
     public void TogglePlacementMode()
@@ -125,7 +126,7 @@ public class BattleBeforeUI : MonoBehaviour
             // 유닛 아이콘 설정
             Image icon = myUnit.transform.Find("UnitImage").GetComponent<Image>();
             if (icon != null && unit.unitIllustration != null)
-                icon.sprite = unit.unitIllustration.sprite;
+                icon.sprite = unit.unitIllustration;
 
             // 유닛 이름 텍스트
             TextMeshProUGUI nameText = myUnit.transform.Find("UnitTexts/UnitNameText").GetComponent<TextMeshProUGUI>();
@@ -282,7 +283,7 @@ public class BattleBeforeUI : MonoBehaviour
         // 아이콘 설정
         Image icon = newBox.transform.Find("UnitImage").GetComponent<Image>();
         if (icon != null && unit.unitIllustration != null)
-            icon.sprite = unit.unitIllustration.sprite;
+            icon.sprite = unit.unitIllustration;
 
         // 유닛 이름 설정
         TextMeshProUGUI nameText = newBox.transform.Find("UnitTexts/UnitNameText").GetComponent<TextMeshProUGUI>();
