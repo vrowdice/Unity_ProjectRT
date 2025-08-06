@@ -57,13 +57,36 @@ public class BattleManager : MonoBehaviour
         allyUnits.Clear();
         enemyUnits.Clear();
 
-        if (battleBeforeUI != null)
+        UnitBase[] allUnits = FindObjectsOfType<UnitBase>();
+
+        foreach (UnitBase unit in allUnits)
         {
-            battleBeforeUI.SetActive(false);
-        }
-        if (enemyBattleBeforeUI != null)
-        {
-            enemyBattleBeforeUI.SetActive(false);
+            if (unit.factionType == FactionType.TYPE.Owl) 
+            {
+                allyUnits.Add(unit);
+                if (enemyForwardPoint != null)
+                {
+                    unit.SetDestination(enemyForwardPoint.position);
+                }
+                else
+                {
+                    Debug.LogError("오류: 아군 유닛의 목표 지점(enemyForwardPoint)이 할당되지 않았습니다. BattleManager의 Inspector를 확인하세요!");
+                }
+            }
+            else
+            {
+                enemyUnits.Add(unit);
+                // 오류 방지를 위해 null 체크를 추가합니다.
+                if (allyForwardPoint != null)
+                {
+                    unit.SetDestination(allyForwardPoint.position);
+                }
+                else
+                {
+                    Debug.LogError("오류: 적군 유닛의 목표 지점(allyForwardPoint)이 할당되지 않았습니다. BattleManager의 Inspector를 확인하세요!");
+                }
+            }
+            unit.SetCombatStatus(true);
         }
     }
 

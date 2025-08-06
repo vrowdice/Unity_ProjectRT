@@ -50,18 +50,19 @@ public class UnitBox : MonoBehaviour
         Vector3 spawnPos = GetRandomPositionInBox();
         GameObject newUnit = Instantiate(unitPrefab, spawnPos, Quaternion.identity);
 
-        //unitType → 태그명 변환 매핑
-        Dictionary<string, string> typeToTagMap = new()
-        {
-            { "Short", "MyShortUnit" },
-            { "Long", "MyLongUnit" },
-            { "Defense", "MyDefenseUnit" }
-        };
+        Dictionary<UnitType, string> typeToTagMap = new()
+    {
+        { UnitType.Melee, "MyShortUnit" }, 
+        { UnitType.Range, "MyLongUnit" },
+        { UnitType.Defense, "MyDefenseUnit" }
+    };
 
-        //태그 설정
-        if (unitData.unitType.ToString() != null) // [수정] ToString()으로 enum을 string으로 변환
+        UnitBase unitBase = newUnit.GetComponent<UnitBase>();
+        if (unitBase != null)
         {
-            if (typeToTagMap.TryGetValue(unitData.unitType.ToString(), out string tagName)) // [수정] unitData.unitType을 string으로 변환
+            unitBase.Initialize(unitData);
+
+            if (typeToTagMap.TryGetValue(unitBase.unitType, out string tagName))
             {
                 try
                 {
@@ -74,25 +75,15 @@ public class UnitBox : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[태그 매핑 누락] '{unitData.unitType}'에 대한 태그가 등록되어 있지 않습니다.");
+                Debug.LogWarning($"[태그 매핑 누락] '{unitBase.unitType}'에 대한 태그가 등록되어 있지 않습니다.");
             }
-        }
-
-        // UnitStatBase 정보 전달
-        UnitBase unitBase = newUnit.GetComponent<UnitBase>();
-        if (unitBase != null)
-        {
-            unitBase.Initialize(unitData);
         }
         else
         {
             Debug.LogWarning("[생성 실패] 생성된 유닛에 UnitBase 컴포넌트가 없습니다.");
         }
-
-        // [수정] affiliation 변수 대신 factionType 변수와 enum을 사용
         if (unitBase != null && unitBase.factionType == FactionType.TYPE.Owl)
         {
-            // 아군인 경우에만 드래그 스크립트 추가
             UnitDragHandler dragHandler = newUnit.GetComponent<UnitDragHandler>();
             if (dragHandler == null)
             {

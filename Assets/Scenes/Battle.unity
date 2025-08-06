@@ -524,6 +524,10 @@ PrefabInstance:
       propertyPath: m_battleLoadingManager
       value: 
       objectReference: {fileID: 612371875}
+    - target: {fileID: 2876233474260583774, guid: 8df8018c38b60ee47aff387ea0cba03b, type: 3}
+      propertyPath: enemyUnits.Array.data[0]
+      value: 
+      objectReference: {fileID: 101454159121852262, guid: be3ae04a1ad450740896d3de2581595f, type: 3}
     - target: {fileID: 3505409810757008548, guid: 8df8018c38b60ee47aff387ea0cba03b, type: 3}
       propertyPath: m_Name
       value: BattleManager

@@ -10,25 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1b380b4e2ae264a42b0bcd4938beb528, type: 3}
-  m_Name: UnitStat_test
+  m_Name: MeleeUnit
   m_EditorClassIdentifier: 
   prefab: {fileID: 8758676270530081962, guid: 682625c063ffee64fb3e4ee70e175600, type: 3}
-  unitName: "\uD14C\uC2A4\uD130"
+  unitName: Short
   unitDescription: 
-  unitIllustration: {fileID: 21300000, guid: ad65963212e8e4a43a106f2bcacf3c0f, type: 3}
+  unitIllustration: {fileID: 0}
   factionType: 2
   unitType: 1
   isAttacker: 0
-  maxHealth: 100
+  maxHealth: 600
   attackPower: 100
-  defensePower: 100
-  attackFrequency: 100
-  attackCount: 100
-  damageCoefficient: 100
-  movementSpeed: 0
-  manaStart: 100
-  maxMana: 100
-  manaRecoveryPerSecond: 100
-  manaRecoveryOnBasicAttack: 100
+  defensePower: 10
+  attackFrequency: 10
+  attackCount: 10
+  damageCoefficient: 10
+  movementSpeed: 1
+  manaStart: 0
+  maxMana: 30
+  manaRecoveryPerSecond: 2
+  manaRecoveryOnBasicAttack: 10
   enemySearchRange: 100
   activatedResearchList: []
