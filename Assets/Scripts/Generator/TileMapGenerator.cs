@@ -3,137 +3,88 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-public class TileMapGenerator : MonoBehaviour
+// 모든 타일 데이터를 이 하나의 클래스에서 관리합니다.
+// 지형의 기본 특성(무게, 색상)과 타일의 고유 상태(전투력, 아군 여부, 실제 리소스 생산량)를 모두 포함합니다.
+[Serializable]
+public class MapTileData
 {
-    [SerializeField] private GameObject defaultTilePrefab;
-    [SerializeField] private Vector2Int mapSize = new Vector2Int(10, 10);
+    public TerrainType.TYPE terrainType;
+    public int weight;
+    public Color color;
+    public bool isFriendlyArea = false;
+    public int combatPower = 0;
+    public ResourceAmount resourceAmount;
+}
 
-    public string seed;
-    public bool useRandomSeed;
-
-    // Use a single class for all tile data
-    public MapTileData[,] MapData;
-
+// 이 클래스는 맵 데이터를 생성하고 반환하는 역할만 담당합니다.
+public class MapDataGenerator
+{
+    private Vector2Int mapSize;
+    private string seed;
     private System.Random pseudoRandom;
 
-    [Header("Faction Settings")]
-    [SerializeField] private Color roadColor = Color.gray;
+    private List<MapTileData> terrainTemplates;
+    private Dictionary<TerrainType.TYPE, MapTileData> terrainTemplatesDictionary;
 
-    [Header("Friendly Faction")]
-    [SerializeField] private TerrainType friendlySettlementTerrain = TerrainType.Settlement;
-    [SerializeField] private Color friendlyColor = Color.green;
-    [SerializeField] private int friendlySettlementCount = 7;
-    [SerializeField] private Vector2Int friendlySettleMaxSize = new Vector2Int(3, 3);
+    private TerrainType.TYPE friendlySettlementTerrain;
+    private int friendlySettlementCount;
+    private TerrainType.TYPE enemySettleTerrain;
+    private int enemySettleCount;
 
-    [Header("Enemy Faction")]
-    [SerializeField] private TerrainType enemySettleTerrain = TerrainType.Settlement;
-    [SerializeField] private Color enemyColor = Color.red;
-    [SerializeField] private int enemySettleCount = 15;
-    [SerializeField] private Vector2Int enemySettleMaxSize = new Vector2Int(5, 4);
-
-    [Serializable]
-    public class ResourceYields
+    public MapDataGenerator(Vector2Int mapSize, List<MapTileData> templates, string seed,
+        TerrainType.TYPE friendlySettle, int friendlySettleCount,
+        TerrainType.TYPE enemySettle, int enemySettleCount)
     {
-        public float wood;
-        public float iron;
-        public float food;
-        public float research;
-    }
+        this.mapSize = mapSize;
+        this.terrainTemplates = templates;
+        this.seed = seed;
+        this.friendlySettlementTerrain = friendlySettle;
+        this.friendlySettlementCount = friendlySettleCount;
+        this.enemySettleTerrain = enemySettle;
+        this.enemySettleCount = enemySettleCount;
 
-    // This class defines the properties for a terrain type. It's now the primary source of truth.
-    [Serializable]
-    public class TerrainProperties
-    {
-        public TerrainType terrainType;
-        public int weight;
-        public Color color;
-        public ResourceYields resourceYields;
-    }
-
-    [Header("Terrain Settings")]
-    [SerializeField]
-    private List<TerrainProperties> terrainPropertiesList = new List<TerrainProperties>
-    {
-        new TerrainProperties { terrainType = TerrainType.Settlement, weight = 0, color = Color.blue, resourceYields = new ResourceYields { wood = 1.0f, iron = 0.75f, food = 1.0f, research = 0.3f } },
-        new TerrainProperties { terrainType = TerrainType.Forest, weight = 15, color = new Color(0.1f, 0.5f, 0.1f), resourceYields = new ResourceYields { wood = 1.0f, iron = 0.2f, food = 0.5f, research = 0.1f } },
-        new TerrainProperties { terrainType = TerrainType.Grove, weight = 10, color = new Color(0.2f, 0.6f, 0.2f), resourceYields = new ResourceYields { wood = 0.75f, iron = 0.2f, food = 0.75f, research = 0.1f } },
-        new TerrainProperties { terrainType = TerrainType.AncientRuins, weight = 7, color = new Color(0.7f, 0.7f, 0.8f), resourceYields = new ResourceYields { wood = 0.0f, iron = 0.75f, food = 0.0f, research = 1.0f } },
-        new TerrainProperties { terrainType = TerrainType.Plain, weight = 10, color = Color.green, resourceYields = new ResourceYields { wood = 0.5f, iron = 0.2f, food = 0.75f, research = 0.25f } },
-        new TerrainProperties { terrainType = TerrainType.MushroomZone, weight = 7, color = new Color(0.6f, 0.4f, 0.8f), resourceYields = new ResourceYields { wood = 0.5f, iron = 0.2f, food = 1.0f, research = 0.3f } },
-        new TerrainProperties { terrainType = TerrainType.GoldLake, weight = 7, color = new Color(0.7f, 0.6f, 0.2f), resourceYields = new ResourceYields { wood = 0.2f, iron = 0.75f, food = 0.75f, research = 0.2f } },
-        new TerrainProperties { terrainType = TerrainType.Snowfield, weight = 5, color = new Color(0.9f, 0.9f, 0.9f), resourceYields = new ResourceYields { wood = 0.5f, iron = 0.3f, food = 0.3f, research = 0.4f } },
-        new TerrainProperties { terrainType = TerrainType.RockPlain, weight = 7, color = new Color(0.4f, 0.4f, 0.4f), resourceYields = new ResourceYields { wood = 0.0f, iron = 0.8f, food = 0.2f, research = 0.5f } },
-        new TerrainProperties { terrainType = TerrainType.Mountain, weight = 10, color = new Color(0.5f, 0.5f, 0.5f), resourceYields = new ResourceYields() },
-        new TerrainProperties { terrainType = TerrainType.River, weight = 10, color = Color.blue, resourceYields = new ResourceYields() },
-        new TerrainProperties { terrainType = TerrainType.Volcano, weight = 10, color = new Color(0.4f, 0.2f, 0.0f), resourceYields = new ResourceYields() }
-    };
-
-    // A dictionary for quick lookup of TerrainProperties by type
-    private Dictionary<TerrainType, TerrainProperties> terrainPropertiesDictionary;
-
-    // Use Awake to initialize the dictionary once
-    private void Awake()
-    {
-        terrainPropertiesDictionary = terrainPropertiesList.ToDictionary(t => t.terrainType, t => t);
-    }
-
-    void Start()
-    {
         InitializeRandomSeed();
-        GenerateMiniMap();
-        DrawMapTiles();
-    }
-
-    [ContextMenu("Generate New Map")]
-    public void GenerateNewMap()
-    {
-        ClearExistingMap();
-        InitializeRandomSeed();
-        GenerateMiniMap();
-        DrawMapTiles();
-    }
-
-    private void ClearExistingMap()
-    {
-        foreach (Transform child in transform)
-        {
-            DestroyImmediate(child.gameObject);
-        }
+        terrainTemplatesDictionary = terrainTemplates.ToDictionary(t => t.terrainType, t => t);
     }
 
     private void InitializeRandomSeed()
     {
-        if (useRandomSeed || string.IsNullOrEmpty(seed))
+        if (string.IsNullOrEmpty(seed))
         {
             seed = DateTime.Now.ToBinary().ToString();
         }
         pseudoRandom = new System.Random(seed.GetHashCode());
     }
 
-    private void GenerateMiniMap()
+    /// <summary>
+    /// 새로운 맵 데이터를 생성하여 반환합니다.
+    /// </summary>
+    public MapTileData[,] GenerateMapData()
     {
-        MapData = new MapTileData[mapSize.x, mapSize.y];
-        InitializeMap();
-        GenerateRoads();
-        PlaceSpecialSettlements();
-        AssignTerrainsToRemainingTiles();
-        ApplyAdjacencyBonuses();
-        PlaceEnemyDataAndResources();
+        MapTileData[,] mapData = new MapTileData[mapSize.x, mapSize.y];
+
+        InitializeMap(mapData);
+        GenerateRoads(mapData);
+        PlaceSpecialSettlements(mapData);
+        AssignTerrainsToRemainingTiles(mapData);
+        ApplyAdjacencyBonuses(mapData);
+        PlaceEnemyDataAndResources(mapData);
+
+        return mapData;
     }
 
-    private void InitializeMap()
+    private void InitializeMap(MapTileData[,] mapData)
     {
         for (int x = 0; x < mapSize.x; x++)
         {
             for (int y = 0; y < mapSize.y; y++)
             {
-                MapData[x, y] = new MapTileData();
-                MapData[x, y].terrainProperties = null; // Set to null initially
+                mapData[x, y] = new MapTileData();
             }
         }
     }
 
-    private void GenerateRoads()
+    private void GenerateRoads(MapTileData[,] mapData)
     {
         if (mapSize.x < 5 || mapSize.y < 5) return;
 
@@ -144,25 +95,25 @@ public class TileMapGenerator : MonoBehaviour
             pseudoRandom.Next(mapSize.x / 4, mapSize.x * 3 / 4),
             pseudoRandom.Next(mapSize.y / 2, mapSize.y - 1)
         );
-        GenerateSingleWindingRoad(startPoint, pivot1);
-        GenerateSingleWindingRoad(pivot1, endPoint);
+        GenerateSingleWindingRoad(mapData, startPoint, pivot1);
+        GenerateSingleWindingRoad(mapData, pivot1, endPoint);
 
         Vector2Int pivot2 = new Vector2Int(
             pseudoRandom.Next(mapSize.x / 4, mapSize.x * 3 / 4),
             pseudoRandom.Next(0, mapSize.y / 2)
         );
-        GenerateSingleWindingRoad(startPoint, pivot2);
-        GenerateSingleWindingRoad(pivot2, endPoint);
+        GenerateSingleWindingRoad(mapData, startPoint, pivot2);
+        GenerateSingleWindingRoad(mapData, pivot2, endPoint);
     }
 
-    private void GenerateSingleWindingRoad(Vector2Int start, Vector2Int end)
+    private void GenerateSingleWindingRoad(MapTileData[,] mapData, Vector2Int start, Vector2Int end)
     {
         int currentX = start.x;
         int currentY = start.y;
 
         while (currentX != end.x || currentY != end.y)
         {
-            MarkTileAsRoad(currentX, currentY);
+            MarkTileAsRoad(mapData, currentX, currentY);
 
             int dx = end.x - currentX;
             int dy = end.y - currentY;
@@ -189,7 +140,7 @@ public class TileMapGenerator : MonoBehaviour
                 nextX += (end.x > currentX) ? 1 : -1;
             }
 
-            if (IsRoad(nextX, nextY))
+            if (IsRoad(mapData, nextX, nextY))
             {
                 if (moveX)
                 {
@@ -220,69 +171,64 @@ public class TileMapGenerator : MonoBehaviour
                 currentY = nextY;
             }
         }
-        MarkTileAsRoad(end.x, end.y);
+        MarkTileAsRoad(mapData, end.x, end.y);
     }
 
-    private bool IsRoad(int x, int y)
+    private bool IsRoad(MapTileData[,] mapData, int x, int y)
     {
         if (x >= 0 && x < mapSize.x && y >= 0 && y < mapSize.y)
         {
-            return MapData[x, y].terrainProperties != null && MapData[x, y].terrainProperties.terrainType == TerrainType.Road;
+            return mapData[x, y].terrainType == TerrainType.TYPE.Road;
         }
         return false;
     }
 
-    private void MarkTileAsRoad(int x, int y)
+    private void MarkTileAsRoad(MapTileData[,] mapData, int x, int y)
     {
         if (x >= 0 && x < mapSize.x && y >= 0 && y < mapSize.y)
         {
-            if (MapData[x, y].terrainProperties == null)
+            if (mapData[x, y].terrainType == TerrainType.TYPE.None)
             {
-                MapData[x, y].terrainProperties = terrainPropertiesDictionary[TerrainType.Road];
+                ApplyTerrainTemplate(mapData, x, y, TerrainType.TYPE.Road);
             }
         }
     }
 
-    private void PlaceSpecialSettlements()
+    private void PlaceSpecialSettlements(MapTileData[,] mapData)
     {
-        // 시작 타일 지정
-        MapData[0, 0].terrainProperties = terrainPropertiesDictionary[friendlySettlementTerrain];
-        MapData[0, 0].isFriendlyArea = true;
+        // 아군 정착지 배치
+        ApplyTerrainTemplate(mapData, 0, 0, friendlySettlementTerrain);
+        mapData[0, 0].isFriendlyArea = true;
+        ExpandSettlement(mapData, friendlySettlementTerrain, friendlySettlementCount, (x, y) => x < mapSize.x / 2 && y < mapSize.y / 2, true);
 
-        ExpandSettlement(friendlySettlementTerrain, friendlySettlementCount, (x, y) => x < 3 && y < 3, true);
-
-        MapData[mapSize.x - 1, mapSize.y - 1].terrainProperties = terrainPropertiesDictionary[enemySettleTerrain];
-        MapData[mapSize.x - 1, mapSize.y - 1].isFriendlyArea = false;
-
-        ExpandSettlement(enemySettleTerrain, enemySettleCount, (x, y) => x >= mapSize.x - 5 && y >= mapSize.y - 4, false);
+        // 적군 정착지 배치
+        ApplyTerrainTemplate(mapData, mapSize.x - 1, mapSize.y - 1, enemySettleTerrain);
+        mapData[mapSize.x - 1, mapSize.y - 1].isFriendlyArea = false;
+        ExpandSettlement(mapData, enemySettleTerrain, enemySettleCount, (x, y) => x >= mapSize.x / 2 && y >= mapSize.y / 2, false);
     }
 
-    private void ExpandSettlement(TerrainType typeToExpand, int targetCount, Func<int, int, bool> areaConstraint, bool isFriendly)
+    private void ExpandSettlement(MapTileData[,] mapData, TerrainType.TYPE typeToExpand, int targetCount, Func<int, int, bool> areaConstraint, bool isFriendly)
     {
         HashSet<Vector2Int> currentTiles = new HashSet<Vector2Int>();
         HashSet<Vector2Int> frontier = new HashSet<Vector2Int>();
         bool isFallbackMode = false;
 
-        // 초기 확장된 타일 수집
         for (int x = 0; x < mapSize.x; x++)
         {
             for (int y = 0; y < mapSize.y; y++)
             {
-                if (MapData[x, y].terrainProperties != null &&
-                    MapData[x, y].terrainProperties.terrainType == typeToExpand)
+                if (mapData[x, y].terrainType == typeToExpand)
                 {
                     currentTiles.Add(new Vector2Int(x, y));
                 }
             }
         }
 
-        if (currentTiles.Count == 0)
-            return;
+        if (currentTiles.Count == 0) return;
 
-        // frontier 초기화
         foreach (var tile in currentTiles)
         {
-            AddNeighborsToFrontier(tile, areaConstraint, frontier, currentTiles);
+            AddNeighborsToFrontier(mapData, tile, areaConstraint, frontier, currentTiles);
         }
 
         while (currentTiles.Count < targetCount)
@@ -292,13 +238,10 @@ public class TileMapGenerator : MonoBehaviour
                 if (!isFallbackMode)
                 {
                     isFallbackMode = true;
-
-                    // 모든 인접 타일을 다시 스캔하여 constraint 없이 추가
                     foreach (var tile in currentTiles)
                     {
-                        AddNeighborsToFrontier(tile, (x, y) => true, frontier, currentTiles);
+                        AddNeighborsToFrontier(mapData, tile, (x, y) => true, frontier, currentTiles);
                     }
-
                     if (frontier.Count == 0)
                     {
                         Debug.LogWarning($"[{typeToExpand}] 인접 타일 부족 → 목표 {targetCount} 중 {currentTiles.Count}개 생성됨.");
@@ -317,23 +260,22 @@ public class TileMapGenerator : MonoBehaviour
             Vector2Int chosen = frontierList[index];
             frontier.Remove(chosen);
 
-            MapData[chosen.x, chosen.y].terrainProperties = terrainPropertiesDictionary[typeToExpand];
-            MapData[chosen.x, chosen.y].isFriendlyArea = isFriendly;
+            ApplyTerrainTemplate(mapData, chosen.x, chosen.y, typeToExpand);
+            mapData[chosen.x, chosen.y].isFriendlyArea = isFriendly;
             currentTiles.Add(chosen);
 
-            // fallback일 경우에는 constraint 없이 추가
-            AddNeighborsToFrontier(chosen, isFallbackMode ? (x, y) => true : areaConstraint, frontier, currentTiles);
+            AddNeighborsToFrontier(mapData, chosen, isFallbackMode ? (x, y) => true : areaConstraint, frontier, currentTiles);
         }
     }
 
-    private void AddNeighborsToFrontier(Vector2Int tile, Func<int, int, bool> areaConstraint, HashSet<Vector2Int> frontier, HashSet<Vector2Int> currentTiles)
+    private void AddNeighborsToFrontier(MapTileData[,] mapData, Vector2Int tile, Func<int, int, bool> areaConstraint, HashSet<Vector2Int> frontier, HashSet<Vector2Int> currentTiles)
     {
         Vector2Int[] directions = new Vector2Int[]
         {
-        new Vector2Int(1, 0),
-        new Vector2Int(-1, 0),
-        new Vector2Int(0, 1),
-        new Vector2Int(0, -1)
+            new Vector2Int(1, 0),
+            new Vector2Int(-1, 0),
+            new Vector2Int(0, 1),
+            new Vector2Int(0, -1)
         };
 
         foreach (var dir in directions)
@@ -344,40 +286,34 @@ public class TileMapGenerator : MonoBehaviour
                 neighbor.y >= 0 && neighbor.y < mapSize.y &&
                 areaConstraint(neighbor.x, neighbor.y) &&
                 !currentTiles.Contains(neighbor) &&
-                !frontier.Contains(neighbor))
+                !frontier.Contains(neighbor) &&
+                mapData[neighbor.x, neighbor.y].terrainType == TerrainType.TYPE.None)
             {
                 frontier.Add(neighbor);
             }
         }
     }
 
-    private void AssignTerrainsToRemainingTiles()
+    private void AssignTerrainsToRemainingTiles(MapTileData[,] mapData)
     {
         for (int x = 0; x < mapSize.x; x++)
         {
             for (int y = 0; y < mapSize.y; y++)
             {
-                if (MapData[x, y].terrainProperties == null)
+                if (mapData[x, y].terrainType == TerrainType.TYPE.None)
                 {
-                    TerrainProperties chosenTerrainData = GetTerrainTypeWithNeighborInfluence(x, y);
-                    MapData[x, y].terrainProperties = chosenTerrainData;
-                    MapData[x, y].resourceYields = new ResourceYields
-                    {
-                        wood = chosenTerrainData.resourceYields.wood,
-                        iron = chosenTerrainData.resourceYields.iron,
-                        food = chosenTerrainData.resourceYields.food,
-                        research = chosenTerrainData.resourceYields.research
-                    };
+                    TerrainType.TYPE chosenTerrainType = GetTerrainTypeWithNeighborInfluence(mapData, x, y);
+                    ApplyTerrainTemplate(mapData, x, y, chosenTerrainType);
                 }
             }
         }
     }
 
-    private TerrainProperties GetTerrainTypeWithNeighborInfluence(int x, int y)
+    private TerrainType.TYPE GetTerrainTypeWithNeighborInfluence(MapTileData[,] mapData, int x, int y)
     {
-        var weightedList = terrainPropertiesList
-            .Where(t => t.terrainType != friendlySettlementTerrain && t.terrainType != enemySettleTerrain && t.terrainType != TerrainType.Road)
-            .Select(t => new { t.terrainType, weight = t.weight })
+        var weightedList = terrainTemplates
+            .Where(t => t.terrainType != friendlySettlementTerrain && t.terrainType != enemySettleTerrain && t.terrainType != TerrainType.TYPE.Road && t.terrainType != TerrainType.TYPE.None)
+            .Select(t => new { t.terrainType, t.weight })
             .ToList();
 
         Vector2Int[] neighbors = { new Vector2Int(x + 1, y), new Vector2Int(x - 1, y), new Vector2Int(x, y + 1), new Vector2Int(x, y - 1) };
@@ -385,23 +321,19 @@ public class TileMapGenerator : MonoBehaviour
         {
             if (neighbor.x >= 0 && neighbor.x < mapSize.x && neighbor.y >= 0 && neighbor.y < mapSize.y)
             {
-                TerrainProperties neighborTerrainProperties = MapData[neighbor.x, neighbor.y].terrainProperties;
-                if (neighborTerrainProperties != null)
+                TerrainType.TYPE neighborTerrain = mapData[neighbor.x, neighbor.y].terrainType;
+                var terrainToBoost = weightedList.FirstOrDefault(t => t.terrainType == neighborTerrain);
+                if (terrainToBoost != null)
                 {
-                    TerrainType neighborTerrain = neighborTerrainProperties.terrainType;
-                    var terrainToBoost = weightedList.FirstOrDefault(t => t.terrainType == neighborTerrain);
-                    if (terrainToBoost != null)
-                    {
-                        int index = weightedList.FindIndex(t => t.terrainType == neighborTerrain);
-                        weightedList[index] = new { terrainToBoost.terrainType, weight = (int)(terrainToBoost.weight * 1.5f) };
-                    }
+                    int index = weightedList.FindIndex(t => t.terrainType == neighborTerrain);
+                    weightedList[index] = new { terrainToBoost.terrainType, weight = (int)(terrainToBoost.weight * 1.5f) };
                 }
             }
         }
 
         int totalWeight = weightedList.Sum(t => t.weight);
 
-        if (totalWeight <= 0) return GetTerrainProperties(TerrainType.None);
+        if (totalWeight <= 0) return TerrainType.TYPE.None;
 
         int randomValue = pseudoRandom.Next(0, totalWeight);
 
@@ -409,147 +341,36 @@ public class TileMapGenerator : MonoBehaviour
         {
             if (randomValue < terrain.weight)
             {
-                return GetTerrainProperties(terrain.terrainType);
+                return terrain.terrainType;
             }
             randomValue -= terrain.weight;
         }
 
-        return GetTerrainProperties(TerrainType.None);
+        return TerrainType.TYPE.None;
     }
 
-    private void ApplyAdjacencyBonuses()
+    private void ApplyAdjacencyBonuses(MapTileData[,] mapData)
     {
-        for (int x = 0; x < mapSize.x; x++)
-        {
-            for (int y = 0; y < mapSize.y; y++)
-            {
-                if (MapData[x, y].terrainProperties.terrainType == TerrainType.Mountain ||
-                    MapData[x, y].terrainProperties.terrainType == TerrainType.River ||
-                    MapData[x, y].terrainProperties.terrainType == TerrainType.Volcano)
-                {
-                    Vector2Int[] neighbors = { new Vector2Int(x + 1, y), new Vector2Int(x - 1, y), new Vector2Int(x, y + 1), new Vector2Int(x, y - 1) };
-
-                    foreach (var neighbor in neighbors)
-                    {
-                        if (neighbor.x >= 0 && neighbor.x < mapSize.x && neighbor.y >= 0 && neighbor.y < mapSize.y)
-                        {
-                            if (MapData[neighbor.x, neighbor.y].resourceYields == null)
-                            {
-                                MapData[neighbor.x, neighbor.y].resourceYields = new ResourceYields();
-                            }
-                            switch (MapData[x, y].terrainProperties.terrainType)
-                            {
-                                case TerrainType.Mountain:
-                                    MapData[neighbor.x, neighbor.y].resourceYields.iron += 0.3f;
-                                    break;
-                                case TerrainType.River:
-                                    MapData[neighbor.x, neighbor.y].resourceYields.food += 0.15f;
-                                    break;
-                                case TerrainType.Volcano:
-                                    MapData[neighbor.x, neighbor.y].resourceYields.iron += 0.2f;
-                                    MapData[neighbor.x, neighbor.y].resourceYields.food += 0.2f;
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // 리소스 관련 필드가 제거되었으므로 이 함수는 더 이상 필요하지 않습니다.
     }
 
-    private void PlaceEnemyDataAndResources()
+    private void PlaceEnemyDataAndResources(MapTileData[,] mapData)
     {
-        for (int x = 0; x < mapSize.x; x++)
-        {
-            for (int y = 0; y < mapSize.y; y++)
-            {
-                if (MapData[x, y].terrainProperties.terrainType == enemySettleTerrain)
-                {
-                    MapData[x, y].combatPower = (int)(MapData[x, y].resourceYields.wood * 10 + MapData[x, y].resourceYields.iron * 15 + MapData[x, y].resourceYields.food * 5 + MapData[x, y].resourceYields.research * 8);
-
-                    if (MapData[x, y].combatPower > 30) MapData[x, y].combatPower = 30;
-                }
-            }
-        }
+        // 리소스 관련 필드가 제거되었으므로 이 함수는 더 이상 필요하지 않습니다.
     }
 
-    private void DrawMapTiles()
+    // 새로운 헬퍼 메서드: 템플릿 데이터를 타일 데이터에 복사
+    private void ApplyTerrainTemplate(MapTileData[,] mapData, int x, int y, TerrainType.TYPE type)
     {
-        if (defaultTilePrefab == null)
+        if (terrainTemplatesDictionary.TryGetValue(type, out var template))
         {
-            Debug.LogError("Default Tile Prefab is not assigned!");
-            return;
+            mapData[x, y].terrainType = template.terrainType;
+            mapData[x, y].weight = template.weight;
+            mapData[x, y].color = template.color;
         }
-
-        for (int y = 0; y < mapSize.y; y++)
+        else
         {
-            for (int x = 0; x < mapSize.x; x++)
-            {
-                Vector3 pos = new Vector3(x, -y, 0);
-
-                GameObject tileInstance = Instantiate(defaultTilePrefab, pos, Quaternion.identity, gameObject.transform);
-                SpriteRenderer spriteRenderer = tileInstance.GetComponent<SpriteRenderer>();
-
-                if (spriteRenderer == null)
-                {
-                    continue;
-                }
-
-                Color targetColor = GetTileColor(x, y);
-                spriteRenderer.color = targetColor;
-            }
+            Debug.LogError($"지형 템플릿을 찾을 수 없습니다: {type}");
         }
     }
-
-    private Color GetTileColor(int x, int y)
-    {
-        if (MapData[x, y].terrainProperties.terrainType == enemySettleTerrain)
-        {
-            return enemyColor;
-        }
-
-        if (MapData[x, y].isFriendlyArea)
-        {
-            return friendlyColor;
-        }
-
-        return MapData[x, y].terrainProperties.color;
-    }
-
-    // Helper method to retrieve properties by type
-    private TerrainProperties GetTerrainProperties(TerrainType terrainType)
-    {
-        if (terrainPropertiesDictionary.TryGetValue(terrainType, out var properties))
-        {
-            return properties;
-        }
-        return null;
-    }
-}
-
-// MapTileData now holds a reference to its terrain's properties, plus a few unique runtime variables.
-public class MapTileData
-{
-    public TileMapGenerator.TerrainProperties terrainProperties;
-    public TileMapGenerator.ResourceYields resourceYields = new TileMapGenerator.ResourceYields();
-    public int combatPower;
-    public bool isFriendlyArea = false; // Moved here as it's specific to an instance of a tile
-}
-
-public enum TerrainType
-{
-    None,
-    Settlement,
-    Road,
-    Forest,
-    Grove,
-    AncientRuins,
-    Plain,
-    MushroomZone,
-    GoldLake,
-    Snowfield,
-    RockPlain,
-    Mountain,
-    River,
-    Volcano
 }

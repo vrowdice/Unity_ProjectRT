@@ -4,6 +4,16 @@ using UnityEngine;
 
 public class MainPanel : BasePanel
 {
+    [Header("MainPanel")]
+    [SerializeField]
+    Vector2 tileBtnSize = new Vector2();
+    [SerializeField]
+    GameObject minimapTileBtnPrefeb = null;
+    [SerializeField]
+    GameObject minimapScrollView = null;
+    [SerializeField]
+    Transform minimapScrollViewContentTrans = null;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -22,5 +32,15 @@ public class MainPanel : BasePanel
         m_showInfoPanel = false;
         SetPanelName("");
         SetBuildingLevel("");
+    }
+
+    public void ClickSkipBtn()
+    {
+
+    }
+
+    public void ClickMinimapBtn()
+    {
+
     }
 }
