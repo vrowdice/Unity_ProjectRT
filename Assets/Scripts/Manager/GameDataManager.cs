@@ -10,6 +10,7 @@ using UnityEngine;
 public class GameDataManager : MonoBehaviour
 {
     [Header("Game Data")]
+    [SerializeField] private List<TileMapData> m_tileMapDataList = new();
     [SerializeField] private List<EventGroupData> m_eventGroupDataList = new();
     [SerializeField] private List<FactionData> m_factionDataList = new();
     [SerializeField] private List<ResearchData> m_commonResearchDataList = new();
@@ -24,6 +25,7 @@ public class GameDataManager : MonoBehaviour
     [SerializeField] private GameBalanceData m_gameBalanceData;
 
     // 데이터 딕셔너리들
+    private readonly Dictionary<TerrainType.TYPE, TileMapData> m_tileMapDataDic = new();
     private readonly Dictionary<FactionType.TYPE, FactionEntry> m_factionEntryDic = new();
     private readonly Dictionary<string, ResearchEntry> m_commonResearchEntryDic = new();
     private readonly Dictionary<string, BuildingEntry> m_buildingEntryDic = new();
@@ -35,12 +37,14 @@ public class GameDataManager : MonoBehaviour
     // 요청 상태 관리
     private readonly List<RequestState> m_acceptableRequestList = new();
     private readonly List<RequestState> m_acceptedRequestList = new();
+    private TileMapState[,] m_tileMap;
 
     // 게임 시스템 엔트리
     private GameBalanceEntry m_gameBalanceEntry;
     private EventEntry m_eventEntry;
 
     // 프로퍼티들
+    public Dictionary<TerrainType.TYPE, TileMapData> TileMapDataDict => m_tileMapDataDic;
     public Dictionary<FactionType.TYPE, FactionEntry> FactionEntryDict => m_factionEntryDic;
     public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDic;
     public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDic;
@@ -48,12 +52,13 @@ public class GameDataManager : MonoBehaviour
     public List<RequestState> AcceptedRequestList => m_acceptedRequestList;
     public GameBalanceEntry GameBalanceEntry => m_gameBalanceEntry;
     public EventEntry EventEntry => m_eventEntry;
+    public TileMapState[,] TileMap => m_tileMap;
 
     #region Unity Lifecycle
     void Awake()
     {
         #if UNITY_EDITOR
-        if (m_factionDataList.Count == 0 || m_buildingDataList.Count == 0)
+        if (m_tileMapDataList.Count == 0 || m_factionDataList.Count == 0 || m_buildingDataList.Count == 0)
         {
             AutoLoadData();
         }
@@ -70,14 +75,28 @@ public class GameDataManager : MonoBehaviour
         InitIconDict();
         InitBalanceEntry();
         InitEventEntry();
+        GenerateTileMap();
     }
 
     private void InitDict()
     {
+        InitTileMapDict();
         InitFactionDict();
         InitResearchDict();
         InitBuildingDict();
         InitRequestTemplateDict();
+    }
+
+    private void InitTileMapDict()
+    {
+        m_tileMapDataDic.Clear();
+        foreach (TileMapData tileMap in m_tileMapDataList)
+        {
+            if (!m_tileMapDataDic.ContainsKey(tileMap.m_terrainType))
+            {
+                m_tileMapDataDic.Add(tileMap.m_terrainType, tileMap);
+            }
+        }
     }
 
     private void InitFactionDict()
@@ -165,6 +184,102 @@ public class GameDataManager : MonoBehaviour
         m_eventEntry = new EventEntry(m_eventGroupDataList, this);
     }
 
+    /// <summary>
+    /// GameBalanceData의 설정을 기반으로 타일맵을 생성합니다.
+    /// </summary>
+    private void GenerateTileMap()
+    {
+        if (m_gameBalanceData == null)
+        {
+            Debug.LogError("GameBalanceData가 설정되지 않았습니다.");
+            return;
+        }
+
+        Vector2Int mapSize = m_gameBalanceData.m_mapSize;
+        int friendlySettleCount = m_gameBalanceData.m_friendlySettle;
+        int enemySettleCount = m_gameBalanceData.m_enemySettle;
+
+        // MapDataGenerator를 사용하여 맵 생성
+        MapDataGenerator mapGenerator = new MapDataGenerator(
+            mapSize,
+            m_tileMapDataList,
+            TerrainType.TYPE.Settlement, // 친화적 정착지 타입
+            friendlySettleCount,
+            TerrainType.TYPE.Settlement, // 적대적 정착지 타입 (같은 타입 사용)
+            enemySettleCount
+        );
+
+        m_tileMap = mapGenerator.GenerateMapData();
+    }
+
+    /// <summary>
+    /// 지정된 시드로 타일맵을 재생성합니다.
+    /// </summary>
+    /// <param name="seed">맵 생성에 사용할 시드</param>
+    public void RegenerateTileMap(string seed = null)
+    {
+        if (m_gameBalanceData == null)
+        {
+            Debug.LogError("GameBalanceData가 설정되지 않았습니다.");
+            return;
+        }
+
+        Vector2Int mapSize = m_gameBalanceData.m_mapSize;
+        int friendlySettleCount = m_gameBalanceData.m_friendlySettle;
+        int enemySettleCount = m_gameBalanceData.m_enemySettle;
+
+        // MapDataGenerator를 사용하여 맵 생성 (시드 지정)
+        MapDataGenerator mapGenerator = new MapDataGenerator(
+            mapSize,
+            m_tileMapDataList,
+            seed,
+            TerrainType.TYPE.Settlement,
+            friendlySettleCount,
+            TerrainType.TYPE.Settlement,
+            enemySettleCount
+        );
+
+        m_tileMap = mapGenerator.GenerateMapData();
+        Debug.Log($"타일맵이 재생성되었습니다. 크기: {mapSize.x}x{mapSize.y}, 시드: {seed ?? "랜덤"}");
+    }
+
+    /// <summary>
+    /// 지정된 위치의 타일맵 상태를 반환합니다.
+    /// </summary>
+    /// <param name="x">X 좌표</param>
+    /// <param name="y">Y 좌표</param>
+    /// <returns>타일맵 상태, 범위를 벗어나면 null</returns>
+    public TileMapState GetTileMapState(int x, int y)
+    {
+        if (m_tileMap == null)
+        {
+            Debug.LogWarning("타일맵이 생성되지 않았습니다.");
+            return null;
+        }
+
+        if (x >= 0 && x < m_tileMap.GetLength(0) && y >= 0 && y < m_tileMap.GetLength(1))
+        {
+            return m_tileMap[x, y];
+        }
+
+        Debug.LogWarning($"타일맵 좌표가 범위를 벗어났습니다: ({x}, {y})");
+        return null;
+    }
+
+    /// <summary>
+    /// 타일맵의 크기를 반환합니다.
+    /// </summary>
+    /// <returns>타일맵 크기 (Vector2Int)</returns>
+    public Vector2Int GetTileMapSize()
+    {
+        if (m_tileMap == null)
+        {
+            return Vector2Int.zero;
+        }
+
+        return new Vector2Int(m_tileMap.GetLength(0), m_tileMap.GetLength(1));
+    }
+
     private void LockResearch()
     {
         // 먼저 모든 연구를 잠금 해제
@@ -201,7 +316,6 @@ public class GameDataManager : MonoBehaviour
     #endregion
 
     #region Data Loading
-    [ContextMenu("Auto Data Loading")]
     public void AutoLoadData()
     {
         #if UNITY_EDITOR
@@ -211,22 +325,35 @@ public class GameDataManager : MonoBehaviour
         #endif
     }
 
-    [ContextMenu("Load Data from Resources")]
     public void LoadDataFromResources()
     {
         DataLoader.LoadAllDataFromResources(
-            m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
             m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
             m_tokenIconList, m_requestIconList, ref m_gameBalanceData);
+    }
+
+    public void LoadMapData()
+    {
+        #if UNITY_EDITOR
+        LoadTileMapDataFromAssets();
+        #else
+        Debug.LogWarning("Load Map Data is only available in editor.");
+        #endif
     }
 
     #if UNITY_EDITOR
     private void LoadAllDataFromAssets()
     {
         DataLoader.LoadAllDataFromAssets(
-            m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
             m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
             m_tokenIconList, m_requestIconList, ref m_gameBalanceData);
+    }
+
+    private void LoadTileMapDataFromAssets()
+    {
+        DataLoader.LoadTileMapDataFromAssets(m_tileMapDataList);
     }
     #endif
     #endregion
@@ -264,6 +391,11 @@ public class GameDataManager : MonoBehaviour
     #endregion
 
     #region Data Access
+    public TileMapData GetTileMapData(TerrainType.TYPE argType)
+    {
+        return m_tileMapDataDic.TryGetValue(argType, out var data) ? data : null;
+    }
+
     public FactionEntry GetFactionEntry(FactionType.TYPE argType)
     {
         return m_factionEntryDic.TryGetValue(argType, out var entry) ? entry : null;

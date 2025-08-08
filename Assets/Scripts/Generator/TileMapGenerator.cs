@@ -3,35 +3,21 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-// 모든 타일 데이터를 이 하나의 클래스에서 관리합니다.
-// 지형의 기본 특성(무게, 색상)과 타일의 고유 상태(전투력, 아군 여부, 실제 리소스 생산량)를 모두 포함합니다.
-[Serializable]
-public class MapTileData
-{
-    public TerrainType.TYPE terrainType;
-    public int weight;
-    public Color color;
-    public bool isFriendlyArea = false;
-    public int combatPower = 0;
-    public ResourceAmount resourceAmount;
-}
-
-// 이 클래스는 맵 데이터를 생성하고 반환하는 역할만 담당합니다.
 public class MapDataGenerator
 {
     private Vector2Int mapSize;
     private string seed;
     private System.Random pseudoRandom;
 
-    private List<MapTileData> terrainTemplates;
-    private Dictionary<TerrainType.TYPE, MapTileData> terrainTemplatesDictionary;
+    private List<TileMapData> terrainTemplates;
+    private Dictionary<TerrainType.TYPE, TileMapData> terrainTemplatesDictionary;
 
     private TerrainType.TYPE friendlySettlementTerrain;
     private int friendlySettlementCount;
     private TerrainType.TYPE enemySettleTerrain;
     private int enemySettleCount;
 
-    public MapDataGenerator(Vector2Int mapSize, List<MapTileData> templates, string seed,
+    public MapDataGenerator(Vector2Int mapSize, List<TileMapData> templates, string seed,
         TerrainType.TYPE friendlySettle, int friendlySettleCount,
         TerrainType.TYPE enemySettle, int enemySettleCount)
     {
@@ -44,7 +30,16 @@ public class MapDataGenerator
         this.enemySettleCount = enemySettleCount;
 
         InitializeRandomSeed();
-        terrainTemplatesDictionary = terrainTemplates.ToDictionary(t => t.terrainType, t => t);
+        terrainTemplatesDictionary = terrainTemplates.ToDictionary(t => t.m_terrainType, t => t);
+    }
+
+    // seed를 인자로 받지 않는 생성자를 추가하여,
+    // 외부에서 시드를 지정하지 않으면 내부적으로 무작위 시드를 사용하도록 합니다.
+    public MapDataGenerator(Vector2Int mapSize, List<TileMapData> templates,
+        TerrainType.TYPE friendlySettle, int friendlySettleCount,
+        TerrainType.TYPE enemySettle, int enemySettleCount)
+        : this(mapSize, templates, null, friendlySettle, friendlySettleCount, enemySettle, enemySettleCount)
+    {
     }
 
     private void InitializeRandomSeed()
@@ -54,43 +49,43 @@ public class MapDataGenerator
             seed = DateTime.Now.ToBinary().ToString();
         }
         pseudoRandom = new System.Random(seed.GetHashCode());
+        Debug.Log($"Map generation seed: {seed}");
     }
 
-    /// <summary>
-    /// 새로운 맵 데이터를 생성하여 반환합니다.
-    /// </summary>
-    public MapTileData[,] GenerateMapData()
+    public TileMapState[,] GenerateMapData()
     {
-        MapTileData[,] mapData = new MapTileData[mapSize.x, mapSize.y];
+        TileMapState[,] mapData = new TileMapState[mapSize.x, mapSize.y];
 
         InitializeMap(mapData);
         GenerateRoads(mapData);
         PlaceSpecialSettlements(mapData);
         AssignTerrainsToRemainingTiles(mapData);
-        ApplyAdjacencyBonuses(mapData);
-        PlaceEnemyDataAndResources(mapData);
 
         return mapData;
     }
 
-    private void InitializeMap(MapTileData[,] mapData)
+    private void InitializeMap(TileMapState[,] mapData)
     {
         for (int x = 0; x < mapSize.x; x++)
         {
             for (int y = 0; y < mapSize.y; y++)
             {
-                mapData[x, y] = new MapTileData();
+                mapData[x, y] = new TileMapState();
+                mapData[x, y].m_index = new Vector2Int(x, y);
+                mapData[x, y].m_terrainType = TerrainType.TYPE.None;
+                mapData[x, y].m_isFriendlyArea = false;
             }
         }
     }
 
-    private void GenerateRoads(MapTileData[,] mapData)
+    private void GenerateRoads(TileMapState[,] mapData)
     {
         if (mapSize.x < 5 || mapSize.y < 5) return;
 
         Vector2Int startPoint = new Vector2Int(0, 0);
         Vector2Int endPoint = new Vector2Int(mapSize.x - 1, mapSize.y - 1);
 
+        // 첫 번째 도로 경로 생성
         Vector2Int pivot1 = new Vector2Int(
             pseudoRandom.Next(mapSize.x / 4, mapSize.x * 3 / 4),
             pseudoRandom.Next(mapSize.y / 2, mapSize.y - 1)
@@ -98,15 +93,17 @@ public class MapDataGenerator
         GenerateSingleWindingRoad(mapData, startPoint, pivot1);
         GenerateSingleWindingRoad(mapData, pivot1, endPoint);
 
+        // 두 번째 도로 경로 생성 (무조건 생성)
         Vector2Int pivot2 = new Vector2Int(
             pseudoRandom.Next(mapSize.x / 4, mapSize.x * 3 / 4),
             pseudoRandom.Next(0, mapSize.y / 2)
         );
-        GenerateSingleWindingRoad(mapData, startPoint, pivot2);
-        GenerateSingleWindingRoad(mapData, pivot2, endPoint);
+        
+        // 두 번째 도로는 기존 도로와 겹치지 않도록 생성
+        GenerateNonOverlappingRoad(mapData, startPoint, pivot2, endPoint);
     }
 
-    private void GenerateSingleWindingRoad(MapTileData[,] mapData, Vector2Int start, Vector2Int end)
+    private void GenerateSingleWindingRoad(TileMapState[,] mapData, Vector2Int start, Vector2Int end)
     {
         int currentX = start.x;
         int currentY = start.y;
@@ -117,7 +114,7 @@ public class MapDataGenerator
 
             int dx = end.x - currentX;
             int dy = end.y - currentY;
-            bool moveX = (Math.Abs(dx) > Math.Abs(dy)) ? true : false;
+            bool moveX = (Math.Abs(dx) > Math.Abs(dy));
 
             if (pseudoRandom.Next(0, 2) == 0)
             {
@@ -174,40 +171,121 @@ public class MapDataGenerator
         MarkTileAsRoad(mapData, end.x, end.y);
     }
 
-    private bool IsRoad(MapTileData[,] mapData, int x, int y)
+    private bool IsRoad(TileMapState[,] mapData, int x, int y)
     {
         if (x >= 0 && x < mapSize.x && y >= 0 && y < mapSize.y)
         {
-            return mapData[x, y].terrainType == TerrainType.TYPE.Road;
+            return mapData[x, y].m_terrainType == TerrainType.TYPE.Road;
         }
         return false;
     }
 
-    private void MarkTileAsRoad(MapTileData[,] mapData, int x, int y)
+    private void GenerateNonOverlappingRoad(TileMapState[,] mapData, Vector2Int start, Vector2Int pivot, Vector2Int end)
+    {
+        // 시작점에서 피벗까지의 경로 생성 (기존 도로와 겹치지 않도록)
+        GenerateNonOverlappingPath(mapData, start, pivot);
+        
+        // 피벗에서 끝점까지의 경로 생성 (기존 도로와 겹치지 않도록)
+        GenerateNonOverlappingPath(mapData, pivot, end);
+    }
+
+    private void GenerateNonOverlappingPath(TileMapState[,] mapData, Vector2Int start, Vector2Int end)
+    {
+        int currentX = start.x;
+        int currentY = start.y;
+        int maxAttempts = 100; // 무한 루프 방지
+        int attempts = 0;
+
+        while ((currentX != end.x || currentY != end.y) && attempts < maxAttempts)
+        {
+            attempts++;
+            
+            // 현재 위치가 도로가 아니면 도로로 표시
+            if (!IsRoad(mapData, currentX, currentY))
+            {
+                MarkTileAsRoad(mapData, currentX, currentY);
+            }
+
+            int dx = end.x - currentX;
+            int dy = end.y - currentY;
+            
+            // 다음 이동 방향 결정
+            Vector2Int nextMove = GetNextMoveAvoidingRoads(mapData, currentX, currentY, dx, dy);
+            
+            currentX = nextMove.x;
+            currentY = nextMove.y;
+        }
+        
+        // 끝점도 도로로 표시
+        if (!IsRoad(mapData, end.x, end.y))
+        {
+            MarkTileAsRoad(mapData, end.x, end.y);
+        }
+    }
+
+    private Vector2Int GetNextMoveAvoidingRoads(TileMapState[,] mapData, int currentX, int currentY, int dx, int dy)
+    {
+        // 우선순위: 1. 목표 방향으로 직진, 2. 대각선 이동, 3. 우회
+        Vector2Int[] possibleMoves = new Vector2Int[]
+        {
+            new Vector2Int(currentX + Math.Sign(dx), currentY), // X 방향
+            new Vector2Int(currentX, currentY + Math.Sign(dy)), // Y 방향
+            new Vector2Int(currentX + Math.Sign(dx), currentY + Math.Sign(dy)), // 대각선
+            new Vector2Int(currentX - Math.Sign(dy), currentY + Math.Sign(dx)), // 우회 1
+            new Vector2Int(currentX + Math.Sign(dy), currentY - Math.Sign(dx))  // 우회 2
+        };
+
+        foreach (var move in possibleMoves)
+        {
+            if (IsValidMove(mapData, move.x, move.y) && !IsRoad(mapData, move.x, move.y))
+            {
+                return move;
+            }
+        }
+
+        // 모든 방향이 막혀있으면 기존 도로를 사용하되, 목표에 가까워지는 방향 선택
+        foreach (var move in possibleMoves)
+        {
+            if (IsValidMove(mapData, move.x, move.y))
+            {
+                return move;
+            }
+        }
+
+        // 마지막 수단: 현재 위치 유지
+        return new Vector2Int(currentX, currentY);
+    }
+
+    private bool IsValidMove(TileMapState[,] mapData, int x, int y)
+    {
+        return x >= 0 && x < mapSize.x && y >= 0 && y < mapSize.y;
+    }
+
+
+
+    private void MarkTileAsRoad(TileMapState[,] mapData, int x, int y)
     {
         if (x >= 0 && x < mapSize.x && y >= 0 && y < mapSize.y)
         {
-            if (mapData[x, y].terrainType == TerrainType.TYPE.None)
+            if (mapData[x, y].m_terrainType == TerrainType.TYPE.None)
             {
-                ApplyTerrainTemplate(mapData, x, y, TerrainType.TYPE.Road);
+                ApplyTerrainTemplate(mapData[x, y], TerrainType.TYPE.Road);
             }
         }
     }
 
-    private void PlaceSpecialSettlements(MapTileData[,] mapData)
+    private void PlaceSpecialSettlements(TileMapState[,] mapData)
     {
-        // 아군 정착지 배치
-        ApplyTerrainTemplate(mapData, 0, 0, friendlySettlementTerrain);
-        mapData[0, 0].isFriendlyArea = true;
+        ApplyTerrainTemplate(mapData[0, 0], friendlySettlementTerrain);
+        mapData[0, 0].m_isFriendlyArea = true;
         ExpandSettlement(mapData, friendlySettlementTerrain, friendlySettlementCount, (x, y) => x < mapSize.x / 2 && y < mapSize.y / 2, true);
 
-        // 적군 정착지 배치
-        ApplyTerrainTemplate(mapData, mapSize.x - 1, mapSize.y - 1, enemySettleTerrain);
-        mapData[mapSize.x - 1, mapSize.y - 1].isFriendlyArea = false;
+        ApplyTerrainTemplate(mapData[mapSize.x - 1, mapSize.y - 1], enemySettleTerrain);
+        mapData[mapSize.x - 1, mapSize.y - 1].m_isFriendlyArea = false;
         ExpandSettlement(mapData, enemySettleTerrain, enemySettleCount, (x, y) => x >= mapSize.x / 2 && y >= mapSize.y / 2, false);
     }
 
-    private void ExpandSettlement(MapTileData[,] mapData, TerrainType.TYPE typeToExpand, int targetCount, Func<int, int, bool> areaConstraint, bool isFriendly)
+    private void ExpandSettlement(TileMapState[,] mapData, TerrainType.TYPE typeToExpand, int targetCount, Func<int, int, bool> areaConstraint, bool isFriendly)
     {
         HashSet<Vector2Int> currentTiles = new HashSet<Vector2Int>();
         HashSet<Vector2Int> frontier = new HashSet<Vector2Int>();
@@ -217,7 +295,7 @@ public class MapDataGenerator
         {
             for (int y = 0; y < mapSize.y; y++)
             {
-                if (mapData[x, y].terrainType == typeToExpand)
+                if (mapData[x, y].m_terrainType == typeToExpand)
                 {
                     currentTiles.Add(new Vector2Int(x, y));
                 }
@@ -260,15 +338,15 @@ public class MapDataGenerator
             Vector2Int chosen = frontierList[index];
             frontier.Remove(chosen);
 
-            ApplyTerrainTemplate(mapData, chosen.x, chosen.y, typeToExpand);
-            mapData[chosen.x, chosen.y].isFriendlyArea = isFriendly;
+            ApplyTerrainTemplate(mapData[chosen.x, chosen.y], typeToExpand);
+            mapData[chosen.x, chosen.y].m_isFriendlyArea = isFriendly;
             currentTiles.Add(chosen);
 
             AddNeighborsToFrontier(mapData, chosen, isFallbackMode ? (x, y) => true : areaConstraint, frontier, currentTiles);
         }
     }
 
-    private void AddNeighborsToFrontier(MapTileData[,] mapData, Vector2Int tile, Func<int, int, bool> areaConstraint, HashSet<Vector2Int> frontier, HashSet<Vector2Int> currentTiles)
+    private void AddNeighborsToFrontier(TileMapState[,] mapData, Vector2Int tile, Func<int, int, bool> areaConstraint, HashSet<Vector2Int> frontier, HashSet<Vector2Int> currentTiles)
     {
         Vector2Int[] directions = new Vector2Int[]
         {
@@ -287,33 +365,34 @@ public class MapDataGenerator
                 areaConstraint(neighbor.x, neighbor.y) &&
                 !currentTiles.Contains(neighbor) &&
                 !frontier.Contains(neighbor) &&
-                mapData[neighbor.x, neighbor.y].terrainType == TerrainType.TYPE.None)
+                (mapData[neighbor.x, neighbor.y].m_terrainType == TerrainType.TYPE.None || 
+                 mapData[neighbor.x, neighbor.y].m_terrainType == TerrainType.TYPE.Road))
             {
                 frontier.Add(neighbor);
             }
         }
     }
 
-    private void AssignTerrainsToRemainingTiles(MapTileData[,] mapData)
+    private void AssignTerrainsToRemainingTiles(TileMapState[,] mapData)
     {
         for (int x = 0; x < mapSize.x; x++)
         {
             for (int y = 0; y < mapSize.y; y++)
             {
-                if (mapData[x, y].terrainType == TerrainType.TYPE.None)
+                if (mapData[x, y].m_terrainType == TerrainType.TYPE.None)
                 {
                     TerrainType.TYPE chosenTerrainType = GetTerrainTypeWithNeighborInfluence(mapData, x, y);
-                    ApplyTerrainTemplate(mapData, x, y, chosenTerrainType);
+                    ApplyTerrainTemplate(mapData[x, y], chosenTerrainType);
                 }
             }
         }
     }
 
-    private TerrainType.TYPE GetTerrainTypeWithNeighborInfluence(MapTileData[,] mapData, int x, int y)
+    private TerrainType.TYPE GetTerrainTypeWithNeighborInfluence(TileMapState[,] mapData, int x, int y)
     {
         var weightedList = terrainTemplates
-            .Where(t => t.terrainType != friendlySettlementTerrain && t.terrainType != enemySettleTerrain && t.terrainType != TerrainType.TYPE.Road && t.terrainType != TerrainType.TYPE.None)
-            .Select(t => new { t.terrainType, t.weight })
+            .Where(t => t.m_terrainType != friendlySettlementTerrain && t.m_terrainType != enemySettleTerrain && t.m_terrainType != TerrainType.TYPE.Road && t.m_terrainType != TerrainType.TYPE.None)
+            .Select(t => new { t.m_terrainType, t.m_weight })
             .ToList();
 
         Vector2Int[] neighbors = { new Vector2Int(x + 1, y), new Vector2Int(x - 1, y), new Vector2Int(x, y + 1), new Vector2Int(x, y - 1) };
@@ -321,52 +400,41 @@ public class MapDataGenerator
         {
             if (neighbor.x >= 0 && neighbor.x < mapSize.x && neighbor.y >= 0 && neighbor.y < mapSize.y)
             {
-                TerrainType.TYPE neighborTerrain = mapData[neighbor.x, neighbor.y].terrainType;
-                var terrainToBoost = weightedList.FirstOrDefault(t => t.terrainType == neighborTerrain);
+                TerrainType.TYPE neighborTerrain = mapData[neighbor.x, neighbor.y].m_terrainType;
+                var terrainToBoost = weightedList.FirstOrDefault(t => t.m_terrainType == neighborTerrain);
                 if (terrainToBoost != null)
                 {
-                    int index = weightedList.FindIndex(t => t.terrainType == neighborTerrain);
-                    weightedList[index] = new { terrainToBoost.terrainType, weight = (int)(terrainToBoost.weight * 1.5f) };
+                    int index = weightedList.FindIndex(t => t.m_terrainType == neighborTerrain);
+                    weightedList[index] = new { terrainToBoost.m_terrainType, m_weight = (terrainToBoost.m_weight * 1.5f) };
                 }
             }
         }
 
-        int totalWeight = weightedList.Sum(t => t.weight);
+        float totalWeight = weightedList.Sum(t => t.m_weight);
 
         if (totalWeight <= 0) return TerrainType.TYPE.None;
+        
+        double randomDouble = pseudoRandom.NextDouble();
 
-        int randomValue = pseudoRandom.Next(0, totalWeight);
+        float randomValue = (float)(randomDouble * totalWeight);
 
         foreach (var terrain in weightedList)
         {
-            if (randomValue < terrain.weight)
+            if (randomValue < terrain.m_weight)
             {
-                return terrain.terrainType;
+                return terrain.m_terrainType;
             }
-            randomValue -= terrain.weight;
+            randomValue -= terrain.m_weight;
         }
 
         return TerrainType.TYPE.None;
     }
 
-    private void ApplyAdjacencyBonuses(MapTileData[,] mapData)
-    {
-        // 리소스 관련 필드가 제거되었으므로 이 함수는 더 이상 필요하지 않습니다.
-    }
-
-    private void PlaceEnemyDataAndResources(MapTileData[,] mapData)
-    {
-        // 리소스 관련 필드가 제거되었으므로 이 함수는 더 이상 필요하지 않습니다.
-    }
-
-    // 새로운 헬퍼 메서드: 템플릿 데이터를 타일 데이터에 복사
-    private void ApplyTerrainTemplate(MapTileData[,] mapData, int x, int y, TerrainType.TYPE type)
+    private void ApplyTerrainTemplate(TileMapState tileState, TerrainType.TYPE type)
     {
         if (terrainTemplatesDictionary.TryGetValue(type, out var template))
         {
-            mapData[x, y].terrainType = template.terrainType;
-            mapData[x, y].weight = template.weight;
-            mapData[x, y].color = template.color;
+            tileState.m_terrainType = template.m_terrainType;
         }
         else
         {

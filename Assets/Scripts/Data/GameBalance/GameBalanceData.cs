@@ -33,6 +33,11 @@ public class GameBalanceData : ScriptableObject
     public int m_firstEventSlot = 2;
     public int m_maxEventSlot = 2;
 
+    [Header("Map")]
+    public Vector2Int m_mapSize = new Vector2Int(10, 10);
+    public int m_friendlySettle = 7;
+    public int m_enemySettle = 22;
+
     private Dictionary<BalanceType.TYPE, BalanceTypeBalance> m_balanceTypeDictionary;
     private Dictionary<RequestType.TYPE, RequestTypeBalance> m_requestTypeDictionary;
 

@@ -10,6 +10,7 @@ public static class DataLoader
     /// Resources에서 모든 데이터를 로드
     /// </summary>
     public static void LoadAllDataFromResources(
+        List<TileMapData> tileMapDataList,
         List<EventGroupData> eventGroupDataList,
         List<FactionData> factionDataList,
         List<ResearchData> commonResearchDataList,
@@ -20,6 +21,7 @@ public static class DataLoader
         List<RequestIcon> requestIconList,
         ref GameBalanceData gameBalanceData)
     {
+        LoadTileMapDataFromResources(tileMapDataList);
         LoadEventGroupDataFromResources(eventGroupDataList);
         LoadFactionDataFromResources(factionDataList);
         LoadCommonResearchDataFromResources(commonResearchDataList);
@@ -31,6 +33,14 @@ public static class DataLoader
         LoadGameBalanceDataFromResources(ref gameBalanceData);
 
         Debug.Log("All game data loaded from Resources.");
+    }
+
+    private static void LoadTileMapDataFromResources(List<TileMapData> tileMapDataList)
+    {
+        TileMapData[] dataArray = Resources.LoadAll<TileMapData>("");
+        tileMapDataList.Clear();
+        tileMapDataList.AddRange(dataArray);
+        Debug.Log($"{tileMapDataList.Count} tile map data loaded from Resources.");
     }
 
     private static void LoadEventGroupDataFromResources(List<EventGroupData> eventGroupDataList)
@@ -193,6 +203,7 @@ public static class DataLoader
     /// 에디터에서 모든 데이터를 자동으로 로드
     /// </summary>
     public static void LoadAllDataFromAssets(
+        List<TileMapData> tileMapDataList,
         List<EventGroupData> eventGroupDataList,
         List<FactionData> factionDataList,
         List<ResearchData> commonResearchDataList,
@@ -203,6 +214,7 @@ public static class DataLoader
         List<RequestIcon> requestIconList,
         ref GameBalanceData gameBalanceData)
     {
+        LoadTileMapDataFromAssets(tileMapDataList);
         LoadEventGroupDataFromAssets(eventGroupDataList);
         LoadFactionDataFromAssets(factionDataList);
         LoadCommonResearchDataFromAssets(commonResearchDataList);
@@ -214,6 +226,24 @@ public static class DataLoader
         LoadGameBalanceDataFromAssets(ref gameBalanceData);
 
         Debug.Log("All game data has been loaded automatically.");
+    }
+
+    public static void LoadTileMapDataFromAssets(List<TileMapData> tileMapDataList)
+    {
+        string[] guids = UnityEditor.AssetDatabase.FindAssets("t:TileMapData");
+        tileMapDataList.Clear();
+        
+        foreach (string guid in guids)
+        {
+            string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+            TileMapData data = UnityEditor.AssetDatabase.LoadAssetAtPath<TileMapData>(path);
+            if (data != null)
+            {
+                tileMapDataList.Add(data);
+            }
+        }
+        
+        Debug.Log($"{tileMapDataList.Count} tile map data loaded.");
     }
 
     private static void LoadEventGroupDataFromAssets(List<EventGroupData> eventGroupDataList)

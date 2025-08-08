@@ -150,6 +150,8 @@ public class MainUIManager : MonoBehaviour, IUIManager
 
         m_BackMainBtn.SetActive(false);
 
+        MovePanel(0);
+
         UpdateAllMainText();
     }
 

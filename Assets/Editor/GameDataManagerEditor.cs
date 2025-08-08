@@ -28,6 +28,11 @@ public class GameDataManagerEditor : Editor
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Individual Data Loading", EditorStyles.boldLabel);
 
+        if (GUILayout.Button("Load Tile Map Data"))
+        {
+            LoadTileMapData(gameDataManager);
+        }
+
         if (GUILayout.Button("Load Event Group Data"))
         {
             LoadEventGroupData(gameDataManager);
@@ -85,6 +90,7 @@ public class GameDataManagerEditor : Editor
     /// </summary>
     private void LoadAllGameData(GameDataManager gameDataManager)
     {
+        LoadTileMapData(gameDataManager);
         LoadEventGroupData(gameDataManager);
         LoadFactionData(gameDataManager);
         LoadCommonResearchData(gameDataManager);
@@ -97,6 +103,32 @@ public class GameDataManagerEditor : Editor
 
         EditorUtility.SetDirty(gameDataManager);
         Debug.Log("All game data has been loaded automatically.");
+    }
+
+    /// <summary>
+    /// 타일맵 데이터 자동 로딩
+    /// </summary>
+    private void LoadTileMapData(GameDataManager gameDataManager)
+    {
+        string[] guids = AssetDatabase.FindAssets("t:TileMapData");
+        List<TileMapData> tileMapDataList = guids
+            .Select(guid => AssetDatabase.LoadAssetAtPath<TileMapData>(AssetDatabase.GUIDToAssetPath(guid)))
+            .Where(data => data != null)
+            .ToList();
+
+        SerializedObject serializedObject = new SerializedObject(gameDataManager);
+        SerializedProperty tileMapDataProperty = serializedObject.FindProperty("m_tileMapDataList");
+        
+        tileMapDataProperty.ClearArray();
+        tileMapDataProperty.arraySize = tileMapDataList.Count;
+        
+        for (int i = 0; i < tileMapDataList.Count; i++)
+        {
+            tileMapDataProperty.GetArrayElementAtIndex(i).objectReferenceValue = tileMapDataList[i];
+        }
+
+        serializedObject.ApplyModifiedProperties();
+        Debug.Log($"{tileMapDataList.Count} tile map data loaded.");
     }
 
     /// <summary>
