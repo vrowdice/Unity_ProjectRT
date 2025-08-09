@@ -59,7 +59,7 @@ public class MapDataGenerator
         InitializeMap(mapData);
         GenerateRoads(mapData);
         PlaceSpecialSettlements(mapData);
-        AssignTerrainsToRemainingTiles(mapData);
+        AssignTerrainsToAllTiles(mapData);
 
         return mapData;
     }
@@ -175,7 +175,7 @@ public class MapDataGenerator
     {
         if (x >= 0 && x < mapSize.x && y >= 0 && y < mapSize.y)
         {
-            return mapData[x, y].m_terrainType == TerrainType.TYPE.Road;
+            return mapData[x, y].m_isRoad;
         }
         return false;
     }
@@ -237,13 +237,25 @@ public class MapDataGenerator
 
         foreach (var move in possibleMoves)
         {
-            if (IsValidMove(mapData, move.x, move.y) && !IsRoad(mapData, move.x, move.y))
+            if (IsValidMove(mapData, move.x, move.y) && 
+                !IsRoad(mapData, move.x, move.y) && 
+                !IsImpassableTerrain(mapData[move.x, move.y].m_terrainType))
             {
                 return move;
             }
         }
 
-        // 모든 방향이 막혀있으면 기존 도로를 사용하되, 목표에 가까워지는 방향 선택
+        // 모든 방향이 막혀있으면 기존 도로를 사용하되, 통과 가능한 지형 중에서 목표에 가까워지는 방향 선택
+        foreach (var move in possibleMoves)
+        {
+            if (IsValidMove(mapData, move.x, move.y) && 
+                !IsImpassableTerrain(mapData[move.x, move.y].m_terrainType))
+            {
+                return move;
+            }
+        }
+
+        // 마지막 수단: 통과 불가능한 지형이라도 유효한 범위 내에서 이동
         foreach (var move in possibleMoves)
         {
             if (IsValidMove(mapData, move.x, move.y))
@@ -261,15 +273,23 @@ public class MapDataGenerator
         return x >= 0 && x < mapSize.x && y >= 0 && y < mapSize.y;
     }
 
+    private bool IsImpassableTerrain(TerrainType.TYPE terrainType)
+    {
+        return terrainType == TerrainType.TYPE.Mountain || 
+               terrainType == TerrainType.TYPE.River || 
+               terrainType == TerrainType.TYPE.Volcano;
+    }
+
 
 
     private void MarkTileAsRoad(TileMapState[,] mapData, int x, int y)
     {
         if (x >= 0 && x < mapSize.x && y >= 0 && y < mapSize.y)
         {
-            if (mapData[x, y].m_terrainType == TerrainType.TYPE.None)
+            // 통과할 수 없는 지형에는 길을 설정할 수 없음
+            if (!IsImpassableTerrain(mapData[x, y].m_terrainType))
             {
-                ApplyTerrainTemplate(mapData[x, y], TerrainType.TYPE.Road);
+                mapData[x, y].m_isRoad = true;
             }
         }
     }
@@ -365,15 +385,14 @@ public class MapDataGenerator
                 areaConstraint(neighbor.x, neighbor.y) &&
                 !currentTiles.Contains(neighbor) &&
                 !frontier.Contains(neighbor) &&
-                (mapData[neighbor.x, neighbor.y].m_terrainType == TerrainType.TYPE.None || 
-                 mapData[neighbor.x, neighbor.y].m_terrainType == TerrainType.TYPE.Road))
+                mapData[neighbor.x, neighbor.y].m_terrainType == TerrainType.TYPE.None)
             {
                 frontier.Add(neighbor);
             }
         }
     }
 
-    private void AssignTerrainsToRemainingTiles(TileMapState[,] mapData)
+    private void AssignTerrainsToAllTiles(TileMapState[,] mapData)
     {
         for (int x = 0; x < mapSize.x; x++)
         {
@@ -391,7 +410,7 @@ public class MapDataGenerator
     private TerrainType.TYPE GetTerrainTypeWithNeighborInfluence(TileMapState[,] mapData, int x, int y)
     {
         var weightedList = terrainTemplates
-            .Where(t => t.m_terrainType != friendlySettlementTerrain && t.m_terrainType != enemySettleTerrain && t.m_terrainType != TerrainType.TYPE.Road && t.m_terrainType != TerrainType.TYPE.None)
+            .Where(t => t.m_terrainType != friendlySettlementTerrain && t.m_terrainType != enemySettleTerrain && t.m_terrainType != TerrainType.TYPE.None)
             .Select(t => new { t.m_terrainType, t.m_weight })
             .ToList();
 
