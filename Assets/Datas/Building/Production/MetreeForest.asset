@@ -14,9 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_code: 20006
   m_buildingType: 0
-  m_name: "Meteorite Forest"
-  m_description: "A place where meteorite trees that have absorbed meteorite components melted into the ground are located. Strong tools are needed for harvesting.\r"
+  m_name: Meteorite Forest
+  m_description: "A place where meteorite trees that have absorbed meteorite components
+    melted into the ground are located. Strong tools are needed for harvesting.\r"
   m_icon: {fileID: 0}
+  m_initialAmount: -1
   m_requireResourceList:
   - m_type: 1
     m_amount: 100

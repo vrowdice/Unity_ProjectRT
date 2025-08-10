@@ -4,7 +4,6 @@ public class TerrainType
     {
         None,
         Settlement,
-        Road,
         Forest,
         Grove,
         AncientRuins,

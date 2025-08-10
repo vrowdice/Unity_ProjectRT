@@ -131,7 +131,10 @@ public class GameDataManager : MonoBehaviour
         {
             if (!m_buildingEntryDic.ContainsKey(building.m_code))
             {
-                m_buildingEntryDic.Add(building.m_code, new BuildingEntry(building));
+                var buildingEntry = new BuildingEntry(building);
+                // Set initial amount from BuildingData
+                buildingEntry.m_state.m_amount = building.m_initialAmount;
+                m_buildingEntryDic.Add(building.m_code, buildingEntry);
             }
         }
     }
@@ -364,6 +367,25 @@ public class GameDataManager : MonoBehaviour
         for (int i = 0; i < buildingCount; i++)
         {
             ProbabilityUtils.GetRandomElement(BuildingEntryDict).Value.m_state.m_amount++;
+        }
+    }
+
+    public void AddSpecificBuilding(string buildingCode, int count = 1)
+    {
+        if (string.IsNullOrEmpty(buildingCode))
+        {
+            Debug.LogWarning("Building code is empty.");
+            return;
+        }
+
+        if (m_buildingEntryDic.TryGetValue(buildingCode, out var buildingEntry))
+        {
+            buildingEntry.m_state.m_amount += count;
+            Debug.Log($"Building '{buildingCode}' {count} added. Total count: {buildingEntry.m_state.m_amount}");
+        }
+        else
+        {
+            Debug.LogWarning($"Building code '{buildingCode}' not found.");
         }
     }
 

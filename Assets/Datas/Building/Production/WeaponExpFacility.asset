@@ -14,9 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_code: 20008
   m_buildingType: 0
-  m_name: "Weapon Testing Facility"
-  m_description: "A place where troops are gathered after battle to hear evaluations about weapons and research improvements.\r"
+  m_name: Weapon Testing Facility
+  m_description: "A place where troops are gathered after battle to hear evaluations
+    about weapons and research improvements.\r"
   m_icon: {fileID: 0}
+  m_initialAmount: -1
   m_requireResourceList:
   - m_type: 0
     m_amount: 75
@@ -24,4 +26,4 @@ MonoBehaviour:
     m_amount: 75
   m_productionList:
   - m_type: 3
-    m_amount: 50 
+    m_amount: 50

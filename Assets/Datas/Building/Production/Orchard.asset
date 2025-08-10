@@ -14,9 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_code: 20005
   m_buildingType: 0
-  m_name: "Orchard"
-  m_description: "Fruit trees have been a major resource responsible for food and wood on the continent for a long time.\r"
+  m_name: Orchard
+  m_description: "Fruit trees have been a major resource responsible for food and
+    wood on the continent for a long time.\r"
   m_icon: {fileID: 0}
+  m_initialAmount: -1
   m_requireResourceList:
   - m_type: 0
     m_amount: 80
@@ -28,4 +30,4 @@ MonoBehaviour:
   - m_type: 0
     m_amount: 20
   - m_type: 2
-    m_amount: 30 
+    m_amount: 30

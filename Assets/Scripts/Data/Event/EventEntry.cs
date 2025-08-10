@@ -26,6 +26,8 @@ public class EventEntry
         {
             m_state.m_territoryResourceModDic[argType] = 1.0f;
             m_state.m_buildingResourceModDic[argType] = 1.0f;
+            m_state.m_territoryResourceAddDic[argType] = 0.0f;
+            m_state.m_buildingResourceAddDic[argType] = 0.0f;
         }
 
         foreach(KeyValuePair<int, EventGroupData> item in m_groupDataDic)

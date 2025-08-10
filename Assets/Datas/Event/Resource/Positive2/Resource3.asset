@@ -20,4 +20,4 @@ MonoBehaviour:
   m_conditionList:
   - {fileID: 11400000, guid: f509efa63815e2c44a523fb75a80941d, type: 2}
   m_effectList:
-  - {fileID: 11400000, guid: 5feab1c5bff6920469ecd7a621d014f3, type: 2}
+  - {fileID: 11400000, guid: 15db268384c57ce47a8eb32a5c504d63, type: 2}

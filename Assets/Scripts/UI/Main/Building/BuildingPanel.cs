@@ -242,7 +242,7 @@ public class BuildingPanel : BasePanel
 
         foreach (BuildingBtn item in m_bulidingBtnList)
         {
-            m_gameDataManager.BuildingEntryDict[item.Code].m_state.m_amount = item.GetTotalCount();
+            m_gameDataManager.BuildingEntryDict[item.Code].m_state.m_amount = item.TotalCount;
         }
 
         ResetState();

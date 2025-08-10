@@ -19,4 +19,4 @@ MonoBehaviour:
   m_description: Nag11
   m_conditionList: []
   m_effectList:
-  - {fileID: 11400000, guid: 768c25a0bed8c4349a3e5e54f245c486, type: 2}
+  - {fileID: 11400000, guid: 5ee692398da7dea438e8dc0f594270a1, type: 2}

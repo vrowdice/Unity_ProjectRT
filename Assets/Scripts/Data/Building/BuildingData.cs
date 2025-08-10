@@ -14,6 +14,9 @@ public class BuildingData : ScriptableObject
 
     public Sprite m_icon;
 
+    [Header("Initial Settings")]
+    public int m_initialAmount = 0;
+
     public List<ResourceAmount> m_requireResourceList = new List<ResourceAmount>();
     public List<ResourceAmount> m_productionList = new List<ResourceAmount>();
 

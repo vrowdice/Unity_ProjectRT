@@ -14,9 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_code: 20009
   m_buildingType: 0
-  m_name: "Pharmacy"
-  m_description: "A place with a bad reputation due to the characteristic bad smell of medicinal herbs.\r"
+  m_name: Pharmacy
+  m_description: "A place with a bad reputation due to the characteristic bad smell
+    of medicinal herbs.\r"
   m_icon: {fileID: 0}
+  m_initialAmount: -1
   m_requireResourceList:
   - m_type: 0
     m_amount: 80
@@ -28,4 +30,4 @@ MonoBehaviour:
   - m_type: 2
     m_amount: 20
   - m_type: 3
-    m_amount: 40 
+    m_amount: 40

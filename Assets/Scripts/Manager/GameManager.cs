@@ -254,15 +254,26 @@ public class GameManager : MonoBehaviour
 
             foreach (var production in building.m_state.m_calculatedProductionList)
             {
-                float modifier = 1f;
-                if (m_gameDataManager.EventEntry.m_state.m_buildingResourceModDic.TryGetValue(production.m_type, out float value))
+                float multiplier = 1f;
+                float addition = 0f;
+                
+                // 곱연산 적용
+                if (m_gameDataManager.EventEntry.m_state.m_buildingResourceModDic.TryGetValue(production.m_type, out float modValue))
                 {
-                    modifier = (value == 0f) ? 1f : value;
+                    multiplier = (modValue == 0f) ? 1f : modValue;
+                }
+                
+                // 합연산 적용
+                if (m_gameDataManager.EventEntry.m_state.m_buildingResourceAddDic.TryGetValue(production.m_type, out float addValue))
+                {
+                    addition = addValue;
                 }
 
                 if (m_producedResourcesDict.ContainsKey(production.m_type))
                 {
-                    m_producedResourcesDict[production.m_type] += (long)(production.m_amount * modifier);
+                    // 곱연산 후 합연산 적용
+                    long finalAmount = (long)(production.m_amount * multiplier + addition);
+                    m_producedResourcesDict[production.m_type] += finalAmount;
                 }
                 else
                 {
