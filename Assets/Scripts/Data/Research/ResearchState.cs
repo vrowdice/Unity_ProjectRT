@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 public class ResearchState
 {
     public bool m_isLocked = false;

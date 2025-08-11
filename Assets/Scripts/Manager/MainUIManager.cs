@@ -176,10 +176,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
 
     public void SetResourceIconButton()
     {
-        m_woodIconBtn.onClick.AddListener(() => SetResourceText(ResourceType.TYPE.Wood));
-        m_metalIconBtn.onClick.AddListener(() => SetResourceText(ResourceType.TYPE.Iron));
-        m_foodIconBtn.onClick.AddListener(() => SetResourceText(ResourceType.TYPE.Food));
-        m_techIconBtn.onClick.AddListener(() => SetResourceText(ResourceType.TYPE.Tech));
+
     }
 
     public void SetResourceAddInfoPanel()

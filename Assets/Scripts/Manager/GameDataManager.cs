@@ -41,7 +41,15 @@ public class GameDataManager : MonoBehaviour
 
     // 게임 시스템 엔트리
     private GameBalanceEntry m_gameBalanceEntry;
-    private EventEntry m_eventEntry;
+
+    // 이벤트 이펙트 관리 (새로 추가)
+    private List<EffectBase> m_activeResearchEffects = new();
+    private List<EffectBase> m_activeEventEffects = new();
+
+    // 이벤트 시스템 통합 (EventEntry 기능)
+    private Dictionary<int, EventGroupData> m_eventGroupDataDic = new();
+    private Dictionary<int, EventGroupState> m_eventGroupStateDic = new();
+    private EventState m_eventState = new();
 
     // 프로퍼티들
     public Dictionary<TerrainType.TYPE, TileMapData> TileMapDataDict => m_tileMapDataDic;
@@ -51,7 +59,7 @@ public class GameDataManager : MonoBehaviour
     public List<RequestState> AcceptableRequestList => m_acceptableRequestList;
     public List<RequestState> AcceptedRequestList => m_acceptedRequestList;
     public GameBalanceEntry GameBalanceEntry => m_gameBalanceEntry;
-    public EventEntry EventEntry => m_eventEntry;
+    public EventState EventState => m_eventState;
     public TileMapState[,] TileMap => m_tileMap;
 
     #region Unity Lifecycle
@@ -74,7 +82,7 @@ public class GameDataManager : MonoBehaviour
         InitDict();
         InitIconDict();
         InitBalanceEntry();
-        InitEventEntry();
+        InitEventSystem();
         GenerateTileMap();
     }
 
@@ -182,9 +190,32 @@ public class GameDataManager : MonoBehaviour
         GameBalanceEntry.m_state.m_dateMul = 1.0f;
     }
 
-    private void InitEventEntry()
+    private void InitEventSystem()
     {
-        m_eventEntry = new EventEntry(m_eventGroupDataList, this);
+        // 이벤트 상태 초기화
+        m_eventState.m_maxEvent = m_gameBalanceEntry.m_data.m_firstEventSlot;
+
+        // 이벤트 그룹 데이터 초기화
+        foreach (EventGroupData item in m_eventGroupDataList)
+        {
+            item.Init(this);
+            m_eventGroupDataDic[item.m_eventGroupKey] = item;
+        }
+
+        // 리소스 수정 딕셔너리 초기화
+        foreach (ResourceType.TYPE argType in EnumUtils.GetAllEnumValues<ResourceType.TYPE>())
+        {
+            m_eventState.m_territoryResourceModDic[argType] = 1.0f;
+            m_eventState.m_buildingResourceModDic[argType] = 1.0f;
+            m_eventState.m_territoryResourceAddDic[argType] = 0.0f;
+            m_eventState.m_buildingResourceAddDic[argType] = 0.0f;
+        }
+
+        // 이벤트 그룹 상태 초기화
+        foreach(KeyValuePair<int, EventGroupData> item in m_eventGroupDataDic)
+        {
+            m_eventGroupStateDic[item.Key] = new EventGroupState(item.Key, item.Value.m_firstPercent);
+        }
     }
 
     /// <summary>
@@ -361,31 +392,482 @@ public class GameDataManager : MonoBehaviour
     #endif
     #endregion
 
-    #region Game Actions
-    public void RandomBuilding(int buildingCount)
+    #region Event System Management
+    /// <summary>
+    /// 날짜 증가 처리 확률성 이벤트 발생
+    /// </summary>
+    /// <returns>이벤트 발생 여부</returns>
+    public bool ProcessEventDate()
     {
-        for (int i = 0; i < buildingCount; i++)
+        bool isAddEvent = false;
+
+        // 진행중인 이벤트 지속시간을 감소시키고 0이면 비활성화
+        for (int i = m_eventState.m_activeEventList.Count - 1; i >= 0; i--)
         {
-            ProbabilityUtils.GetRandomElement(BuildingEntryDict).Value.m_state.m_amount++;
+            if (m_eventState.m_activeEventList[i].Tick(this))
+            {
+                m_eventState.m_activeEventList.RemoveAt(i);
+            }
+        }
+
+        // 그룹별 이벤트 확률을 증가시킴
+        foreach (KeyValuePair<int, EventGroupState> groupStateItem in m_eventGroupStateDic)
+        {
+            // 그룹별 이벤트 확률을 확인하여 증가시킴
+            groupStateItem.Value.m_percent += m_eventGroupDataDic[groupStateItem.Key].m_dateChangePercent;
+            Debug.Log("Event Group Key: " + groupStateItem.Key + ", Percent: " + groupStateItem.Value.m_percent);
+
+            // 이미 진행중인 이벤트가 있으면 건너뜀
+            if (m_eventState.m_activeEventList.Count >= m_eventState.m_maxEvent)
+            {
+                continue;
+            }
+
+            // 확률 확인하여 그룹 이벤트 활성화 여부 결정
+            if (ProbabilityUtils.RollPercent(groupStateItem.Value.m_percent))
+            {
+                // 이벤트 슬롯이 가득 찬 경우 확률을 초기화하고 건너뜀
+                if (m_eventState.m_activeEventList.Count >= m_eventState.m_maxEvent)
+                {
+                    groupStateItem.Value.m_percent = m_eventGroupDataDic[groupStateItem.Key].m_firstPercent;
+                    continue;
+                }
+
+                // 이벤트 활성화되면 확률을 초기화
+                groupStateItem.Value.m_percent = m_eventGroupDataDic[groupStateItem.Key].m_firstPercent;
+
+                // 그룹에서 랜덤 이벤트를 선택하여 활성화
+                EventData eventData = ProbabilityUtils.GetRandomElement(m_eventGroupDataDic[groupStateItem.Key].m_dataList);
+                
+                // 조건을 확인하고 조건이 만족되면 이벤트를 활성화
+                bool conditionsMet = true;
+                foreach (ConditionBase condition in eventData.m_conditionList)
+                {
+                    condition.Initialize(this);
+                    if (!condition.IsSatisfied())
+                    {
+                        conditionsMet = false;
+                        break;
+                    }
+                }
+
+                if (conditionsMet)
+                {
+                    ActiveEvent newEvent = eventData.Activate(this);
+                    m_eventState.m_activeEventList.Add(newEvent);
+                    isAddEvent = true;
+                }
+            }
+        }
+
+        return isAddEvent;
+    }
+
+    /// <summary>
+    /// 활성 이벤트 목록 가져오기
+    /// </summary>
+    /// <returns>활성 이벤트 리스트</returns>
+    public List<ActiveEvent> GetActiveEvents()
+    {
+        return m_eventState.m_activeEventList;
+    }
+
+    /// <summary>
+    /// 이벤트 상태 가져오기
+    /// </summary>
+    /// <returns>이벤트 상태</returns>
+    public EventState GetEventState()
+    {
+        return m_eventState;
+    }
+    #endregion
+
+    #region Event Effect Management (Internal)
+    /// <summary>
+    /// 이벤트 이펙트를 활성 이펙트 리스트에 추가 (내부용)
+    /// </summary>
+    /// <param name="effect">추가할 이펙트</param>
+    public void AddActiveEventEffect(EffectBase effect)
+    {
+        if (!m_activeEventEffects.Contains(effect))
+        {
+            m_activeEventEffects.Add(effect);
         }
     }
 
-    public void AddSpecificBuilding(string buildingCode, int count = 1)
+    /// <summary>
+    /// 이벤트 이펙트를 활성 이펙트 리스트에서 제거 (내부용)
+    /// </summary>
+    /// <param name="effect">제거할 이펙트</param>
+    public void RemoveActiveEventEffect(EffectBase effect)
+    {
+        m_activeEventEffects.Remove(effect);
+    }
+
+    /// <summary>
+    /// 모든 이벤트 이펙트 제거 (내부용)
+    /// </summary>
+    public void ClearActiveEventEffects()
+    {
+        m_activeEventEffects.Clear();
+    }
+    #endregion
+
+    #region Effect Management
+    /// <summary>
+    /// 활성화된 모든 이펙트 목록 가져오기
+    /// </summary>
+    /// <returns>활성 이펙트 리스트</returns>
+    public List<EffectBase> GetActiveEffects()
+    {
+        return m_activeEventEffects;
+    }
+
+    /// <summary>
+    /// 특정 이벤트로 활성화된 이펙트 목록 가져오기
+    /// </summary>
+    /// <param name="eventName">이벤트 이름</param>
+    /// <returns>해당 이벤트로 활성화된 이펙트 리스트</returns>
+    public List<EffectBase> GetActiveEffectsByEvent(string eventName)
+    {
+        return m_activeEventEffects.FindAll(e => e.ActivatedEventName == eventName);
+    }
+
+    /// <summary>
+    /// 모든 활성 이펙트 정보를 문자열로 반환
+    /// </summary>
+    /// <returns>이펙트 정보 문자열</returns>
+    public string GetAllEffectInfo()
+    {
+        if (m_activeEventEffects.Count == 0)
+        {
+            return "활성화된 이펙트가 없습니다.";
+        }
+        
+        var effectInfos = m_activeEventEffects.Select(e => e.GetEffectInfo());
+        return string.Join("\n\n", effectInfos);
+    }
+
+    /// <summary>
+    /// 특정 이벤트의 이펙트 정보를 문자열로 반환
+    /// </summary>
+    /// <param name="eventName">이벤트 이름</param>
+    /// <returns>이벤트 이펙트 정보 문자열</returns>
+    public string GetEventEffectInfo(string eventName)
+    {
+        var eventEffects = GetActiveEffectsByEvent(eventName);
+        
+        if (eventEffects.Count == 0)
+        {
+            return $"'{eventName}' 이벤트의 활성 이펙트가 없습니다.";
+        }
+        
+        var effectInfos = eventEffects.Select(e => e.GetEffectInfo());
+        return $"'{eventName}' 이벤트 이펙트:\n" + string.Join("\n\n", effectInfos);
+    }
+
+    /// <summary>
+    /// 특정 이벤트로 활성화된 이펙트들을 비활성화
+    /// </summary>
+    /// <param name="eventName">이벤트 이름</param>
+    /// <returns>비활성화된 이펙트 수</returns>
+    public int DeactivateEffectsByEvent(string eventName)
+    {
+        int deactivatedCount = 0;
+        var effectsToDeactivate = GetActiveEffectsByEvent(eventName).ToList();
+        
+        foreach (var effect in effectsToDeactivate)
+        {
+            if (effect.DeactivateEffect(this))
+            {
+                m_activeEventEffects.Remove(effect);
+                deactivatedCount++;
+            }
+        }
+        
+        return deactivatedCount;
+    }
+
+    /// <summary>
+    /// 모든 활성 이펙트 비활성화
+    /// </summary>
+    /// <returns>비활성화된 이펙트 수</returns>
+    public int DeactivateAllEffects()
+    {
+        int deactivatedCount = 0;
+        var effectsToDeactivate = m_activeEventEffects.ToList();
+        
+        foreach (var effect in effectsToDeactivate)
+        {
+            if (effect.DeactivateEffect(this))
+            {
+                m_activeEventEffects.Remove(effect);
+                deactivatedCount++;
+            }
+        }
+        
+        return deactivatedCount;
+    }
+
+    /// <summary>
+    /// 디버그용: 모든 이펙트 강제 초기화
+    /// </summary>
+    public void ForceResetAllEffects()
+    {
+        foreach (var effect in m_activeEventEffects)
+        {
+            effect.ForceReset();
+        }
+        ClearActiveEventEffects();
+        Debug.Log("All effects force reset.");
+    }
+    #endregion
+
+    #region Research Effect Management
+    /// <summary>
+    /// 모든 연구에서 활성화된 이펙트 목록 가져오기
+    /// </summary>
+    /// <returns>모든 연구의 활성 이펙트 리스트</returns>
+    public List<EffectBase> GetAllResearchEffects()
+    {
+        List<EffectBase> allEffects = new List<EffectBase>();
+        
+        foreach (var researchEntry in m_commonResearchEntryDic.Values)
+        {
+            allEffects.AddRange(researchEntry.GetActiveEffects());
+        }
+        
+        return allEffects;
+    }
+
+    /// <summary>
+    /// 특정 연구의 이펙트 목록 가져오기
+    /// </summary>
+    /// <param name="researchCode">연구 코드</param>
+    /// <returns>해당 연구의 활성 이펙트 리스트</returns>
+    public List<EffectBase> GetResearchEffects(string researchCode)
+    {
+        if (m_commonResearchEntryDic.TryGetValue(researchCode, out var researchEntry))
+        {
+            return researchEntry.GetActiveEffects();
+        }
+        
+        return new List<EffectBase>();
+    }
+
+    /// <summary>
+    /// 모든 연구 이펙트 정보를 문자열로 반환
+    /// </summary>
+    /// <returns>모든 연구 이펙트 정보 문자열</returns>
+    public string GetAllResearchEffectInfo()
+    {
+        var researchInfos = m_commonResearchEntryDic.Values
+            .Where(r => r.m_state.m_isResearched)
+            .Select(r => r.GetResearchEffectInfo());
+        
+        if (!researchInfos.Any())
+        {
+            return "완료된 연구가 없습니다.";
+        }
+        
+        return string.Join("\n\n", researchInfos);
+    }
+
+    /// <summary>
+    /// 특정 연구의 이펙트 정보를 문자열로 반환
+    /// </summary>
+    /// <param name="researchCode">연구 코드</param>
+    /// <returns>연구 이펙트 정보 문자열</returns>
+    public string GetResearchEffectInfo(string researchCode)
+    {
+        if (m_commonResearchEntryDic.TryGetValue(researchCode, out var researchEntry))
+        {
+            return researchEntry.GetResearchEffectInfo();
+        }
+        
+        return $"연구 코드 '{researchCode}'를 찾을 수 없습니다.";
+    }
+
+    /// <summary>
+    /// 연구 완료 처리
+    /// </summary>
+    /// <param name="researchCode">연구 코드</param>
+    /// <returns>성공 여부</returns>
+    public bool CompleteResearch(string researchCode)
+    {
+        if (m_commonResearchEntryDic.TryGetValue(researchCode, out var researchEntry))
+        {
+            researchEntry.CompleteResearch(this);
+            return true;
+        }
+        
+        Debug.LogWarning($"Research code '{researchCode}' not found.");
+        return false;
+    }
+
+    /// <summary>
+    /// 연구 되돌리기 (디버그용)
+    /// </summary>
+    /// <param name="researchCode">연구 코드</param>
+    /// <returns>성공 여부</returns>
+    public bool UndoResearch(string researchCode)
+    {
+        if (m_commonResearchEntryDic.TryGetValue(researchCode, out var researchEntry))
+        {
+            researchEntry.UndoResearch(this);
+            return true;
+        }
+        
+        Debug.LogWarning($"Research code '{researchCode}' not found.");
+        return false;
+    }
+
+    /// <summary>
+    /// 모든 연구 이펙트 비활성화
+    /// </summary>
+    /// <returns>비활성화된 이펙트 수</returns>
+    public int DeactivateAllResearchEffects()
+    {
+        int deactivatedCount = 0;
+        
+        foreach (var researchEntry in m_commonResearchEntryDic.Values)
+        {
+            if (researchEntry.m_state.m_isResearched)
+            {
+                researchEntry.DeactivateResearchEffects(this);
+                deactivatedCount += researchEntry.GetActiveEffects().Count;
+            }
+        }
+        
+        return deactivatedCount;
+    }
+
+    /// <summary>
+    /// 모든 연구 이펙트 강제 초기화 (디버그용)
+    /// </summary>
+    public void ForceResetAllResearchEffects()
+    {
+        foreach (var researchEntry in m_commonResearchEntryDic.Values)
+        {
+            foreach (var effect in researchEntry.GetActiveEffects())
+            {
+                effect.ForceReset();
+            }
+            researchEntry.ClearActiveEffects();
+        }
+        Debug.Log("All research effects force reset.");
+    }
+    #endregion
+
+    #region Combined Effect Management
+    /// <summary>
+    /// 모든 활성 이펙트 목록 가져오기 (이벤트 + 연구)
+    /// </summary>
+    /// <returns>모든 활성 이펙트 리스트</returns>
+    public List<EffectBase> GetAllActiveEffects()
+    {
+        List<EffectBase> allEffects = new List<EffectBase>();
+        
+        // 이벤트 이펙트 추가
+        allEffects.AddRange(GetActiveEffects());
+        
+        // 연구 이펙트 추가
+        allEffects.AddRange(GetAllResearchEffects());
+        
+        return allEffects;
+    }
+
+    /// <summary>
+    /// 모든 활성 이펙트 정보를 문자열로 반환 (이벤트 + 연구)
+    /// </summary>
+    /// <returns>모든 활성 이펙트 정보 문자열</returns>
+    public string GetAllActiveEffectInfo()
+    {
+        List<string> allInfo = new List<string>();
+        
+        // 이벤트 이펙트 정보
+        string eventEffects = GetAllEffectInfo();
+        if (eventEffects != "활성화된 이펙트가 없습니다.")
+        {
+            allInfo.Add("=== 이벤트 이펙트 ===");
+            allInfo.Add(eventEffects);
+        }
+        
+        // 연구 이펙트 정보
+        string researchEffects = GetAllResearchEffectInfo();
+        if (researchEffects != "완료된 연구가 없습니다.")
+        {
+            allInfo.Add("=== 연구 이펙트 ===");
+            allInfo.Add(researchEffects);
+        }
+        
+        if (allInfo.Count == 0)
+        {
+            return "활성화된 이펙트가 없습니다.";
+        }
+        
+        return string.Join("\n\n", allInfo);
+    }
+
+    /// <summary>
+    /// 모든 이펙트 비활성화 (이벤트 + 연구)
+    /// </summary>
+    /// <returns>비활성화된 이펙트 수</returns>
+    public int DeactivateAllEffectsCombined()
+    {
+        int eventDeactivated = DeactivateAllEffects();
+        int researchDeactivated = DeactivateAllResearchEffects();
+        
+        return eventDeactivated + researchDeactivated;
+    }
+
+    /// <summary>
+    /// 모든 이펙트 강제 초기화 (디버그용)
+    /// </summary>
+    public void ForceResetAllEffectsCombined()
+    {
+        ForceResetAllEffects();
+        ForceResetAllResearchEffects();
+        Debug.Log("All effects (event + research) force reset.");
+    }
+    #endregion
+
+    #region Game Actions
+    public List<string> RandomBuilding(int buildingCount)
+    {
+        List<string> addedBuildings = new List<string>();
+        
+        for (int i = 0; i < buildingCount; i++)
+        {
+            var randomBuilding = ProbabilityUtils.GetRandomElement(BuildingEntryDict);
+            if (randomBuilding.Value != null)
+            {
+                randomBuilding.Value.m_state.m_amount++;
+                addedBuildings.Add(randomBuilding.Key);
+            }
+        }
+        
+        return addedBuildings;
+    }
+
+    public bool AddSpecificBuilding(string buildingCode, int count = 1)
     {
         if (string.IsNullOrEmpty(buildingCode))
         {
             Debug.LogWarning("Building code is empty.");
-            return;
+            return false;
         }
 
         if (m_buildingEntryDic.TryGetValue(buildingCode, out var buildingEntry))
         {
             buildingEntry.m_state.m_amount += count;
             Debug.Log($"Building '{buildingCode}' {count} added. Total count: {buildingEntry.m_state.m_amount}");
+            return true;
         }
         else
         {
             Debug.LogWarning($"Building code '{buildingCode}' not found.");
+            return false;
         }
     }
 

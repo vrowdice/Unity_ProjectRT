@@ -26,11 +26,16 @@ public class ResearchData : ScriptableObject
     /// 연구 완료 시 모든 이펙트 활성화
     /// </summary>
     /// <param name="dataManager">게임 데이터 매니저</param>
-    public void ActivateAllEffect(GameDataManager dataManager)
+    /// <param name="researchEntry">연구 엔트리 (이펙트 추적용)</param>
+    public void ActivateAllEffect(GameDataManager dataManager, ResearchEntry researchEntry)
     {
-        foreach(EffectBase item in m_effects)
+        foreach(EffectBase effect in m_effects)
         {
-            item.Activate(dataManager);
+            if (effect.ActivateEffect(dataManager, m_name))
+            {
+                // 활성화 성공 시 ResearchEntry에 추가
+                researchEntry.AddActiveEffect(effect);
+            }
         }
     }
 
@@ -38,11 +43,15 @@ public class ResearchData : ScriptableObject
     /// 연구 효과 비활성화 (필요시 사용)
     /// </summary>
     /// <param name="dataManager">게임 데이터 매니저</param>
-    public void DeactivateAllEffect(GameDataManager dataManager)
+    /// <param name="researchEntry">연구 엔트리 (이펙트 추적용)</param>
+    public void DeactivateAllEffect(GameDataManager dataManager, ResearchEntry researchEntry)
     {
-        foreach (EffectBase item in m_effects)
+        foreach (EffectBase effect in m_effects)
         {
-            item.Deactivate(dataManager);
+            if (effect.DeactivateEffect(dataManager))
+            {
+                researchEntry.RemoveActiveEffect(effect);
+            }
         }
     }
 }

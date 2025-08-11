@@ -8,11 +8,11 @@ using UnityEngine.UI;
 public class BattleLoadingManager : MonoBehaviour
 {
     // Start is called before the first frame update
-    [Header("·Îµù UI")]
+    [Header("ï¿½Îµï¿½ UI")]
     public GameObject loadingPanel;
     private Image loadingBar;
 
-    [Header("°ÔÀÓ ÇÊµå")]
+    [Header("ï¿½ï¿½ï¿½ï¿½ ï¿½Êµï¿½")]
     public GameObject battleField;
 
     [HideInInspector] public Vector3 defenseCameraPoint;
@@ -23,11 +23,11 @@ public class BattleLoadingManager : MonoBehaviour
     private Vector3 spawnAreaSize;
     public GameObject battleBeforeUI;
 
-    [Header("°ÔÀÓ µ¥ÀÌÅÍ ¸Å´ÏÀú")]
+    [Header("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Å´ï¿½ï¿½ï¿½")]
     [SerializeField] private GameDataManager m_gameDataManager = null;
 
 
-    [Header("À¯´Ö µ¥ÀÌÅÍ")]
+    [Header("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½")]
     [SerializeField] private AllyArmyData allyArmyData = null;
     [SerializeField] private EnemyArmyData enemyArmyData = null;
 
@@ -35,10 +35,10 @@ public class BattleLoadingManager : MonoBehaviour
     [HideInInspector] public List<UnitStatBase> allyArmyDataList = new();
     private List<UnitStatBase> enemyArmyDataList = new();
 
-    [Header("º´·Â ¹èÄ¡ UI")]
+    [Header("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ UI")]
     [SerializeField] private GameObject DeploymentUI;
 
-    //Å×½ºÆ®¿ë ÈÄ¿¡ ½ÇÁ¦ °ªÀ¸·Î º¯°æÇØ¾ßÇÔ
+    //ï¿½×½ï¿½Æ®ï¿½ï¿½ ï¿½Ä¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¾ï¿½ï¿½ï¿½
     private bool isAttack = true;
 
 
@@ -46,7 +46,7 @@ public class BattleLoadingManager : MonoBehaviour
     {
         LodingSetting();
 
-        // ·Îµå ´Ü°è ¸®½ºÆ® ±¸¼º
+        // ï¿½Îµï¿½ ï¿½Ü°ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
         List<IEnumerator> initSteps = new()
     {
         LoadUnitData(),
@@ -77,7 +77,7 @@ public class BattleLoadingManager : MonoBehaviour
         Canvas canvas = FindObjectOfType<Canvas>();
         if (canvas == null)
         {
-            Debug.LogError("Canvas¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù!");
+            Debug.LogError("Canvasï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½!");
             return;
         }
 
@@ -86,7 +86,7 @@ public class BattleLoadingManager : MonoBehaviour
         loadingPanel.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         loadingPanel.SetActive(true);
 
-        //·Îµù È­¸é ¼¼ÆÃ
+        //ï¿½Îµï¿½ È­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         loadingPanel.SetActive(true);
         loadingBar = loadingPanel.transform.Find("LoadingBar").GetComponent<Image>();
         UpdateLoadingBar(0.0f);
@@ -103,59 +103,59 @@ public class BattleLoadingManager : MonoBehaviour
 
     private IEnumerator LoadUnitData()
     {
-        Debug.Log("º´·Â ·Îµù Áß...");
+        Debug.Log("ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½...");
 
-        // ÀÌÀü µ¥ÀÌÅÍ ÃÊ±âÈ­
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
         allyArmyDataList.Clear();
         enemyArmyDataList.Clear();
 
-        //¾Æ±º º´·Â ·Îµù
+        //ï¿½Æ±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½
         foreach (var unit in allyArmyData.units)
         {
             allyArmyDataList.Add(unit);
-            Debug.Log($"¾Æ±º À¯´Ö ÀÌ¸§: {unit.unitName}");
+            Debug.Log($"ï¿½Æ±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½: {unit.unitName}");
         }
 
-        //Àû±º º´·Â ·Îµù
+        //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½
         foreach (var unit in enemyArmyData.units)
         {
             enemyArmyDataList.Add(unit);
-            Debug.Log($"Àû±º À¯´Ö ÀÌ¸§: {unit.unitName}");
+            Debug.Log($"ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½: {unit.unitName}");
         }
 
         yield return new WaitForSeconds(0.5f);
     }
 
-    //±¸Çö ÇÊ¿ä
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
     private IEnumerator CombatTypeCheck()
     {
-        Debug.Log("ÀüÅõÅ¸ÀÔ È®ÀÎ Áß...");
+        Debug.Log("ï¿½ï¿½ï¿½ï¿½Å¸ï¿½ï¿½ È®ï¿½ï¿½ ï¿½ï¿½...");
         yield return new WaitForSeconds(0.5f);
     }
 
-    //È°¼ºÈ­µÈ ÀÌº¥Æ® È®ÀÎ
+    //È°ï¿½ï¿½È­ï¿½ï¿½ ï¿½Ìºï¿½Æ® È®ï¿½ï¿½
     private IEnumerator LoadEvent()
     {
-        Debug.Log("ÀÌº¥Æ® È®ÀÎ Áß...");
+        Debug.Log("ï¿½Ìºï¿½Æ® È®ï¿½ï¿½ ï¿½ï¿½...");
 
-        if (m_gameDataManager == null || m_gameDataManager.EventEntry == null)
+        if (m_gameDataManager == null || m_gameDataManager.EventState == null)
         {
-            Debug.LogWarning("[LoadEvent] GameDataManager ¶Ç´Â EventEntry°¡ nullÀÔ´Ï´Ù.");
+            Debug.LogWarning("[LoadEvent] GameDataManager ï¿½Ç´ï¿½ EventEntryï¿½ï¿½ nullï¿½Ô´Ï´ï¿½.");
             yield break;
         }
 
-        var activeEventList = m_gameDataManager.EventEntry.m_state.m_activeEventList;
+        var activeEventList = m_gameDataManager.EventState.m_activeEventList;
 
         if (activeEventList.Count == 0)
         {
-            Debug.Log("ÇöÀç È°¼ºÈ­µÈ ÀÌº¥Æ®°¡ ¾ø½À´Ï´Ù.");
+            Debug.Log("ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­ï¿½ï¿½ ï¿½Ìºï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
         }
         else
         {
-            Debug.Log($"ÇöÀç È°¼ºÈ­µÈ ÀÌº¥Æ® ¼ö: {activeEventList.Count}");
+            Debug.Log($"ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­ï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½ï¿½: {activeEventList.Count}");
             foreach (var evt in activeEventList)
             {
-                Debug.Log($"- ÀÌº¥Æ® ÀÌ¸§: {evt.m_eventData}, ³²Àº Áö¼ÓÀÏ: {evt.m_remainingDuration}");
+                Debug.Log($"- ï¿½Ìºï¿½Æ® ï¿½Ì¸ï¿½: {evt.m_eventData}, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: {evt.m_remainingDuration}");
             }
         }
 
@@ -165,9 +165,9 @@ public class BattleLoadingManager : MonoBehaviour
 
     private IEnumerator LoadMapSetting()
     {
-        Debug.Log("¸Ê ¼³Á¤ Áß...");
+        Debug.Log("ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½...");
 
-        // ¹è°æ ¼¼ÆÃ
+        // ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         battleField = Instantiate(battleField);
         allySpawnArea = GameObject.Find("AttackSpawnArea").transform;
         enemySpawnArea = GameObject.Find("DefenseSpawnArea").transform;
@@ -179,7 +179,7 @@ public class BattleLoadingManager : MonoBehaviour
         {
             if (unitData.prefab == null)
             {
-                Debug.LogWarning($"{unitData.unitName}ÀÇ ÇÁ¸®ÆÕÀÌ ¼³Á¤µÇÁö ¾Ê¾Ò½À´Ï´Ù.");
+                Debug.LogWarning($"{unitData.unitName}ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½.");
                 continue;
             }
 
@@ -207,19 +207,19 @@ public class BattleLoadingManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"{unitData.unitName}¿¡ ÅÂ±× Á¤º¸°¡ ¾ø½À´Ï´Ù.");
+                Debug.LogWarning($"{unitData.unitName}ï¿½ï¿½ ï¿½Â±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
             }
 
-            // ½ºÇÁ¶óÀÌÆ® ¼³Á¤
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
             SpriteRenderer sr = enemyUnit.GetComponent<SpriteRenderer>();
             if (sr != null && unitData.unitIllustration != null)
             {
-                // [¼öÁ¤] Sprite ¿¡¼Â¿¡ .sprite¸¦ »ç¿ëÇÏÁö ¾Ê°í Á÷Á¢ ÇÒ´ç
+                // [ï¿½ï¿½ï¿½ï¿½] Sprite ï¿½ï¿½ï¿½Â¿ï¿½ .spriteï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ò´ï¿½
                 sr.sprite = unitData.unitIllustration;
             }
             else
             {
-                Debug.LogWarning($"{unitData.unitName}¿¡ SpriteRenderer°¡ ¾ø°Å³ª unitIllustrationÀÌ ºñ¾îÀÖ½À´Ï´Ù.");
+                Debug.LogWarning($"{unitData.unitName}ï¿½ï¿½ SpriteRendererï¿½ï¿½ ï¿½ï¿½ï¿½Å³ï¿½ unitIllustrationï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½Ï´ï¿½.");
             }
         }
 
@@ -239,21 +239,21 @@ public class BattleLoadingManager : MonoBehaviour
 
     private IEnumerator SetupCamera()
     {
-        Debug.Log("Ä«¸Þ¶ó ¼³Á¤ Áß...");
+        Debug.Log("Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½...");
 
-        //Ä«¸Þ¶ó À§Ä¡ Ã£À½
+        //Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½Ä¡ Ã£ï¿½ï¿½
         mainCamra = GameObject.Find("Main Camera").GetComponent<Camera>();
         defenseCameraPoint = GameObject.Find("DefenseCameraPoint").transform.position;
         attackCameraPoint = GameObject.Find("AttackCameraPoint").transform.position;
 
         if (isAttack == true)
         {
-            //°ø°ÝÀÎ °æ¿ì Ä«¸Þ¶ó ¼³Á¤
+            //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½
             mainCamra.transform.position = attackCameraPoint;
         }
         else
         {
-            //¹æ¾îÀÎ °æ¿ì Ä«¸Þ¶ó ¼³Á¤
+            //ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½
             mainCamra.transform.position = defenseCameraPoint;
         }
         yield return new WaitForSeconds(0.5f);
@@ -264,7 +264,7 @@ public class BattleLoadingManager : MonoBehaviour
         Canvas canvas = FindObjectOfType<Canvas>();
         if (canvas == null)
         {
-            Debug.LogError("Canvas¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù!");
+            Debug.LogError("Canvasï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½!");
             return;
         }
 
