@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93fb73814869783458a2263a475b4f9c, type: 3}
+  m_Name: Volcano
+  m_EditorClassIdentifier: 
+  m_terrainType: 13
+  m_isMoveable: 0
+  m_weight: 10
+  m_closeTileMul: 0.2
+  m_woodMul: 0
+  m_iromMul: 0
+  m_foodMul: 0
+  m_techMul: 0
+  m_color: {r: 0.8, g: 0.2, b: 0.1, a: 1}

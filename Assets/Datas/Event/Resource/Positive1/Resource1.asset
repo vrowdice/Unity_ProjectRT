@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 895ca96f05c98c34d94c32946029dd9f, type: 3}
+  m_Name: Resource1
+  m_EditorClassIdentifier: 
+  m_isGood: 1
+  m_minDuration: 2
+  m_maxDuration: 4
+  m_title: Ironwood Harvest
+  m_description: Ironwood itself brings out the ultimate in efficiency. - From 'Ruo's'
+    material science lecture notes.
+  m_conditionList: []
+  m_effectList:
+  - {fileID: 11400000, guid: edbb330ad41c37540879a2122e134f52, type: 2}
+  - {fileID: 11400000, guid: d22070bcaa743004e889462b1b0e8fe0, type: 2}

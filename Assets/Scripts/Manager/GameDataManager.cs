@@ -3,278 +3,403 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// ê²Œì„ì˜ ëª¨ë“  ë°ì´í„°ë¥¼ ê´€ë¦¬í•˜ëŠ” ë§¤ë‹ˆì € í´ë˜ìŠ¤
+/// íŒ©ì…˜, ì—°êµ¬, ê±´ë¬¼, ì´ë²¤íŠ¸, ìš”ì²­ ë“±ì˜ ë°ì´í„°ë¥¼ ì¤‘ì•™ì—ì„œ ê´€ë¦¬
+/// </summary>
 public class GameDataManager : MonoBehaviour
 {
-    [System.Serializable]
-    public struct ResourceIcon
-    {
-        public ResourceType.TYPE m_type;
-        public Sprite m_icon;
-    }
-    [System.Serializable]
-    public struct TokenIcon
-    {
-        public TokenType.TYPE m_type;
-        public Sprite m_icon;
-    }
-    [System.Serializable]
-    public struct RequestIcon
-    {
-        public RequestType.TYPE m_type;
-        public Sprite m_icon;
-    }
-
     [Header("Game Data")]
-    [SerializeField]
-    private List<FactionData> m_factionDataList = new();
-    [SerializeField]
-    private List<ResearchData> m_commonResearchDataList = new();
-    [SerializeField]
-    private List<BuildingData> m_buildingDataList = new();
-    [SerializeField]
-    private List<RequestLineTemplate> m_requestLineTemplateList = new();
+    [SerializeField] private List<TileMapData> m_tileMapDataList = new();
+    [SerializeField] private List<EventGroupData> m_eventGroupDataList = new();
+    [SerializeField] private List<FactionData> m_factionDataList = new();
+    [SerializeField] private List<ResearchData> m_commonResearchDataList = new();
+    [SerializeField] private List<BuildingData> m_buildingDataList = new();
+    [SerializeField] private List<RequestLineTemplate> m_requestLineTemplateList = new();
+    [SerializeField] private RequestLineTemplate m_contactLineTemplate;
 
     [Header("Common Data")]
-    [SerializeField]
-    private List<ResourceIcon> m_resourceIconList = new();
-    [SerializeField]
-    private List<TokenIcon> m_tokenIconList = new();
-    [SerializeField]
-    private List<RequestIcon> m_requestIconList = new();
-    [SerializeField]
-    private GameBalanceData m_gameBalanceData;
+    [SerializeField] private List<ResourceIcon> m_resourceIconList = new();
+    [SerializeField] private List<TokenIcon> m_tokenIconList = new();
+    [SerializeField] private List<RequestIcon> m_requestIconList = new();
+    [SerializeField] private GameBalanceData m_gameBalanceData;
 
-    private readonly Dictionary<FactionType.TYPE, FactionEntry> m_factionEntryDict = new();
-    private readonly Dictionary<string, ResearchEntry> m_commonResearchEntryDict = new();
-    private readonly Dictionary<string, BuildingEntry> m_buildingEntryDict = new();
-    private readonly Dictionary<ResourceType.TYPE, Sprite> m_resourceIconDict = new();
-    private readonly Dictionary<TokenType.TYPE, Sprite> m_tokenIconDict = new();
-    private readonly Dictionary<RequestType.TYPE, Sprite> m_requestIconDict = new();
+    // ë°ì´í„° ë”•ì…”ë„ˆë¦¬ë“¤
+    private readonly Dictionary<TerrainType.TYPE, TileMapData> m_tileMapDataDic = new();
+    private readonly Dictionary<FactionType.TYPE, FactionEntry> m_factionEntryDic = new();
+    private readonly Dictionary<string, ResearchEntry> m_commonResearchEntryDic = new();
+    private readonly Dictionary<string, BuildingEntry> m_buildingEntryDic = new();
+    private readonly Dictionary<ResourceType.TYPE, Sprite> m_resourceIconDic = new();
+    private readonly Dictionary<TokenType.TYPE, Sprite> m_tokenIconDic = new();
+    private readonly Dictionary<RequestType.TYPE, Sprite> m_requestIconDic = new();
+    private readonly Dictionary<RequestType.TYPE, RequestLineTemplate> m_requestLineTemplateDic = new();
 
+    // ìš”ì²­ ìƒíƒœ ê´€ë¦¬
     private readonly List<RequestState> m_acceptableRequestList = new();
     private readonly List<RequestState> m_acceptedRequestList = new();
+    private TileMapState[,] m_tileMap;
 
+    // ê²Œì„ ì‹œìŠ¤í…œ ì—”íŠ¸ë¦¬
     private GameBalanceEntry m_gameBalanceEntry;
+    private EventEntry m_eventEntry;
 
-    public Dictionary<FactionType.TYPE, FactionEntry> FactionEntryDict => m_factionEntryDict;
-    public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDict;
-    public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDict;
+    // í”„ë¡œí¼í‹°ë“¤
+    public Dictionary<TerrainType.TYPE, TileMapData> TileMapDataDict => m_tileMapDataDic;
+    public Dictionary<FactionType.TYPE, FactionEntry> FactionEntryDict => m_factionEntryDic;
+    public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDic;
+    public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDic;
     public List<RequestState> AcceptableRequestList => m_acceptableRequestList;
     public List<RequestState> AcceptedRequestList => m_acceptedRequestList;
     public GameBalanceEntry GameBalanceEntry => m_gameBalanceEntry;
+    public EventEntry EventEntry => m_eventEntry;
+    public TileMapState[,] TileMap => m_tileMap;
 
+    #region Unity Lifecycle
     void Awake()
     {
-        InitializeDict();
-        InitializeIcons();
-        InitializeBalanceEntry();
+        #if UNITY_EDITOR
+        if (m_tileMapDataList.Count == 0 || m_factionDataList.Count == 0 || m_buildingDataList.Count == 0)
+        {
+            AutoLoadData();
+        }
+        #endif
+
+        InitializeGameData();
+    }
+    #endregion
+
+    #region Initialization
+    private void InitializeGameData()
+    {
+        InitDict();
+        InitIconDict();
+        InitBalanceEntry();
+        InitEventEntry();
+        GenerateTileMap();
     }
 
-    private void InitializeDict()
+    private void InitDict()
     {
-        m_factionEntryDict.Clear();
-        m_commonResearchEntryDict.Clear();
+        InitTileMapDict();
+        InitFactionDict();
+        InitResearchDict();
+        InitBuildingDict();
+        InitRequestTemplateDict();
+    }
 
+    private void InitTileMapDict()
+    {
+        m_tileMapDataDic.Clear();
+        foreach (TileMapData tileMap in m_tileMapDataList)
+        {
+            if (!m_tileMapDataDic.ContainsKey(tileMap.m_terrainType))
+            {
+                m_tileMapDataDic.Add(tileMap.m_terrainType, tileMap);
+            }
+        }
+    }
+
+    private void InitFactionDict()
+    {
+        m_factionEntryDic.Clear();
         foreach (FactionData faction in m_factionDataList)
         {
-            if (!m_factionEntryDict.ContainsKey(faction.m_factionType))
+            if (!m_factionEntryDic.ContainsKey(faction.m_factionType))
             {
-                FactionEntry _entry = new(faction);
-
-                m_factionEntryDict.Add(faction.m_factionType, _entry);
-            }
-            else
-            {
-                Debug.LogError(ExceptionMessages.ErrorNoSuchType + faction.m_factionType);
-            }
-        }
-
-        foreach (ResearchData research in m_commonResearchDataList)
-        {
-            if (!m_commonResearchEntryDict.ContainsKey(research.name))
-            {
-                ResearchEntry _entry = new(research);
-
-                research.m_code = research.name;
-                m_commonResearchEntryDict.Add(research.m_code, _entry);
-            }
-            else
-            {
-                Debug.LogError(ExceptionMessages.ErrorValueNotAllowed + research.m_code);
-            }
-        }
-        
-        foreach (BuildingData building in m_buildingDataList)
-        {
-            if (!m_buildingEntryDict.ContainsKey(building.name))
-            {
-                BuildingEntry _entry = new(building);
-
-                building.m_code = building.name;
-                m_buildingEntryDict.Add(building.m_code, _entry);
-            }
-            else
-            {
-                Debug.LogError(ExceptionMessages.ErrorValueNotAllowed + building.name);
+                m_factionEntryDic.Add(faction.m_factionType, new FactionEntry(faction));
             }
         }
     }
 
-    private void InitializeBalanceEntry()
+    private void InitResearchDict()
+    {
+        m_commonResearchEntryDic.Clear();
+        foreach (ResearchData research in m_commonResearchDataList)
+        {
+            if (!m_commonResearchEntryDic.ContainsKey(research.m_code))
+            {
+                m_commonResearchEntryDic.Add(research.m_code, new ResearchEntry(research));
+            }
+        }
+        LockResearch();
+    }
+
+    private void InitBuildingDict()
+    {
+        m_buildingEntryDic.Clear();
+        foreach (BuildingData building in m_buildingDataList)
+        {
+            if (!m_buildingEntryDic.ContainsKey(building.m_code))
+            {
+                var buildingEntry = new BuildingEntry(building);
+                // Set initial amount from BuildingData
+                buildingEntry.m_state.m_amount = building.m_initialAmount;
+                m_buildingEntryDic.Add(building.m_code, buildingEntry);
+            }
+        }
+    }
+
+    private void InitRequestTemplateDict()
+    {
+        m_requestLineTemplateDic.Clear();
+        foreach (RequestLineTemplate item in m_requestLineTemplateList)
+        {
+            if (!m_requestLineTemplateDic.ContainsKey(item.m_type))
+            {
+                m_requestLineTemplateDic.Add(item.m_type, item);
+            }
+        }
+    }
+
+    private void InitIconDict()
+    {
+        InitIconDictionary(m_resourceIconList, m_resourceIconDic, icon => icon.m_type, icon => icon.m_icon);
+        InitIconDictionary(m_tokenIconList, m_tokenIconDic, icon => icon.m_type, icon => icon.m_icon);
+        InitIconDictionary(m_requestIconList, m_requestIconDic, icon => icon.m_type, icon => icon.m_icon);
+    }
+
+    private void InitIconDictionary<T, TKey>(List<T> iconList, Dictionary<TKey, Sprite> iconDict, 
+        System.Func<T, TKey> keySelector, System.Func<T, Sprite> iconSelector)
+    {
+        iconDict.Clear();
+        foreach (var entry in iconList)
+        {
+            var key = keySelector(entry);
+            if (!iconDict.ContainsKey(key))
+            {
+                iconDict.Add(key, iconSelector(entry));
+            }
+        }
+    }
+
+    private void InitBalanceEntry()
     {
         m_gameBalanceData.InitializeDict();
-
         m_gameBalanceEntry = new GameBalanceEntry(m_gameBalanceData, new GameBalanceState());
-
-        GameBalanceEntry.m_state.m_mainMul = GameBalanceEntry.m_data.GetBalanceTypeBalance(
-            GameBalanceEntry.m_data.m_firstBalanceType).m_mul;
+        
+        var firstBalance = GameBalanceEntry.m_data.GetBalanceTypeBalance(GameBalanceEntry.m_data.m_firstBalanceType);
+        GameBalanceEntry.m_state.m_mainMul = firstBalance.m_mul;
         GameBalanceEntry.m_state.m_dateMul = 1.0f;
     }
 
-    private void InitializeIcons()
+    private void InitEventEntry()
     {
-        m_resourceIconDict.Clear();
-        foreach (var entry in m_resourceIconList)
-        {
-            if (!m_resourceIconDict.ContainsKey(entry.m_type))
-            {
-                m_resourceIconDict.Add(entry.m_type, entry.m_icon);
-            }
-            else
-            {
-                Debug.LogWarning(ExceptionMessages.ErrorNoSuchType + entry.m_type);
-            }
-        }
-
-        m_tokenIconDict.Clear();
-        foreach (var entry in m_tokenIconList)
-        {
-            if (!m_tokenIconDict.ContainsKey(entry.m_type))
-            {
-                m_tokenIconDict.Add(entry.m_type, entry.m_icon);
-            }
-            else
-            {
-                Debug.LogWarning(ExceptionMessages.ErrorNoSuchType + entry.m_type);
-            }
-        }
-
-        m_requestIconDict.Clear();
-        {
-            foreach (var entry in m_requestIconList)
-            {
-                if (!m_requestIconDict.ContainsKey(entry.m_type))
-                {
-                    m_requestIconDict.Add(entry.m_type, entry.m_icon);
-                }
-                else
-                {
-                    Debug.LogWarning(ExceptionMessages.ErrorNoSuchType + entry.m_type);
-                }
-            }
-        }
-    }
-
-    private void ResetAcceptableRequest()
-    {
-        AcceptableRequestList.Clear();
+        m_eventEntry = new EventEntry(m_eventGroupDataList, this);
     }
 
     /// <summary>
-    /// ÄÁÅÃÆ® ·£´ı ÀÇ·Ú¸¦ ÃÖ´ë µÎ°³ »ı¼ºÇÕ´Ï´Ù
-    /// Ã¹ ¹øÂ° ÄÁÅÃÆ® È®·ü°ú µÎ ¹øÂ° ÄÁÅÃÆ® È®·üÀÌ °¢°¢ Á¤ÇØÁ® ÀÖ½À´Ï´Ù
+    /// GameBalanceDataì˜ ì„¤ì •ì„ ê¸°ë°˜ìœ¼ë¡œ íƒ€ì¼ë§µì„ ìƒì„±í•©ë‹ˆë‹¤.
     /// </summary>
-    private void RandomContactRequest()
+    private void GenerateTileMap()
     {
-        List<FactionType.TYPE> _factionTypes = FactionEntryDict.Keys.ToList();
-
-        //·£´ı ÆÑ¼Ç Å¸ÀÔ ÁöÁ¤
-        FactionType.TYPE _type = ProbabilityUtils.GetRandomElement(_factionTypes);
-
-        //°è»ê½Ä
-        float _per = GameBalanceEntry.m_state.m_noContactCount *
-            GameBalanceEntry.m_data.m_noContactChangePer +
-            GameBalanceEntry.m_data.m_firstContactPer;
-
-        //Ã¹ ¹øÂ° ÄÁÅÃ
-        if (ProbabilityUtils.RollPercent(_per) == true)
+        if (m_gameBalanceData == null)
         {
-            m_acceptableRequestList.Add(new RequestState(
-                true,
-                GameManager.Instance.Date,
-                GetFactionEntry(_type).m_state.m_like,
-                ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>()),
-                _type,
-                GameBalanceEntry));
-
-            _factionTypes.Remove(_type);
-
-            //µÎ ¹øÂ° ÄÁÅÃ ÆÑ¼Ç Å¸ÀÔ ÁöÁ¤
-            _type = ProbabilityUtils.GetRandomElement(_factionTypes);
-
-            //µÎ ¹øÂ° ÄÁÅÃ °è»ê½Ä
-            _per = GameBalanceEntry.m_state.m_noContactCount *
-                GameBalanceEntry.m_data.m_noContactChangePer +
-                GameBalanceEntry.m_data.m_overSecondContactPer;
-
-            //µÎ ¹øÂ° ÄÁÅÃ
-            if (ProbabilityUtils.RollPercent(_per) == true)
-            {
-                m_acceptableRequestList.Add(new RequestState(
-                    true,
-                    GameManager.Instance.Date,
-                    GetFactionEntry(_type).m_state.m_like,
-                    ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>()),
-                    _type,
-                    GameBalanceEntry));
-            }
-
-            GameBalanceEntry.m_state.m_noContactCount = 0;
+            Debug.LogError("GameBalanceDataê°€ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
+            return;
         }
+
+        Vector2Int mapSize = m_gameBalanceData.m_mapSize;
+        int friendlySettleCount = m_gameBalanceData.m_friendlySettle;
+        int enemySettleCount = m_gameBalanceData.m_enemySettle;
+
+        // MapDataGeneratorë¥¼ ì‚¬ìš©í•˜ì—¬ ë§µ ìƒì„±
+        MapDataGenerator mapGenerator = new MapDataGenerator(
+            mapSize,
+            m_tileMapDataList,
+            TerrainType.TYPE.Settlement, // ì¹œí™”ì  ì •ì°©ì§€ íƒ€ì…
+            friendlySettleCount,
+            TerrainType.TYPE.Settlement, // ì ëŒ€ì  ì •ì°©ì§€ íƒ€ì… (ê°™ì€ íƒ€ì… ì‚¬ìš©)
+            enemySettleCount
+        );
+
+        m_tileMap = mapGenerator.GenerateMapData();
     }
 
     /// <summary>
-    /// ÀÏ¹İ ÀÇ·Ú »ı¼º
+    /// ì§€ì •ëœ ì‹œë“œë¡œ íƒ€ì¼ë§µì„ ì¬ìƒì„±í•©ë‹ˆë‹¤.
     /// </summary>
-    private void RandomNormalRequest()
+    /// <param name="seed">ë§µ ìƒì„±ì— ì‚¬ìš©í•  ì‹œë“œ</param>
+    public void RegenerateTileMap(string seed = null)
     {
-        List<FactionType.TYPE> _haveFactionTypes = GetHaveFactionTypeList();
-
-        //ÀÇ·Ú °¹¼ö¸¦ ¹İ¿µÇØ ÃÖ´ë ÀÇ·Ú¸¦ »ı¼ºÇÕ´Ï´Ù.
-        for (int i = 0; i < GameBalanceEntry.m_data.m_maxRequest; i++)
+        if (m_gameBalanceData == null)
         {
-            FactionType.TYPE _type = ProbabilityUtils.GetRandomElement(_haveFactionTypes);
+            Debug.LogError("GameBalanceDataê°€ ì„¤ì •ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
+            return;
+        }
 
-            int _like;
-            if (GetFactionEntry(_type) == null)
+        Vector2Int mapSize = m_gameBalanceData.m_mapSize;
+        int friendlySettleCount = m_gameBalanceData.m_friendlySettle;
+        int enemySettleCount = m_gameBalanceData.m_enemySettle;
+
+        // MapDataGeneratorë¥¼ ì‚¬ìš©í•˜ì—¬ ë§µ ìƒì„± (ì‹œë“œ ì§€ì •)
+        MapDataGenerator mapGenerator = new MapDataGenerator(
+            mapSize,
+            m_tileMapDataList,
+            seed,
+            TerrainType.TYPE.Settlement,
+            friendlySettleCount,
+            TerrainType.TYPE.Settlement,
+            enemySettleCount
+        );
+
+        m_tileMap = mapGenerator.GenerateMapData();
+        Debug.Log($"íƒ€ì¼ë§µì´ ì¬ìƒì„±ë˜ì—ˆìŠµë‹ˆë‹¤. í¬ê¸°: {mapSize.x}x{mapSize.y}, ì‹œë“œ: {seed ?? "ëœë¤"}");
+    }
+
+    /// <summary>
+    /// ì§€ì •ëœ ìœ„ì¹˜ì˜ íƒ€ì¼ë§µ ìƒíƒœë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
+    /// </summary>
+    /// <param name="x">X ì¢Œí‘œ</param>
+    /// <param name="y">Y ì¢Œí‘œ</param>
+    /// <returns>íƒ€ì¼ë§µ ìƒíƒœ, ë²”ìœ„ë¥¼ ë²—ì–´ë‚˜ë©´ null</returns>
+    public TileMapState GetTileMapState(int x, int y)
+    {
+        if (m_tileMap == null)
+        {
+            Debug.LogWarning("íƒ€ì¼ë§µì´ ìƒì„±ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
+            return null;
+        }
+
+        if (x >= 0 && x < m_tileMap.GetLength(0) && y >= 0 && y < m_tileMap.GetLength(1))
+        {
+            return m_tileMap[x, y];
+        }
+
+        Debug.LogWarning($"íƒ€ì¼ë§µ ì¢Œí‘œê°€ ë²”ìœ„ë¥¼ ë²—ì–´ë‚¬ìŠµë‹ˆë‹¤: ({x}, {y})");
+        return null;
+    }
+
+    /// <summary>
+    /// íƒ€ì¼ë§µì˜ í¬ê¸°ë¥¼ ë°˜í™˜í•©ë‹ˆë‹¤.
+    /// </summary>
+    /// <returns>íƒ€ì¼ë§µ í¬ê¸° (Vector2Int)</returns>
+    public Vector2Int GetTileMapSize()
+    {
+        if (m_tileMap == null)
+        {
+            return Vector2Int.zero;
+        }
+
+        return new Vector2Int(m_tileMap.GetLength(0), m_tileMap.GetLength(1));
+    }
+
+    private void LockResearch()
+    {
+        // ë¨¼ì € ëª¨ë“  ì—°êµ¬ë¥¼ ì ê¸ˆ í•´ì œ
+        foreach (var research in m_commonResearchDataList)
+        {
+            if (research.m_unlocks != null)
             {
-                _like = 0;
+                foreach (var unlockResearch in research.m_unlocks)
+                {
+                    if (m_commonResearchEntryDic.TryGetValue(unlockResearch.m_code, out var unlockEntry))
+                    {
+                        unlockEntry.m_state.m_isLocked = false;
+                    }
+                }
             }
-            else
+        }
+
+        // ì„ í–‰ ì¡°ê±´ í™•ì¸í•˜ì—¬ ì ê¸ˆ ì„¤ì •
+        foreach (var research in m_commonResearchDataList)
+        {
+            if (research.m_prerequisites != null && research.m_prerequisites.Count > 0)
             {
-                _like = GetFactionEntry(_type).m_state.m_like;
+                bool allPrerequisitesMet = research.m_prerequisites.All(prereq => 
+                    m_commonResearchEntryDic.TryGetValue(prereq.m_code, out var prereqEntry) && 
+                    prereqEntry.m_state.m_isResearched);
+
+                if (!allPrerequisitesMet)
+                {
+                    m_commonResearchEntryDic[research.m_code].m_state.m_isLocked = true;
+                }
             }
+        }
+    }
+    #endregion
 
-            //ÀÇ·Ú Ãß°¡ ºÎºĞ
-            m_acceptableRequestList.Add(new RequestState(
-                false,
-                GameManager.Instance.Date,
-                _like,
-                ProbabilityUtils.GetRandomElement(EnumUtils.GetAllEnumValues<RequestType.TYPE>()),
-                _type,
-                GameBalanceEntry));
+    #region Data Loading
+    public void AutoLoadData()
+    {
+        #if UNITY_EDITOR
+        LoadAllDataFromAssets();
+        #else
+        Debug.LogWarning("Auto data loading is only available in editor.");
+        #endif
+    }
 
-            //¸¸¾à ÇÏ³ªÀÇ ÆÑ¼Ç ÀÇ·Ú°¡ ³ª¿Ô´Ù¸é ±× ÆÑ¼ÇÀº Á¦¿ÜÇÏ°í ÀÇ·Ú¸¦ »ı¼ºÇÕ´Ï´Ù.
-            _haveFactionTypes.Remove(_type);
+    public void LoadDataFromResources()
+    {
+        DataLoader.LoadAllDataFromResources(
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
+            m_tokenIconList, m_requestIconList, ref m_gameBalanceData);
+    }
+
+    public void LoadMapData()
+    {
+        #if UNITY_EDITOR
+        LoadTileMapDataFromAssets();
+        #else
+        Debug.LogWarning("Load Map Data is only available in editor.");
+        #endif
+    }
+
+    #if UNITY_EDITOR
+    private void LoadAllDataFromAssets()
+    {
+        DataLoader.LoadAllDataFromAssets(
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
+            m_tokenIconList, m_requestIconList, ref m_gameBalanceData);
+    }
+
+    private void LoadTileMapDataFromAssets()
+    {
+        DataLoader.LoadTileMapDataFromAssets(m_tileMapDataList);
+    }
+    #endif
+    #endregion
+
+    #region Game Actions
+    public void RandomBuilding(int buildingCount)
+    {
+        for (int i = 0; i < buildingCount; i++)
+        {
+            ProbabilityUtils.GetRandomElement(BuildingEntryDict).Value.m_state.m_amount++;
+        }
+    }
+
+    public void AddSpecificBuilding(string buildingCode, int count = 1)
+    {
+        if (string.IsNullOrEmpty(buildingCode))
+        {
+            Debug.LogWarning("Building code is empty.");
+            return;
+        }
+
+        if (m_buildingEntryDic.TryGetValue(buildingCode, out var buildingEntry))
+        {
+            buildingEntry.m_state.m_amount += count;
+            Debug.Log($"Building '{buildingCode}' {count} added. Total count: {buildingEntry.m_state.m_amount}");
+        }
+        else
+        {
+            Debug.LogWarning($"Building code '{buildingCode}' not found.");
         }
     }
 
     public void MakeRandomRequest()
     {
-        ResetAcceptableRequest();
+        RequestGenerator.MakeRandomRequest(
+            m_acceptableRequestList, m_factionEntryDic, m_gameBalanceEntry,
+            m_contactLineTemplate, m_requestLineTemplateDic);
+    }
 
-        RandomNormalRequest();
-        RandomContactRequest();
+    public void ForceContactRequest()
+    {
+        RequestGenerator.GenerateContactRequests(
+            m_acceptableRequestList, m_factionEntryDic, m_gameBalanceEntry, m_contactLineTemplate);
     }
 
     public void AcceptRequest(RequestState request)
@@ -285,112 +410,70 @@ public class GameDataManager : MonoBehaviour
             m_acceptableRequestList.Remove(request);
         }
     }
+    #endregion
+
+    #region Data Access
+    public TileMapData GetTileMapData(TerrainType.TYPE argType)
+    {
+        return m_tileMapDataDic.TryGetValue(argType, out var data) ? data : null;
+    }
 
     public FactionEntry GetFactionEntry(FactionType.TYPE argType)
     {
-        if (m_factionEntryDict != null && m_factionEntryDict.TryGetValue(argType, out FactionEntry entry))
-        {
-            return entry;
-        }
-
-        Debug.LogWarning($"{ExceptionMessages.ErrorNoSuchType}: FactionType.TYPE - {argType}");
-        return null;
+        return m_factionEntryDic.TryGetValue(argType, out var entry) ? entry : null;
     }
 
     public ResearchEntry GetCommonResearchEntry(string argKey)
     {
-        if (string.IsNullOrEmpty(argKey))
-        {
-            return null;
-        }
-
-        if (m_commonResearchEntryDict != null && m_commonResearchEntryDict.TryGetValue(argKey, out ResearchEntry entry))
-        {
-            return entry;
-        }
-
-        Debug.LogWarning($"{ExceptionMessages.ErrorNoSuchType}: CommonResearch - {argKey}");
-        return null;
+        return !string.IsNullOrEmpty(argKey) && m_commonResearchEntryDic.TryGetValue(argKey, out var entry) ? entry : null;
     }
 
     public BuildingEntry GetBuildingEntry(string argKey)
     {
-        if (string.IsNullOrEmpty(argKey))
-        {
-            return null;
-        }
+        return !string.IsNullOrEmpty(argKey) && m_buildingEntryDic.TryGetValue(argKey, out var entry) ? entry : null;
+    }
 
-        if (m_buildingEntryDict != null && m_buildingEntryDict.TryGetValue(argKey, out BuildingEntry entry))
-        {
-            return entry;
-        }
-
-        Debug.LogWarning($"{ExceptionMessages.ErrorNoSuchType}: Building - {argKey}");
-        return null;
+    public RequestLineTemplate GetRequestLineTemplate(RequestType.TYPE argType)
+    {
+        return m_requestLineTemplateDic.TryGetValue(argType, out var item) ? item : null;
     }
 
     public Sprite GetResourceIcon(ResourceType.TYPE type)
     {
-        if (m_resourceIconDict.TryGetValue(type, out var icon))
-        {
-            return icon;
-        }
-        else
-        {
-            Debug.LogWarning(ExceptionMessages.ErrorNoSuchType);
-            return null;
-        }
+        return m_resourceIconDic.TryGetValue(type, out var icon) ? icon : null;
     }
 
     public Sprite GetTokenIcon(TokenType.TYPE type)
     {
-        if (m_tokenIconDict.TryGetValue(type, out var icon))
-        {
-            return icon;
-        }
-        else
-        {
-            Debug.LogWarning(ExceptionMessages.ErrorNoSuchType);
-            return null;
-        }
+        return m_tokenIconDic.TryGetValue(type, out var icon) ? icon : null;
     }
 
     public Sprite GetRequestIcon(RequestType.TYPE type)
     {
-        if (m_requestIconDict.TryGetValue(type, out var icon))
-        {
-            return icon;
-        }
-        else
-        {
-            Debug.LogWarning(ExceptionMessages.ErrorNoSuchType);
-            return null;
-        }
+        return m_requestIconDic.TryGetValue(type, out var icon) ? icon : null;
     }
-
-    /// <summary>
-    /// ¸¸¾à ±× ÆÑ¼ÇÀ» °¡Áö°í ÀÖÁö ¾ÊÀ» °æ¿ì ¸®½ºÆ®¿¡¼­ Á¦¿ÜÇÕ´Ï´Ù.
-    /// </summary>
-    /// <returns>ÆÑ¼Ç Å¸ÀÔ ¸®½ºÆ®</returns>
-    public List<FactionType.TYPE> GetHaveFactionTypeList()
-    {
-        List<FactionType.TYPE> _factionTypes = FactionEntryDict.Keys.ToList();
-
-        for (int i = _factionTypes.Count - 1; i >= 0; i--)
-        {
-            FactionType.TYPE item = _factionTypes[i];
-
-            if (item == FactionType.TYPE.None)
-            {
-                continue;
-            }
-
-            if (GetFactionEntry(item).m_state.m_have == false)
-            {
-                _factionTypes.RemoveAt(i);
-            }
-        }
-
-        return _factionTypes;
-    }
+    #endregion
 }
+
+#region Icon Structures
+[System.Serializable]
+public struct ResourceIcon
+{
+    public ResourceType.TYPE m_type;
+    public Sprite m_icon;
+}
+
+[System.Serializable]
+public struct TokenIcon
+{
+    public TokenType.TYPE m_type;
+    public Sprite m_icon;
+}
+
+[System.Serializable]
+public struct RequestIcon
+{
+    public RequestType.TYPE m_type;
+    public Sprite m_icon;
+}
+#endregion

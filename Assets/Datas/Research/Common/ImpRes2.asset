@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64267ea355f27ed4ca3896a3d6e9ec6c, type: 3}
+  m_Name: ImpRes2
+  m_EditorClassIdentifier: 
+  m_code: 00014
+  m_name: Research Power Boost 2
+  m_description: Increase research power production in territory/buildings by 1.2x
+    (multiplicative with Boost 1)
+  m_cost: 200
+  m_duration: 7
+  m_prerequisites:
+  - {fileID: 11400000, guid: e20b84dc52d20b34abf3be6e87fbf054, type: 2}
+  m_unlocks: []
+  m_effects:
+  - {fileID: 11400000, guid: 1b5d52f6f7fe68e41b9f9c34e6e1a34c, type: 2}
+  m_icon: {fileID: 0}
+  m_isFirstLocked: 0
+  m_factionType: 0

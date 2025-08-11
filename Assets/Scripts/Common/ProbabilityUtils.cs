@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ProbabilityUtils
@@ -26,5 +27,19 @@ public class ProbabilityUtils
 
         int index = Random.Range(0, list.Count);
         return list[index];
+    }
+
+    /// <summary>
+    /// Returns a random KeyValuePair from a non-empty dictionary. If the dictionary is null or empty, returns default(KeyValuePair<TKey, TValue>).
+    /// </summary>
+    public static KeyValuePair<TKey, TValue> GetRandomElement<TKey, TValue>(Dictionary<TKey, TValue> dictionary)
+    {
+        if (dictionary == null || dictionary.Count == 0)
+        {
+            return default;
+        }
+
+        int index = Random.Range(0, dictionary.Count);
+        return dictionary.ElementAt(index);
     }
 }

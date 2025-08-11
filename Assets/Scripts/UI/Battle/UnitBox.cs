@@ -1,0 +1,169 @@
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class UnitBox : MonoBehaviour
+{
+    [SerializeField] private GameObject unitPrefab;
+    private GameObject attackSpawnArea;
+
+    private UnitStatBase unitData;
+    private int unitCount;
+    private int createdCount = 0;
+
+    private TextMeshProUGUI countText;
+    private Image buttonImage;
+    private Color defaultColor;
+    private bool hasColorChanged = false;
+
+    public void Init(UnitStatBase data, int count, TextMeshProUGUI countTextRef)
+    {
+        unitData = data;
+        unitCount = count;
+        createdCount = 0;
+        countText = countTextRef;
+        attackSpawnArea = GameObject.Find("AttackSpawnArea");
+
+        buttonImage = GetComponent<Image>();
+        if (buttonImage != null)
+        {
+            defaultColor = buttonImage.color;
+            buttonImage.color = new Color(defaultColor.r, defaultColor.g, defaultColor.b, 0.5f); // 흐리게
+        }
+
+        Button btn = GetComponent<Button>();
+        if (btn != null)
+        {
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(OnClickUnitButton);
+        }
+
+        UpdateCountText();
+    }
+
+    public void OnClickUnitButton()
+    {
+        if (unitCount <= 0 || unitPrefab == null || attackSpawnArea == null) return;
+
+        Vector3 spawnPos = GetRandomPositionInBox();
+        GameObject newUnit = Instantiate(unitPrefab, spawnPos, Quaternion.identity);
+
+        //unitType → 태그명 변환 매핑
+        Dictionary<string, string> typeToTagMap = new()
+        {
+            { "Short", "MyShortUnit" },
+            { "Long", "MyLongUnit" },
+            { "Defense", "MyDefenseUnit" }
+        };
+
+        //태그 설정
+        if (unitData.unitType.ToString() != null) // [수정] ToString()으로 enum을 string으로 변환
+        {
+            if (typeToTagMap.TryGetValue(unitData.unitType.ToString(), out string tagName)) // [수정] unitData.unitType을 string으로 변환
+            {
+                try
+                {
+                    newUnit.tag = tagName;
+                }
+                catch
+                {
+                    Debug.LogWarning($"[태그 오류] '{tagName}' 태그가 유효하지 않거나 등록되지 않았습니다.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[태그 매핑 누락] '{unitData.unitType}'에 대한 태그가 등록되어 있지 않습니다.");
+            }
+        }
+
+        // UnitStatBase 정보 전달
+        UnitBase unitBase = newUnit.GetComponent<UnitBase>();
+        if (unitBase != null)
+        {
+            unitBase.Initialize(unitData);
+        }
+        else
+        {
+            Debug.LogWarning("[생성 실패] 생성된 유닛에 UnitBase 컴포넌트가 없습니다.");
+        }
+
+        // [수정] affiliation 변수 대신 factionType 변수와 enum을 사용
+        if (unitBase != null && unitBase.factionType == FactionType.TYPE.Owl)
+        {
+            // 아군인 경우에만 드래그 스크립트 추가
+            UnitDragHandler dragHandler = newUnit.GetComponent<UnitDragHandler>();
+            if (dragHandler == null)
+            {
+                dragHandler = newUnit.AddComponent<UnitDragHandler>();
+            }
+
+            // 유닛 정보 전달
+            dragHandler.unitStatData = unitData;
+        }
+
+        // 수량 및 UI 처리
+        unitCount--;
+        createdCount++;
+        UpdateCountText();
+
+        if (!hasColorChanged && buttonImage != null && createdCount >= 1)
+        {
+            buttonImage.color = defaultColor;
+            hasColorChanged = true;
+        }
+
+        if (unitCount <= 0)
+        {
+            GetComponent<Button>().interactable = false;
+        }
+    }
+
+    private void UpdateCountText()
+    {
+        if (countText != null)
+        {
+            countText.text = unitCount.ToString();
+        }
+    }
+
+    private Vector3 GetRandomPositionInBox()
+    {
+        BoxCollider2D box = attackSpawnArea.GetComponent<BoxCollider2D>();
+        if (box == null)
+        {
+            Debug.LogWarning("BoxCollider2D가 없습니다.");
+            return Vector3.zero;
+        }
+
+        Bounds bounds = box.bounds;
+        float x = Random.Range(bounds.min.x, bounds.max.x);
+        float y = Random.Range(bounds.min.y, bounds.max.y);
+        return new Vector3(x, y, 0f);
+    }
+
+    public void IncreaseUnitCount(int amount)
+    {
+        unitCount += amount;
+        UpdateCountText();
+
+        // 버튼 다시 활성화
+        if (unitCount > 0)
+        {
+            Button btn = GetComponent<Button>();
+            if (btn != null)
+            {
+                btn.interactable = true;
+
+                // 버튼 색상도 다시 진하게 설정 (선택 사항)
+                if (buttonImage != null)
+                {
+                    buttonImage.color = defaultColor;
+                }
+
+                hasColorChanged = true;
+            }
+        }
+    }
+}

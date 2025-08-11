@@ -19,6 +19,7 @@ public class GameBalanceData : ScriptableObject
 
     [Header("Request")]
     public List<RequestTypeBalance> m_requestTypeBalanceList = new();
+    public List<int> m_forcedContactRequestList = new();
     public int m_maxRequest = 5;
     public int m_makeRequestDate = 5;
     //첫 번째 컨텍을 할 확률
@@ -28,6 +29,14 @@ public class GameBalanceData : ScriptableObject
     //두번 이상 컨텍이 없을 경우 오르는 확률
     public float m_noContactChangePer = 15.0f;
 
+    [Header("Event")]
+    public int m_firstEventSlot = 2;
+    public int m_maxEventSlot = 2;
+
+    [Header("Map")]
+    public Vector2Int m_mapSize = new Vector2Int(10, 10);
+    public int m_friendlySettle = 7;
+    public int m_enemySettle = 22;
 
     private Dictionary<BalanceType.TYPE, BalanceTypeBalance> m_balanceTypeDictionary;
     private Dictionary<RequestType.TYPE, RequestTypeBalance> m_requestTypeDictionary;

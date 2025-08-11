@@ -13,5 +13,9 @@ MonoBehaviour:
   m_Name: Conquest
   m_EditorClassIdentifier: 
   m_type: 1
-  m_titleTemplate: 
-  m_contentTemplates: []
+  m_titleTemplate: Recovery of {territory}
+  m_contentTemplates:
+  - Recently, a request for the restoration of {territory} by {faction} has been
+    received.
+  - "A pile of {faction} explanatory notes on the importance of {faction} catch my
+    eyes\u2026"

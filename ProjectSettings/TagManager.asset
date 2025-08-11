@@ -3,7 +3,15 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - BBUI
+  - EBBUI
+  - ShortUnit
+  - LongUnit
+  - DefenseUnit
+  - MyShortUnit
+  - MyLongUnit
+  - MyDefenseUnit
   layers:
   - Default
   - TransparentFX
