@@ -1,156 +1,67 @@
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
 
 /// <summary>
-/// 이펙트 관리를 담당하는 매니저 클래스
-/// 이벤트 이름 기반 중복 방지와 사용자 정보 제공 기능 포함
+/// 이펙트 시스템을 관리하는 매니저 클래스
+/// 이벤트 이펙트와 연구 이펙트를 통합 관리
 /// </summary>
 public class EffectManager : MonoBehaviour
 {
-    [Header("Active Effects")]
-    [SerializeField] private List<EffectBase> m_activeEffects = new List<EffectBase>();
+    // 이벤트 이펙트 관리
+    private List<EffectBase> m_activeEventEffects = new();
     
-    [Header("Effect Display")]
-    [SerializeField] private bool m_showEffectInfo = true;
-    
+    // 참조
     private GameDataManager m_gameDataManager;
     
-    void Awake()
-    {
-        m_gameDataManager = FindObjectOfType<GameDataManager>();
-        if (m_gameDataManager == null)
-        {
-            Debug.LogError("GameDataManager not found!");
-        }
-    }
-    
     /// <summary>
-    /// 이펙트 활성화
+    /// 이펙트 매니저 초기화
     /// </summary>
-    /// <param name="effect">활성화할 이펙트</param>
-    /// <param name="eventName">이벤트 이름</param>
-    /// <returns>활성화 성공 여부</returns>
-    public bool ActivateEffect(EffectBase effect, string eventName)
+    /// <param name="gameDataManager">게임 데이터 매니저 참조</param>
+    public void Initialize(GameDataManager gameDataManager)
     {
-        if (effect == null)
-        {
-            Debug.LogError("Effect is null!");
-            return false;
-        }
-        
-        if (m_gameDataManager == null)
-        {
-            Debug.LogError("GameDataManager is null!");
-            return false;
-        }
-        
-        // 이펙트 활성화 시도
-        if (effect.ActivateEffect(m_gameDataManager, eventName))
-        {
-            // 활성화 성공 시 리스트에 추가
-            if (!m_activeEffects.Contains(effect))
-            {
-                m_activeEffects.Add(effect);
-            }
-            
-            if (m_showEffectInfo)
-            {
-                Debug.Log($"Effect activated: {effect.GetEffectInfo()}");
-            }
-            
-            return true;
-        }
-        
-        return false;
+        m_gameDataManager = gameDataManager;
     }
     
+    #region Event Effect Management
     /// <summary>
-    /// 이펙트 비활성화
+    /// 이벤트 이펙트를 활성 이펙트 리스트에 추가
     /// </summary>
-    /// <param name="effect">비활성화할 이펙트</param>
-    /// <returns>비활성화 성공 여부</returns>
-    public bool DeactivateEffect(EffectBase effect)
+    /// <param name="effect">추가할 이펙트</param>
+    public void AddActiveEventEffect(EffectBase effect)
     {
-        if (effect == null)
+        if (!m_activeEventEffects.Contains(effect))
         {
-            Debug.LogError("Effect is null!");
-            return false;
+            m_activeEventEffects.Add(effect);
         }
-        
-        if (m_gameDataManager == null)
-        {
-            Debug.LogError("GameDataManager is null!");
-            return false;
-        }
-        
-        // 이펙트 비활성화 시도
-        if (effect.DeactivateEffect(m_gameDataManager))
-        {
-            // 비활성화 성공 시 리스트에서 제거
-            m_activeEffects.Remove(effect);
-            
-            if (m_showEffectInfo)
-            {
-                Debug.Log($"Effect deactivated: {effect.m_name}");
-            }
-            
-            return true;
-        }
-        
-        return false;
     }
-    
+
     /// <summary>
-    /// 특정 이벤트로 활성화된 이펙트들을 비활성화
+    /// 이벤트 이펙트를 활성 이펙트 리스트에서 제거
     /// </summary>
-    /// <param name="eventName">이벤트 이름</param>
-    /// <returns>비활성화된 이펙트 수</returns>
-    public int DeactivateEffectsByEvent(string eventName)
+    /// <param name="effect">제거할 이펙트</param>
+    public void RemoveActiveEventEffect(EffectBase effect)
     {
-        int deactivatedCount = 0;
-        var effectsToDeactivate = m_activeEffects.Where(e => e.ActivatedEventName == eventName).ToList();
-        
-        foreach (var effect in effectsToDeactivate)
-        {
-            if (DeactivateEffect(effect))
-            {
-                deactivatedCount++;
-            }
-        }
-        
-        return deactivatedCount;
+        m_activeEventEffects.Remove(effect);
     }
-    
+
     /// <summary>
-    /// 모든 활성 이펙트 비활성화
+    /// 모든 이벤트 이펙트 제거
     /// </summary>
-    /// <returns>비활성화된 이펙트 수</returns>
-    public int DeactivateAllEffects()
+    public void ClearActiveEventEffects()
     {
-        int deactivatedCount = 0;
-        var effectsToDeactivate = m_activeEffects.ToList();
-        
-        foreach (var effect in effectsToDeactivate)
-        {
-            if (DeactivateEffect(effect))
-            {
-                deactivatedCount++;
-            }
-        }
-        
-        return deactivatedCount;
+        m_activeEventEffects.Clear();
     }
-    
+
     /// <summary>
-    /// 활성 이펙트 목록 가져오기
+    /// 활성화된 모든 이벤트 이펙트 목록 가져오기
     /// </summary>
-    /// <returns>활성 이펙트 리스트</returns>
-    public List<EffectBase> GetActiveEffects()
+    /// <returns>활성 이벤트 이펙트 리스트</returns>
+    public List<EffectBase> GetActiveEventEffects()
     {
-        return m_activeEffects.ToList();
+        return m_activeEventEffects;
     }
-    
+
     /// <summary>
     /// 특정 이벤트로 활성화된 이펙트 목록 가져오기
     /// </summary>
@@ -158,24 +69,24 @@ public class EffectManager : MonoBehaviour
     /// <returns>해당 이벤트로 활성화된 이펙트 리스트</returns>
     public List<EffectBase> GetActiveEffectsByEvent(string eventName)
     {
-        return m_activeEffects.Where(e => e.ActivatedEventName == eventName).ToList();
+        return m_activeEventEffects.FindAll(e => e.ActivatedEventName == eventName);
     }
-    
+
     /// <summary>
-    /// 모든 활성 이펙트 정보를 문자열로 반환
+    /// 모든 활성 이벤트 이펙트 정보를 문자열로 반환
     /// </summary>
-    /// <returns>이펙트 정보 문자열</returns>
-    public string GetAllEffectInfo()
+    /// <returns>이벤트 이펙트 정보 문자열</returns>
+    public string GetAllEventEffectInfo()
     {
-        if (m_activeEffects.Count == 0)
+        if (m_activeEventEffects.Count == 0)
         {
-            return "활성화된 이펙트가 없습니다.";
+            return "활성화된 이벤트 이펙트가 없습니다.";
         }
         
-        var effectInfos = m_activeEffects.Select(e => e.GetEffectInfo());
+        var effectInfos = m_activeEventEffects.Select(e => e.GetEffectInfo());
         return string.Join("\n\n", effectInfos);
     }
-    
+
     /// <summary>
     /// 특정 이벤트의 이펙트 정보를 문자열로 반환
     /// </summary>
@@ -193,27 +104,222 @@ public class EffectManager : MonoBehaviour
         var effectInfos = eventEffects.Select(e => e.GetEffectInfo());
         return $"'{eventName}' 이벤트 이펙트:\n" + string.Join("\n\n", effectInfos);
     }
-    
+
     /// <summary>
-    /// 이펙트 정보 표시 설정
+    /// 특정 이벤트로 활성화된 이펙트들을 비활성화
     /// </summary>
-    /// <param name="show">표시 여부</param>
-    public void SetShowEffectInfo(bool show)
+    /// <param name="eventName">이벤트 이름</param>
+    /// <returns>비활성화된 이펙트 수</returns>
+    public int DeactivateEffectsByEvent(string eventName)
     {
-        m_showEffectInfo = show;
+        int deactivatedCount = 0;
+        var effectsToDeactivate = GetActiveEffectsByEvent(eventName).ToList();
+        
+        foreach (var effect in effectsToDeactivate)
+        {
+            if (effect.DeactivateEffect(m_gameDataManager))
+            {
+                m_activeEventEffects.Remove(effect);
+                deactivatedCount++;
+            }
+        }
+        
+        return deactivatedCount;
     }
-    
+
     /// <summary>
-    /// 디버그용: 모든 이펙트 강제 초기화
+    /// 모든 이벤트 이펙트 비활성화
     /// </summary>
-    [ContextMenu("Force Reset All Effects")]
+    /// <returns>비활성화된 이펙트 수</returns>
+    public int DeactivateAllEventEffects()
+    {
+        int deactivatedCount = 0;
+        var effectsToDeactivate = m_activeEventEffects.ToList();
+        
+        foreach (var effect in effectsToDeactivate)
+        {
+            if (effect.DeactivateEffect(m_gameDataManager))
+            {
+                m_activeEventEffects.Remove(effect);
+                deactivatedCount++;
+            }
+        }
+        
+        return deactivatedCount;
+    }
+    #endregion
+
+    #region Research Effect Management
+    /// <summary>
+    /// 모든 연구에서 활성화된 이펙트 목록 가져오기
+    /// </summary>
+    /// <returns>모든 연구의 활성 이펙트 리스트</returns>
+    public List<EffectBase> GetAllResearchEffects()
+    {
+        List<EffectBase> allEffects = new List<EffectBase>();
+        
+        foreach (var researchEntry in m_gameDataManager.CommonResearchEntryDict.Values)
+        {
+            allEffects.AddRange(researchEntry.GetActiveEffects());
+        }
+        
+        return allEffects;
+    }
+
+    /// <summary>
+    /// 특정 연구의 이펙트 목록 가져오기
+    /// </summary>
+    /// <param name="researchCode">연구 코드</param>
+    /// <returns>해당 연구의 활성 이펙트 리스트</returns>
+    public List<EffectBase> GetResearchEffects(string researchCode)
+    {
+        if (m_gameDataManager.CommonResearchEntryDict.TryGetValue(researchCode, out var researchEntry))
+        {
+            return researchEntry.GetActiveEffects();
+        }
+        
+        return new List<EffectBase>();
+    }
+
+    /// <summary>
+    /// 모든 연구 이펙트 정보를 문자열로 반환
+    /// </summary>
+    /// <returns>모든 연구 이펙트 정보 문자열</returns>
+    public string GetAllResearchEffectInfo()
+    {
+        var researchInfos = m_gameDataManager.CommonResearchEntryDict.Values
+            .Where(r => r.m_state.m_isResearched)
+            .Select(r => r.GetResearchEffectInfo());
+        
+        if (!researchInfos.Any())
+        {
+            return "완료된 연구가 없습니다.";
+        }
+        
+        return string.Join("\n\n", researchInfos);
+    }
+
+    /// <summary>
+    /// 특정 연구의 이펙트 정보를 문자열로 반환
+    /// </summary>
+    /// <param name="researchCode">연구 코드</param>
+    /// <returns>연구 이펙트 정보 문자열</returns>
+    public string GetResearchEffectInfo(string researchCode)
+    {
+        if (m_gameDataManager.CommonResearchEntryDict.TryGetValue(researchCode, out var researchEntry))
+        {
+            return researchEntry.GetResearchEffectInfo();
+        }
+        
+        return $"연구 코드 '{researchCode}'를 찾을 수 없습니다.";
+    }
+
+    /// <summary>
+    /// 모든 연구 이펙트 비활성화
+    /// </summary>
+    /// <returns>비활성화된 이펙트 수</returns>
+    public int DeactivateAllResearchEffects()
+    {
+        int deactivatedCount = 0;
+        
+        foreach (var researchEntry in m_gameDataManager.CommonResearchEntryDict.Values)
+        {
+            if (researchEntry.m_state.m_isResearched)
+            {
+                researchEntry.DeactivateResearchEffects(m_gameDataManager);
+                deactivatedCount += researchEntry.GetActiveEffects().Count;
+            }
+        }
+        
+        return deactivatedCount;
+    }
+    #endregion
+
+    #region Combined Effect Management
+    /// <summary>
+    /// 모든 활성 이펙트 목록 가져오기 (이벤트 + 연구)
+    /// </summary>
+    /// <returns>모든 활성 이펙트 리스트</returns>
+    public List<EffectBase> GetAllActiveEffects()
+    {
+        List<EffectBase> allEffects = new List<EffectBase>();
+        
+        // 이벤트 이펙트 추가
+        allEffects.AddRange(GetActiveEventEffects());
+        
+        // 연구 이펙트 추가
+        allEffects.AddRange(GetAllResearchEffects());
+        
+        return allEffects;
+    }
+
+    /// <summary>
+    /// 모든 활성 이펙트 정보를 문자열로 반환 (이벤트 + 연구)
+    /// </summary>
+    /// <returns>모든 활성 이펙트 정보 문자열</returns>
+    public string GetAllActiveEffectInfo()
+    {
+        List<string> allInfo = new List<string>();
+        
+        // 이벤트 이펙트 정보
+        string eventEffects = GetAllEventEffectInfo();
+        if (eventEffects != "활성화된 이벤트 이펙트가 없습니다.")
+        {
+            allInfo.Add("=== 이벤트 이펙트 ===");
+            allInfo.Add(eventEffects);
+        }
+        
+        // 연구 이펙트 정보
+        string researchEffects = GetAllResearchEffectInfo();
+        if (researchEffects != "완료된 연구가 없습니다.")
+        {
+            allInfo.Add("=== 연구 이펙트 ===");
+            allInfo.Add(researchEffects);
+        }
+        
+        if (allInfo.Count == 0)
+        {
+            return "활성화된 이펙트가 없습니다.";
+        }
+        
+        return string.Join("\n\n", allInfo);
+    }
+
+    /// <summary>
+    /// 모든 이펙트 비활성화 (이벤트 + 연구)
+    /// </summary>
+    /// <returns>비활성화된 이펙트 수</returns>
+    public int DeactivateAllEffectsCombined()
+    {
+        int eventDeactivated = DeactivateAllEventEffects();
+        int researchDeactivated = DeactivateAllResearchEffects();
+        
+        return eventDeactivated + researchDeactivated;
+    }
+
+    /// <summary>
+    /// 모든 이펙트 강제 초기화 (디버그용)
+    /// </summary>
     public void ForceResetAllEffects()
     {
-        foreach (var effect in m_activeEffects)
+        // 이벤트 이펙트 강제 초기화
+        foreach (var effect in m_activeEventEffects)
         {
             effect.ForceReset();
         }
-        m_activeEffects.Clear();
-        Debug.Log("All effects force reset.");
+        ClearActiveEventEffects();
+        
+        // 연구 이펙트 강제 초기화
+        foreach (var researchEntry in m_gameDataManager.CommonResearchEntryDict.Values)
+        {
+            foreach (var effect in researchEntry.GetActiveEffects())
+            {
+                effect.ForceReset();
+            }
+            researchEntry.ClearActiveEffects();
+        }
+        
+        Debug.Log("All effects (event + research) force reset.");
     }
-} 
+    #endregion
+}

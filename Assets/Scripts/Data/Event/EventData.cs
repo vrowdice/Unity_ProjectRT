@@ -38,8 +38,8 @@ public class EventData : ScriptableObject
         {
             if (effect.ActivateEffect(dataManager, m_title))
             {
-                // 활성화 성공 시 GameDataManager에 추가
-                dataManager.AddActiveEventEffect(effect);
+                // 활성화 성공 시 EffectManager에 추가
+                dataManager.EffectManager.AddActiveEventEffect(effect);
             }
         }
         
@@ -52,7 +52,7 @@ public class EventData : ScriptableObject
         {
             if (item.ActivateEffect(dataManager, m_title))
             {
-                dataManager.AddActiveEventEffect(item);
+                dataManager.EffectManager.AddActiveEventEffect(item);
             }
         }
     }
@@ -63,7 +63,7 @@ public class EventData : ScriptableObject
         {
             if (item.DeactivateEffect(dataManager))
             {
-                dataManager.RemoveActiveEventEffect(item);
+                dataManager.EffectManager.RemoveActiveEventEffect(item);
             }
         }
     }

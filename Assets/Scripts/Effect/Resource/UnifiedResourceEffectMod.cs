@@ -56,16 +56,16 @@ public class UnifiedResourceEffectMod : EffectBase
         switch (m_targetType)
         {
             case EffectTargetType.TYPE.Building:
-                return ApplyOperation(argDataManager.EventState.m_buildingResourceModDic, 
-                                   argDataManager.EventState.m_buildingResourceAddDic, resourceType, m_modifier);
+                return ApplyOperation(argDataManager.EventManager.EventState.m_buildingResourceModDic, 
+                                   argDataManager.EventManager.EventState.m_buildingResourceAddDic, resourceType, m_modifier);
             case EffectTargetType.TYPE.Territory:
-                return ApplyOperation(argDataManager.EventState.m_territoryResourceModDic, 
-                                   argDataManager.EventState.m_territoryResourceAddDic, resourceType, m_modifier);
+                return ApplyOperation(argDataManager.EventManager.EventState.m_territoryResourceModDic, 
+                                   argDataManager.EventManager.EventState.m_territoryResourceAddDic, resourceType, m_modifier);
             case EffectTargetType.TYPE.Both:
-                bool buildingResult = ApplyOperation(argDataManager.EventState.m_buildingResourceModDic, 
-                                                   argDataManager.EventState.m_buildingResourceAddDic, resourceType, m_modifier);
-                bool territoryResult = ApplyOperation(argDataManager.EventState.m_territoryResourceModDic, 
-                                                    argDataManager.EventState.m_territoryResourceAddDic, resourceType, m_modifier);
+                bool buildingResult = ApplyOperation(argDataManager.EventManager.EventState.m_buildingResourceModDic, 
+                                                   argDataManager.EventManager.EventState.m_buildingResourceAddDic, resourceType, m_modifier);
+                bool territoryResult = ApplyOperation(argDataManager.EventManager.EventState.m_territoryResourceModDic, 
+                                                    argDataManager.EventManager.EventState.m_territoryResourceAddDic, resourceType, m_modifier);
                 return buildingResult || territoryResult;
             default:
                 return false;
@@ -77,18 +77,18 @@ public class UnifiedResourceEffectMod : EffectBase
         switch (m_targetType)
         {
             case EffectTargetType.TYPE.Building:
-                RemoveOperation(argDataManager.EventState.m_buildingResourceModDic, 
-                              argDataManager.EventState.m_buildingResourceAddDic, resourceType, m_modifier);
+                RemoveOperation(argDataManager.EventManager.EventState.m_buildingResourceModDic, 
+                              argDataManager.EventManager.EventState.m_buildingResourceAddDic, resourceType, m_modifier);
                 break;
             case EffectTargetType.TYPE.Territory:
-                RemoveOperation(argDataManager.EventState.m_territoryResourceModDic, 
-                              argDataManager.EventState.m_territoryResourceAddDic, resourceType, m_modifier);
+                RemoveOperation(argDataManager.EventManager.EventState.m_territoryResourceModDic, 
+                              argDataManager.EventManager.EventState.m_territoryResourceAddDic, resourceType, m_modifier);
                 break;
             case EffectTargetType.TYPE.Both:
-                RemoveOperation(argDataManager.EventState.m_buildingResourceModDic, 
-                              argDataManager.EventState.m_buildingResourceAddDic, resourceType, m_modifier);
-                RemoveOperation(argDataManager.EventState.m_territoryResourceModDic, 
-                              argDataManager.EventState.m_territoryResourceAddDic, resourceType, m_modifier);
+                RemoveOperation(argDataManager.EventManager.EventState.m_buildingResourceModDic, 
+                              argDataManager.EventManager.EventState.m_buildingResourceAddDic, resourceType, m_modifier);
+                RemoveOperation(argDataManager.EventManager.EventState.m_territoryResourceModDic, 
+                              argDataManager.EventManager.EventState.m_territoryResourceAddDic, resourceType, m_modifier);
                 break;
         }
     }

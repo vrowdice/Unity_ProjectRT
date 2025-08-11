@@ -8,13 +8,16 @@ using UnityEngine.UI;
 public class BattleLoadingManager : MonoBehaviour
 {
     // Start is called before the first frame update
-    [Header("�ε� UI")]
+    [Header("로딩 UI")]
     public GameObject loadingPanel;
+    [SerializeField]
     private Image loadingBar;
 
-    [Header("���� �ʵ�")]
-    public GameObject battleField;
-
+    [Header("카메라 포인트")]
+    [SerializeField]
+    private Transform defenseCameraPointTransform;
+    [SerializeField]
+    private Transform attackCameraPointTransform;
     [HideInInspector] public Vector3 defenseCameraPoint;
     [HideInInspector] public Vector3 attackCameraPoint;
     [HideInInspector] public Camera mainCamra;
@@ -23,22 +26,27 @@ public class BattleLoadingManager : MonoBehaviour
     private Vector3 spawnAreaSize;
     public GameObject battleBeforeUI;
 
-    [Header("���� ������ �Ŵ���")]
+    [Header("전투 필드 프리팹")]
+    [SerializeField]
+    private GameObject battleField;
+
+    [Header("게임 데이터 매니저")]
     [SerializeField] private GameDataManager m_gameDataManager = null;
 
-
-    [Header("���� ������")]
+    [Header("아군 데이터")]
     [SerializeField] private AllyArmyData allyArmyData = null;
-    [SerializeField] private EnemyArmyData enemyArmyData = null;
 
+    [Header("적군 데이터")]
+    [SerializeField] private EnemyArmyData enemyArmyData = null;
 
     [HideInInspector] public List<UnitStatBase> allyArmyDataList = new();
     private List<UnitStatBase> enemyArmyDataList = new();
 
-    [Header("���� ��ġ UI")]
-    [SerializeField] private GameObject DeploymentUI;
+    [Header("전투 배치 UI")]
+    [SerializeField]
+    private GameObject deploymentUI;
 
-    //�׽�Ʈ�� �Ŀ� ���� ������ �����ؾ���
+    //테스트용 공격 방향 설정
     private bool isAttack = true;
 
 
@@ -136,26 +144,26 @@ public class BattleLoadingManager : MonoBehaviour
     //Ȱ��ȭ�� �̺�Ʈ Ȯ��
     private IEnumerator LoadEvent()
     {
-        Debug.Log("�̺�Ʈ Ȯ�� ��...");
+        Debug.Log("이벤트 확인 중...");
 
-        if (m_gameDataManager == null || m_gameDataManager.EventState == null)
+        if (m_gameDataManager == null || m_gameDataManager.EventManager?.EventState == null)
         {
-            Debug.LogWarning("[LoadEvent] GameDataManager �Ǵ� EventEntry�� null�Դϴ�.");
+            Debug.LogWarning("[LoadEvent] GameDataManager 또는 EventEntry가 null입니다.");
             yield break;
         }
 
-        var activeEventList = m_gameDataManager.EventState.m_activeEventList;
+        var activeEventList = m_gameDataManager.EventManager.EventState.m_activeEventList;
 
         if (activeEventList.Count == 0)
         {
-            Debug.Log("���� Ȱ��ȭ�� �̺�Ʈ�� �����ϴ�.");
+            Debug.Log("현재 활성화된 이벤트가 없습니다.");
         }
         else
         {
-            Debug.Log($"���� Ȱ��ȭ�� �̺�Ʈ ��: {activeEventList.Count}");
+            Debug.Log($"현재 활성화된 이벤트 수: {activeEventList.Count}");
             foreach (var evt in activeEventList)
             {
-                Debug.Log($"- �̺�Ʈ �̸�: {evt.m_eventData}, ���� ������: {evt.m_remainingDuration}");
+                Debug.Log($"- 이벤트 이름: {evt.m_eventData}, 남은 지속시간: {evt.m_remainingDuration}");
             }
         }
 
@@ -268,7 +276,7 @@ public class BattleLoadingManager : MonoBehaviour
             return;
         }
 
-        battleBeforeUI = Instantiate(DeploymentUI, canvas.transform);
+        battleBeforeUI = Instantiate(deploymentUI, canvas.transform);
 
         battleBeforeUI.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
         battleBeforeUI.SetActive(true);

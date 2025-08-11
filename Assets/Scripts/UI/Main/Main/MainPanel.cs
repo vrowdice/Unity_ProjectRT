@@ -46,7 +46,7 @@ public class MainPanel : BasePanel
         GameObjectUtils.ClearChildren(m_minimapScrollViewContentTrans);
 
         // 타일맵 크기 가져오기
-        Vector2Int mapSize = _manager.GetTileMapSize();
+        Vector2Int mapSize = _manager.TileMapManager.GetTileMapSize();
         
         if (mapSize == Vector2Int.zero)
         {
@@ -59,12 +59,12 @@ public class MainPanel : BasePanel
         {
             for (int y = 0; y < mapSize.y; y++)
             {
-                TileMapState tileState = _manager.GetTileMapState(x, y);
+                TileMapState tileState = _manager.TileMapManager.GetTileMapState(x, y);
                 
                 if (tileState != null)
                 {
                     // 타일의 지형 타입에 해당하는 TileMapData 가져오기
-                    TileMapData tileData = _manager.GetTileMapData(tileState.m_terrainType);
+                    TileMapData tileData = _manager.TileMapManager.GetTileMapData(tileState.m_terrainType);
                     
                     if (tileData != null)
                     {

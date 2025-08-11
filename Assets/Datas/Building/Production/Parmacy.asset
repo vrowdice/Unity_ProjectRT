@@ -19,6 +19,7 @@ MonoBehaviour:
     of medicinal herbs.\r"
   m_icon: {fileID: 0}
   m_initialAmount: -1
+  m_isUnlocked: 0
   m_requireResourceList:
   - m_type: 0
     m_amount: 80

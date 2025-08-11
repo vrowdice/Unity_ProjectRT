@@ -8,8 +8,8 @@ public abstract class EffectBase : ScriptableObject
     public string m_description;
     
     [Header("Event Tracking")]
-    [SerializeField] private string m_activatedEventName = "";
-    [SerializeField] private bool m_isActive = false;
+    [SerializeField, HideInInspector] private string m_activatedEventName = "";
+    [SerializeField, HideInInspector] private bool m_isActive = false;
     
     /// <summary>
     /// 이펙트가 활성화되어 있는지 확인

@@ -148,6 +148,8 @@ public class GameManager : MonoBehaviour
         UpdateGameBalance();
         CheckAndProcessRequests();
         CheckAndProcessEvents();
+
+        m_gameDataManager.EffectManager.GetAllActiveEffectInfo();
     }
 
     /// <summary>
@@ -184,7 +186,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void CheckAndProcessEvents()
     {
-        if (m_gameDataManager.ProcessEventDate())
+        if (m_gameDataManager.EventManager.ProcessEventDate())
         {
             Warning(InfoMessages.EventOccurs);
         }
@@ -366,7 +368,7 @@ public class GameManager : MonoBehaviour
     /// <returns>곱연산 값</returns>
     private float GetResourceMultiplier(ResourceType.TYPE resourceType)
     {
-                    if (m_gameDataManager.EventState.m_buildingResourceModDic.TryGetValue(resourceType, out float modValue))
+        if (m_gameDataManager.EventManager.EventState.m_buildingResourceModDic.TryGetValue(resourceType, out float modValue))
         {
             return (modValue == 0f) ? DEFAULT_MULTIPLIER : modValue;
         }
@@ -380,7 +382,7 @@ public class GameManager : MonoBehaviour
     /// <returns>합연산 값</returns>
     private float GetResourceAddition(ResourceType.TYPE resourceType)
     {
-                    if (m_gameDataManager.EventState.m_buildingResourceAddDic.TryGetValue(resourceType, out float addValue))
+        if (m_gameDataManager.EventManager.EventState.m_buildingResourceAddDic.TryGetValue(resourceType, out float addValue))
         {
             return addValue;
         }

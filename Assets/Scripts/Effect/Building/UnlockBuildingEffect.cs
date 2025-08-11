@@ -2,14 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "AddBuildingEffect", menuName = "Event Effects/Building/Add")]
-public class AddBuildingEffect : EffectBase
+[CreateAssetMenu(fileName = "UnlockBuildingEffect", menuName = "Event Effects/Building/Unlock")]
+public class UnlockBuildingEffect : EffectBase
 {
-    [Header("Building Settings")]
-    public int m_addCount = 1;
-    
     [Header("Specific Building")]
-    [Tooltip("Enter building code to specify a particular building to add.")]
+    [Tooltip("Enter building code to specify a particular building to unlock.")]
     public string m_specificBuildingCode = "";
 
     private GameDataManager m_gameDataManager = null;
@@ -20,19 +17,15 @@ public class AddBuildingEffect : EffectBase
 
         if (!string.IsNullOrEmpty(m_specificBuildingCode))
         {
-            argDataManager.AddSpecificBuilding(m_specificBuildingCode, m_addCount);
+            argDataManager.UnlockSpecificBuilding(m_specificBuildingCode, 1);
         }
     }
 
     public override void Deactivate(GameDataManager argDataManager)
     {
-        // 건물 추가는 영구적이므로 제거할 필요 없음
+        // 건물 언락은 영구적이므로 제거할 필요 없음
     }
 
-    /// <summary>
-    /// 이펙트 정보를 사용자에게 표시할 수 있는 문자열 반환 (오버라이드)
-    /// </summary>
-    /// <returns>이펙트 정보 문자열</returns>
     public override string GetEffectInfo()
     {
         string baseInfo = base.GetEffectInfo();
@@ -42,8 +35,8 @@ public class AddBuildingEffect : EffectBase
             return baseInfo;
         }
         
-        string buildingInfo = $"{m_specificBuildingCode} 건물 {m_addCount}개";
+        string buildingInfo = $"{m_specificBuildingCode} 건물 언락";
         
         return $"{baseInfo}\n{buildingInfo}";
     }
-}
+} 
