@@ -34,6 +34,24 @@ public class MainUIManager : MonoBehaviour, IUIManager
     [SerializeField]
     TextMeshProUGUI m_addTechText = null;
 
+    [Header("Resource Icon Button")]
+    [SerializeField]
+    Button m_woodIconBtn = null;
+    [SerializeField]
+    Button m_metalIconBtn = null;
+    [SerializeField]
+    Button m_foodIconBtn = null;
+    [SerializeField]
+    Button m_techIconBtn = null;
+
+    [Header("Resource Add Info Panel")]
+    [SerializeField]
+    GameObject m_resourceAddInfoPanel = null;
+    [SerializeField]
+    TextMeshProUGUI m_resourceAddInfoTextPrefab = null;
+    [SerializeField]
+    Transform m_resourceAddInfoContent = null;
+
     [Header("Game Info Text")]
     [SerializeField]
     TextMeshProUGUI m_dateText = null;
@@ -153,6 +171,27 @@ public class MainUIManager : MonoBehaviour, IUIManager
         MovePanel(0);
 
         UpdateAllMainText();
+        SetResourceIconButton();
+    }
+
+    public void SetResourceIconButton()
+    {
+        m_woodIconBtn.onClick.AddListener(() => SetResourceText(ResourceType.TYPE.Wood));
+        m_metalIconBtn.onClick.AddListener(() => SetResourceText(ResourceType.TYPE.Iron));
+        m_foodIconBtn.onClick.AddListener(() => SetResourceText(ResourceType.TYPE.Food));
+        m_techIconBtn.onClick.AddListener(() => SetResourceText(ResourceType.TYPE.Tech));
+    }
+
+    public void SetResourceAddInfoPanel()
+    {
+        m_resourceAddInfoPanel.SetActive(false);
+    }
+
+    public void OpenResourceAddInfoPanel(ResourceType.TYPE argType)
+    {
+        m_resourceAddInfoPanel.SetActive(true);
+        TextMeshProUGUI text = Instantiate(m_resourceAddInfoTextPrefab, m_resourceAddInfoContent);
+        text.text = argType.ToString();
     }
 
     /// <summary>
