@@ -46,6 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cam: {fileID: 0}
   sensitivity: 1
-  invert: 0
   smooth: 15
+  invert: 1
   perspectivePixelsToWorld: 0.01
+  boundsPaddingX: 0.5
