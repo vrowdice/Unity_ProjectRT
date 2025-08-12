@@ -1,49 +1,35 @@
+using Unity.VisualScripting;
 using UnityEngine;
-using System.Collections.Generic;
 
-// UnitType enum
-public enum UnitType
-{
-    None,
-    Melee, // 근거리
-    Range, // 원거리
-    Defense // 방어형
-}
-
-[CreateAssetMenu(fileName = "UnitStat", menuName = "Scriptable Object/UnitStat", order = 1)]
+[CreateAssetMenu(fileName = "NewUnitStat", menuName = "Unit/UnitStatBase")]
 public class UnitStatBase : ScriptableObject
 {
-    [Header("프리팹")]
-    public GameObject prefab;
 
-    [Header("기본 정보")]
     public string unitName;
-    public string unitDescription;
-    public Sprite unitIllustration;
+    public Sprite unitIcon;
     public FactionType.TYPE factionType;
-    public UnitType unitType;
-    public bool isAttacker;
+    public UnitTagType unitTagType;
 
-    [Header("스탯")]
-    public float maxHealth;
+    [Header("Base Stats")]
     public float attackPower;
     public float defensePower;
-    public float attackFrequency;
-    public int attackCount;
-    public float damageCoefficient;
-
-    [Header("이동")]
-    public float movementSpeed;
+    public float maxHealth;
+    public float moveSpeed;
+    public float attackRange;
+    public float attackSpeed;
 
     [Header("마나")]
-    public float manaStart;
+    public float baseMana;
     public float maxMana;
+    public float manaRecoveryOnAttack;
     public float manaRecoveryPerSecond;
-    public float manaRecoveryOnBasicAttack;
 
-    [Header("탐색")]
+    [Header("공격")]
+    public int attackCount;
+    public float damageCoefficient;
     public float enemySearchRange;
 
-    [Header("연구")]
-    public List<string> activatedResearchList = new List<string>();
+    [Header("Assets")]
+    public GameObject prefab;
+    public Sprite unitIllustration; // UI에 표시될 유닛 이미지
 }

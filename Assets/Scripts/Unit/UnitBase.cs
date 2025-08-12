@@ -1,350 +1,252 @@
-using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
-// Battle Scene Unit의 동적인 정보 코어
 public class UnitBase : MonoBehaviour
 {
-    /////////////////////////////////////////////////
-    [Header("기본 정보 및 스탯")]
-    public UnitStatBase stat;
+    [Header("초기 스탯 ")]
+    [SerializeField] private UnitStatBase initialStat;
 
-    // 기본 정보
-    public string unitName;
-    public UnitType unitType;
-    public FactionType.TYPE factionType;
+    // 내부 보관 스탯 
+    private UnitStatBase stat;
+    public UnitStatBase UnitStat => stat;
 
-    public float attackPower;
-    public float defensePower;
-    public float maxHealth;
-    public float movementSpeed;
-    public float maxMana;
-    public float manaRecoveryOnBasicAttack;
-    public float manaRecoveryPerSecond;
-    public float attackFrequency;
-    public int attackCount;
-    public float damageCoefficient;
+    public string UnitName { get; private set; }
+    public float AttackPower { get; private set; }
+    public float DefensePower { get; private set; }
+    public float MaxHealth { get; private set; }
+    public float MoveSpeed { get; private set; }
+    public float AttackRange { get; private set; }
+    public float AttackSpeed { get; private set; }
+    public float AttackFrequency { get; private set; }
+    public float DamageCoefficient { get; private set; }
+    public int AttackCount { get; private set; }
+    public float EnemySearchRange { get; private set; }
 
-    // 현재 체력
-    private float _currentHealth;
-    public float currentHealth
+    // 진영은 스탯에서 파생 
+    public FactionType.TYPE Faction => stat != null ? stat.factionType : FactionType.TYPE.None;
+
+    // 마나/체력
+    public float CurrentMana { get; private set; }
+    public float MaxMana { get; private set; }
+    public float ManaRecoveryOnBasicAttack { get; private set; }
+    public float ManaRecoveryPerSecond { get; private set; }
+    public float CurrentHealth { get; private set; }
+
+    // 상태
+    public bool IsCombatInProgress { get; private set; }
+    public bool IsDead => CurrentHealth <= 0;
+
+    // 컴포넌트
+    private UnitMovementController movementLogic;
+    private UnitTargetingController targetingLogic;
+    private BaseAttack attackLogic;
+
+    private Transform currentTarget;
+    private bool isBattleStarted = false;
+    private Coroutine battleCoroutine;
+    private Coroutine manaCoroutine;
+
+    private void Awake()
     {
-        get { return _currentHealth; }
-        set { _currentHealth = Mathf.Max(0, Mathf.Min(value, maxHealth)); }
+        movementLogic = GetComponent<UnitMovementController>();
+        targetingLogic = GetComponent<UnitTargetingController>();
+        attackLogic = GetComponent<BaseAttack>();
+
+        if (stat == null && initialStat != null)
+            Initialize(initialStat);
     }
 
-    private float _currentMana;
-    public float currentMana
+    private void OnEnable()
     {
-        get { return _currentMana; }
-        set { _currentMana = Mathf.Max(0, Mathf.Min(value, maxMana)); }
-    }
-
-    //공/수 여부
-    public bool isAttacker;
-
-    /////////////////////////////////////////////////
-    [Header("연구 및 일러스트")]
-    public List<string> activatedResearchList;
-    public Image unitIllustration;
-
-    /////////////////////////////////////////////////
-    public enum BasicAttackName
-    {
-        longDistanceDefault,
-        shortDistanceDefault,
-        defenseDefault
-    }
-
-    public enum BasicAttackType
-    {
-        MultiAttack,
-        Single
-    }
-
-    /////////////////////////////////////////////////
-    [Header("전투 상태 및 타겟팅")]
-    public bool isCombatInProgress;
-    public bool isTargetingAvailable;
-    public GameObject targetedEnemy;
-    public bool isTargetEliminated;
-    public float enemySearchRange;
-    public float distanceToTargetedEnemy;
-
-    /////////////////////////////////////////////////
-
-    [Header("전진 목표 지점")]
-    private Vector3 forwardDestination;
-    private Vector3 startPosition;
-
-    /////////////////////////////////////////////////
-    [Header("외부 클래스")]
-    public BaseAttack attackLogic;
-    public BaseSkill skillLogic;
-    public PassiveSkillHandler passiveLogic;
-    public UnitMovementController movementLogic;
-
-    private float attackTimer = 0f;
-
-    protected virtual void Awake()
-    {
-        if (stat != null)
+        if (IsDead)
         {
-            Initialize(stat);
-        }
-        else
-        {
-            Debug.LogError($"Error: UnitStatBase 에셋이 {gameObject.name}의 UnitBase 스크립트에 할당되지 않았습니다.");
-        }
 
-        currentHealth = maxHealth;
-        currentMana = stat.manaStart;
-        isCombatInProgress = false;
-        isTargetingAvailable = false;
-        isTargetEliminated = false;
-    }
-
-    public virtual void Initialize(UnitStatBase statData)
-    {
-        unitName = statData.unitName;
-        unitType = statData.unitType;
-        factionType = statData.factionType;
-
-        attackPower = statData.attackPower;
-        defensePower = statData.defensePower;
-        maxHealth = statData.maxHealth;
-        movementSpeed = statData.movementSpeed;
-        maxMana = statData.maxMana;
-        manaRecoveryOnBasicAttack = statData.manaRecoveryOnBasicAttack;
-        manaRecoveryPerSecond = statData.manaRecoveryPerSecond;
-        isAttacker = statData.isAttacker;
-        enemySearchRange = statData.enemySearchRange;
-
-        attackFrequency = statData.attackFrequency;
-        attackCount = statData.attackCount;
-        damageCoefficient = statData.damageCoefficient;
-
-        activatedResearchList = new List<string>(statData.activatedResearchList);
-
-        if (unitIllustration != null && statData.unitIllustration != null)
-        {
-            unitIllustration.sprite = statData.unitIllustration;
-        }
-
-        Debug.Log($"{unitName} 유닛 초기화 완료.");
-    }
-
-    public void SetDestination(Vector3 destination)
-    {
-        forwardDestination = destination;
-        startPosition = transform.position;
-    }
-
-    protected virtual void Start()
-    {
-        if (passiveLogic != null)
-        {
-            passiveLogic.ApplyEffect(this);
         }
     }
 
-    protected virtual void Update()
+    private void OnDisable()
     {
-        if (isCombatInProgress)
-        {
-            currentMana += manaRecoveryPerSecond * Time.deltaTime;
-            currentMana = Mathf.Min(currentMana, maxMana);
+        // 코루틴 누수 방지
+        if (battleCoroutine != null) { StopCoroutine(battleCoroutine); battleCoroutine = null; }
+        if (manaCoroutine != null) { StopCoroutine(manaCoroutine); manaCoroutine = null; }
+        isBattleStarted = false;
+        IsCombatInProgress = false;
+    }
 
-            if (targetedEnemy == null || !targetedEnemy.activeSelf)
+    // 초기화
+    public void Initialize(UnitStatBase newStat)
+    {
+        if (newStat == null)
+        {
+            Debug.LogError($"[{name}] Initialize 실패: stat이 null");
+            return;
+        }
+
+        stat = newStat;
+
+        UnitName = stat.unitName;
+        AttackPower = stat.attackPower;
+        DefensePower = stat.defensePower;
+        MaxHealth = stat.maxHealth;
+        MoveSpeed = stat.moveSpeed;
+        AttackRange = stat.attackRange;
+        AttackSpeed = stat.attackSpeed;
+        AttackFrequency = (AttackSpeed > 0.0f) ? 1.0f / AttackSpeed : 0.0f;
+        AttackCount = stat.attackCount;
+        DamageCoefficient = stat.damageCoefficient;
+        EnemySearchRange = stat.enemySearchRange;
+
+        MaxMana = stat.maxMana;
+        CurrentMana = stat.baseMana;
+        ManaRecoveryOnBasicAttack = stat.manaRecoveryOnAttack;
+        ManaRecoveryPerSecond = stat.manaRecoveryPerSecond;
+
+        CurrentHealth = MaxHealth;
+        IsCombatInProgress = false;
+
+        // 마나 자동 회복 시작
+        if (manaCoroutine != null) StopCoroutine(manaCoroutine);
+        manaCoroutine = StartCoroutine(ManaRecoveryRoutine());
+    }
+
+    // 마나
+    public void AddMana(float amount)
+    {
+        if (MaxMana <= 0.0f) return;
+        CurrentMana = Mathf.Clamp(CurrentMana + Mathf.Max(0.0f, amount), 0.0f, MaxMana);
+    }
+
+    public bool UseMana(float amount)
+    {
+        if (amount <= 0.0f) return true;
+        if (CurrentMana >= amount)
+        {
+            CurrentMana -= amount;
+            return true;
+        }
+        return false;
+    }
+
+    public void OnBasicAttackLanded()
+    {
+        CurrentMana += ManaRecoveryOnBasicAttack;
+        if (MaxMana > 0.0f) CurrentMana = Mathf.Min(CurrentMana, MaxMana);
+    }
+
+    private IEnumerator ManaRecoveryRoutine()
+    {
+        var wait = new WaitForSeconds(1f);
+        while (!IsDead)
+        {
+            if (!IsCombatInProgress)
             {
-                FindNewTarget();
-                if (targetedEnemy == null)
-                {
-                    if (BattleManager.Instance != null && movementLogic != null)
-                    {
-                        Vector3 forwardDestination = (factionType == FactionType.TYPE.Owl) ?
-                            BattleManager.Instance.enemyForwardPoint.position :
-                            BattleManager.Instance.allyForwardPoint.position;
+                AddMana(ManaRecoveryPerSecond);
+            }
+            yield return wait;
+        }
+    }
 
-                        MoveTo(forwardDestination);
-                    }
-                }
+    // 체력/사망
+    public void Heal(float amount)
+    {
+        if (MaxHealth <= 0.0f) return;
+        CurrentHealth = Mathf.Clamp(CurrentHealth + Mathf.Max(0.0f, amount), 0.0f, MaxHealth);
+    }
+
+    public void TakeDamage(float damage)
+    {
+        if (IsDead) return;
+        CurrentHealth = Mathf.Max(CurrentHealth - Mathf.Max(0.0f, damage), 0.0f);
+        OnDamaged?.Invoke(this, damage, null);
+        if (IsDead) OnDeath();
+    }
+
+    private void OnDeath()
+    {
+        OnDied?.Invoke(this);
+
+        isBattleStarted = false;
+        attackLogic?.StopAttack();
+        movementLogic?.StopMove();
+
+        // 풀링을 쓴다면 Destroy 대신 비활성화가 적절하다함 
+        gameObject.SetActive(false);
+    }
+
+    // 전투
+    public void StartBattle(bool isAttacker)
+    {
+        if (battleCoroutine != null) return;
+
+        isBattleStarted = true;
+        battleCoroutine = StartCoroutine(BattleRoutine(isAttacker));
+    }
+
+    private IEnumerator BattleRoutine(bool isAttacker)
+    {
+        while (isBattleStarted && !IsDead)
+        {
+            if (currentTarget == null || !currentTarget.gameObject.activeSelf)
+            {
+                targetingLogic?.FindNewTarget();
+                currentTarget = targetingLogic?.TargetedEnemy?.transform;
             }
 
-            if (targetedEnemy != null)
+            if (currentTarget != null)
             {
-                distanceToTargetedEnemy = Vector2.Distance(transform.position, targetedEnemy.transform.position);
+                float dist = Vector3.Distance(transform.position, currentTarget.position);
 
-                if (distanceToTargetedEnemy <= attackLogic.attackRange)
+                if (dist <= AttackRange * 0.9f)
                 {
-                    movementLogic?.StopMoveRoutine();
-
-                    if (skillLogic != null && currentMana >= skillLogic.manaCost && !skillLogic.IsCasting)
+                    if (attackLogic != null && !attackLogic.IsAttacking)
                     {
-                        UseActiveSkill();
-                    }
-                    else if (attackLogic != null && !attackLogic.IsAttacking)
-                    {
-                        PerformBasicAttack();
+                        attackLogic.StartAttack(this, currentTarget.gameObject);
+                        IsCombatInProgress = true;
+                        movementLogic?.StopMove();
                     }
                 }
                 else
                 {
-                    MoveTo(targetedEnemy.transform.position);
+                    attackLogic?.StopAttack();
+                    IsCombatInProgress = false;
+                    movementLogic?.MoveTo(currentTarget.position, MoveSpeed);
                 }
             }
-        }
-    }
-
-    private void FindNewTarget()
-    {
-        List<UnitBase> potentialTargets = (factionType == FactionType.TYPE.Owl) ? BattleManager.Instance.enemyUnits : BattleManager.Instance.allyUnits;
-
-        GameObject nearestEnemy = null;
-        float minDistance = float.MaxValue;
-
-        foreach (UnitBase potentialTarget in potentialTargets)
-        {
-            if (potentialTarget == null || !potentialTarget.gameObject.activeSelf)
+            else
             {
-                continue;
+                attackLogic?.StopAttack();
+                IsCombatInProgress = false;
+                Vector3 moveDir = isAttacker ? Vector3.left : Vector3.right;
+                movementLogic?.StartMoveInDirection(moveDir, MoveSpeed);
             }
 
-            float distance = Vector2.Distance(transform.position, potentialTarget.transform.position);
-
-            if (distance < minDistance && distance <= enemySearchRange)
-            {
-                minDistance = distance;
-                nearestEnemy = potentialTarget.gameObject;
-            }
-        }
-        if (nearestEnemy != null)
-        {
-            Debug.Log($"{unitName} 타겟을 찾음: {nearestEnemy.name}");
-        }
-        else
-        {
-            Debug.LogWarning($"{unitName} 타겟을 못찾음. EnemySearchRange: {enemySearchRange}");
-        }
-        SetTarget(nearestEnemy);
-    }
-
-    public virtual void SetTarget(GameObject target)
-    {
-        targetedEnemy = target;
-        isTargetingAvailable = (target != null);
-        isTargetEliminated = false;
-
-        if (target != null)
-        {
-            distanceToTargetedEnemy = Vector2.Distance(transform.position, targetedEnemy.transform.position);
-        }
-        else
-        {
-            distanceToTargetedEnemy = 0.0f;
+            yield return null;
         }
     }
 
-    public virtual void MoveTo(Vector3 destination)
+    // 이팩트
+
+    public event System.Action<UnitBase, GameObject> OnBasicAttackStarted;
+    public event System.Action<UnitBase, GameObject, float> OnBasicAttackHit;
+    public event System.Action<UnitBase, GameObject> OnSkillCastStarted;
+    public event System.Action<UnitBase, GameObject> OnSkillCastFinished;
+    public event System.Action<UnitBase, float, GameObject> OnDamaged;
+    public event System.Action<UnitBase> OnDied;
+
+    public void NotifyBasicAttackStart(GameObject target)
     {
-        if (movementLogic != null)
-        {
-            movementLogic.StartMove(destination, movementSpeed);
-        }
-        else
-        {
-            Debug.LogWarning($"{unitName}에 이동 로직(UnitMovementController)이 할당되지 않아 이동 불가. 확인 필요.");
-        }
+        OnBasicAttackStarted?.Invoke(this, target);
     }
-
-    public virtual void PerformBasicAttack()
+    public void NotifyBasicAttackHit(GameObject target, float damage)
     {
-        if (attackLogic != null)
-        {
-            if (targetedEnemy == null || !isTargetingAvailable)
-            {
-                Debug.LogWarning($"{unitName}의 타겟이 없어 기본 공격을 수행 불가.");
-                return;
-            }
-            if (distanceToTargetedEnemy > attackLogic.attackRange)
-            {
-                return;
-            }
-
-            attackLogic.StartAttack(this, targetedEnemy);
-        }
-        else
-        {
-            Debug.LogWarning($"{unitName}에 공격 로직(BaseAttack)이 할당되지 않아 공격 불가.");
-        }
+        OnBasicAttackHit?.Invoke(this, target, damage);
     }
-
-    public virtual void TakeDamage(float rawDamage)
+    public void NotifySkillCastStart(GameObject target)
     {
-        float finalDamage = DamageCalculator.CalculateDamage(rawDamage, defensePower);
-        currentHealth -= finalDamage;
-
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
+        OnSkillCastStarted?.Invoke(this, target);
     }
-
-    public virtual bool UseActiveSkill()
+    public void NotifySkillCastFinish(GameObject target)
     {
-        if (skillLogic != null && currentMana >= skillLogic.manaCost && !skillLogic.IsCasting)
-        {
-            skillLogic.StartCast(this, targetedEnemy);
-            currentMana -= skillLogic.manaCost;
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    public virtual void ApplyPassiveSkills()
-    {
-        if (passiveLogic != null)
-        {
-            passiveLogic.ApplyEffect(this);
-        }
-        else
-        {
-            Debug.LogWarning($"{unitName}에 패시브 로직(PassiveSkillHandler)이 할당되지 않음. 확인 필요.");
-        }
-    }
-
-    protected virtual void Die()
-    {
-        Debug.Log($"{unitName}이(가) 제거");
-        isCombatInProgress = false;
-
-        attackLogic?.StopAttack();
-        skillLogic?.StopCast();
-        movementLogic?.StopMoveRoutine();
-
-        if (BattleManager.Instance != null)
-        {
-            BattleManager.Instance.OnUnitDied(this);
-        }
-
-        Destroy(gameObject);
-    }
-
-    public void SetCombatStatus(bool inCombat)
-    {
-        isCombatInProgress = inCombat;
-
-        if (movementLogic != null)
-        {
-            movementLogic.gameObject.SetActive(inCombat);
-        }
-
-        if (inCombat)
-        {
-            FindNewTarget();
-        }
+        OnSkillCastFinished?.Invoke(this, target);
     }
 }

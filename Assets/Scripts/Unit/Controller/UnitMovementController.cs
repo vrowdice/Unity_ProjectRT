@@ -1,55 +1,47 @@
-using System.Collections;
 using UnityEngine;
 
-// 이동 컨트롤러
 public class UnitMovementController : MonoBehaviour
 {
-    private UnitBase unit;
-    private Coroutine moveRoutine;
+    private Vector3 _targetPosition;
+    private Vector3 _dir;
+    private float _moveSpeed;
+    private bool _isMoving = false;
+    private bool _directional = false;
 
-    private Vector3 currentDestination;
-    private float currentMoveSpeed;
-
-    private void Awake()
+    public void MoveTo(Vector3 target, float speed)
     {
-        unit = GetComponent<UnitBase>();
-        if (unit == null)
-        {
-            enabled = false;
-        }
+        _directional = false;
+        _targetPosition = target;
+        _moveSpeed = speed;
+        _isMoving = true;
     }
 
-    public void StartMove(Vector3 destination, float movementSpeed)
+    public void StartMoveInDirection(Vector3 direction, float speed)
     {
-        if (moveRoutine != null)
-        {
-            StopCoroutine(moveRoutine);
-        }
-
-        currentDestination = destination;
-        currentMoveSpeed = movementSpeed;
-        moveRoutine = StartCoroutine(MoveToRoutine());
+        _directional = true;
+        _dir = direction.normalized;
+        _moveSpeed = speed;
+        _isMoving = true;
     }
 
-    protected IEnumerator MoveToRoutine()
+    public void StopMove()
     {
-
-        while (Vector3.Distance(transform.position, currentDestination) > 0.1f)
-        {
-            transform.position = Vector3.MoveTowards(transform.position, currentDestination, currentMoveSpeed * Time.deltaTime);
-            yield return null;
-        }
-
-        transform.position = currentDestination;
-        moveRoutine = null;
+        _isMoving = false;
     }
 
-    public void StopMoveRoutine()
+    private void Update()
     {
-        if (moveRoutine != null)
+        if (!_isMoving) return;
+
+        if (_directional)
         {
-            StopCoroutine(moveRoutine);
-            moveRoutine = null;
+            transform.position += _dir * _moveSpeed * Time.deltaTime;
+        }
+        else
+        {
+            transform.position = Vector3.MoveTowards(transform.position, _targetPosition, _moveSpeed * Time.deltaTime);
+            if (Vector3.Distance(transform.position, _targetPosition) < 0.1f)
+                StopMove();
         }
     }
 }

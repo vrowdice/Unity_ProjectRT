@@ -10,7 +10,7 @@ public abstract class BaseSkill : MonoBehaviour
     public float skillDamageCoefficient;
     public int skillAttackCount;
 
-    // [추가] 방어 스킬 관련 변수
+    // 방어 스킬 관련 변수
     public float otherSkillCoefficient;
     public float otherSkillRange;
 
@@ -21,17 +21,18 @@ public abstract class BaseSkill : MonoBehaviour
     {
         if (IsCasting)
         {
-            Debug.LogWarning($"{caster.unitName}의 스킬 '{skillName}'이 이미 시전 중입니다.");
+            Debug.LogWarning($"{caster.UnitName}의 스킬 '{skillName}'이 이미 시전 중입니다.");
             return;
         }
 
-        if (caster.currentMana < manaCost)
+        if (!caster.UseMana(manaCost))
         {
-            Debug.Log($"{caster.unitName}은(는) '{skillName}' 스킬을 사용할 마나가 부족합니다.");
+            Debug.Log($"{caster.UnitName}은(는) '{skillName}' 스킬을 사용할 마나가 부족합니다.");
             return;
         }
 
-        caster.currentMana -= manaCost;
+        // 이펙트 시작
+        UnitImpactEmitter.Emit(caster.gameObject, ImpactEventType.SkillCastStart, caster, target, 0.0f, skillName);
 
         StopAllCoroutines();
         StartCoroutine(PerformSkillRoutine(caster, target));
@@ -54,7 +55,11 @@ public abstract class BaseSkill : MonoBehaviour
         if (targetUnit != null)
         {
             targetUnit.TakeDamage(rawDamage);
-            Debug.Log($"→ {targetUnit.unitName}에게 스킬로 {rawDamage:F2} 피해를 입힘. (시전자: {caster.unitName})");
+            Debug.Log($"→ {targetUnit.UnitName}에게 스킬로 {rawDamage:F2} 피해를 입힘. (시전자: {caster.UnitName})");
+
+            // 이펙트
+            UnitImpactEmitter.Emit(caster.gameObject, ImpactEventType.SkillCastHit, caster, target, rawDamage, skillName);
+            UnitImpactEmitter.Emit(target, ImpactEventType.Damaged, caster, target, rawDamage, skillName);
         }
     }
 }

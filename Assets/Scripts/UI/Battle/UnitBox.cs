@@ -1,169 +1,79 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UnitBox : MonoBehaviour
 {
-    [SerializeField] private GameObject unitPrefab;
-    private GameObject attackSpawnArea;
+    // === UI 참조 ===
+    [SerializeField] private Image unitIcon;
+    [SerializeField] private TextMeshProUGUI unitNameText;
+    [SerializeField] private TextMeshProUGUI countText;
+    [SerializeField] private Button spawnButton;
 
-    private UnitStatBase unitData;
-    private int unitCount;
-    private int createdCount = 0;
+    // === 데이터 ===
+    private UnitStatBase unitStat;
+    private int currentCount;
+    private BattleBeforeUI battleBeforeUI;
 
-    private TextMeshProUGUI countText;
-    private Image buttonImage;
-    private Color defaultColor;
-    private bool hasColorChanged = false;
+    public int CurrentCount => currentCount;
 
-    public void Init(UnitStatBase data, int count, TextMeshProUGUI countTextRef)
+    private void Awake()
     {
-        unitData = data;
-        unitCount = count;
-        createdCount = 0;
-        countText = countTextRef;
-        attackSpawnArea = GameObject.Find("AttackSpawnArea");
-
-        buttonImage = GetComponent<Image>();
-        if (buttonImage != null)
+        if (spawnButton)
         {
-            defaultColor = buttonImage.color;
-            buttonImage.color = new Color(defaultColor.r, defaultColor.g, defaultColor.b, 0.5f); // 흐리게
+            spawnButton.onClick.AddListener(OnSpawnButtonClicked);
         }
-
-        Button btn = GetComponent<Button>();
-        if (btn != null)
-        {
-            btn.onClick.RemoveAllListeners();
-            btn.onClick.AddListener(OnClickUnitButton);
-        }
-
-        UpdateCountText();
     }
 
-    public void OnClickUnitButton()
+    public void Init(UnitStatBase stat, int count, BattleBeforeUI beforeUI)
     {
-        if (unitCount <= 0 || unitPrefab == null || attackSpawnArea == null) return;
-
-        Vector3 spawnPos = GetRandomPositionInBox();
-        GameObject newUnit = Instantiate(unitPrefab, spawnPos, Quaternion.identity);
-
-        //unitType → 태그명 변환 매핑
-        Dictionary<string, string> typeToTagMap = new()
+        if (stat != null)
         {
-            { "Short", "MyShortUnit" },
-            { "Long", "MyLongUnit" },
-            { "Defense", "MyDefenseUnit" }
-        };
-
-        //태그 설정
-        if (unitData.unitType.ToString() != null) // [수정] ToString()으로 enum을 string으로 변환
-        {
-            if (typeToTagMap.TryGetValue(unitData.unitType.ToString(), out string tagName)) // [수정] unitData.unitType을 string으로 변환
-            {
-                try
-                {
-                    newUnit.tag = tagName;
-                }
-                catch
-                {
-                    Debug.LogWarning($"[태그 오류] '{tagName}' 태그가 유효하지 않거나 등록되지 않았습니다.");
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"[태그 매핑 누락] '{unitData.unitType}'에 대한 태그가 등록되어 있지 않습니다.");
-            }
-        }
-
-        // UnitStatBase 정보 전달
-        UnitBase unitBase = newUnit.GetComponent<UnitBase>();
-        if (unitBase != null)
-        {
-            unitBase.Initialize(unitData);
+            Debug.Log($"[UnitBox] '{stat.unitName}'에 대한 Init 함수 호출. UnitStat 데이터 정상.");
         }
         else
         {
-            Debug.LogWarning("[생성 실패] 생성된 유닛에 UnitBase 컴포넌트가 없습니다.");
+            Debug.LogError("[UnitBox] Init 함수 호출 시 UnitStat 데이터가 null입니다.");
         }
 
-        // [수정] affiliation 변수 대신 factionType 변수와 enum을 사용
-        if (unitBase != null && unitBase.factionType == FactionType.TYPE.Owl)
-        {
-            // 아군인 경우에만 드래그 스크립트 추가
-            UnitDragHandler dragHandler = newUnit.GetComponent<UnitDragHandler>();
-            if (dragHandler == null)
-            {
-                dragHandler = newUnit.AddComponent<UnitDragHandler>();
-            }
+        unitStat = stat;
+        currentCount = count;
+        battleBeforeUI = beforeUI;
 
-            // 유닛 정보 전달
-            dragHandler.unitStatData = unitData;
-        }
-
-        // 수량 및 UI 처리
-        unitCount--;
-        createdCount++;
-        UpdateCountText();
-
-        if (!hasColorChanged && buttonImage != null && createdCount >= 1)
-        {
-            buttonImage.color = defaultColor;
-            hasColorChanged = true;
-        }
-
-        if (unitCount <= 0)
-        {
-            GetComponent<Button>().interactable = false;
-        }
-    }
-
-    private void UpdateCountText()
-    {
-        if (countText != null)
-        {
-            countText.text = unitCount.ToString();
-        }
-    }
-
-    private Vector3 GetRandomPositionInBox()
-    {
-        BoxCollider2D box = attackSpawnArea.GetComponent<BoxCollider2D>();
-        if (box == null)
-        {
-            Debug.LogWarning("BoxCollider2D가 없습니다.");
-            return Vector3.zero;
-        }
-
-        Bounds bounds = box.bounds;
-        float x = Random.Range(bounds.min.x, bounds.max.x);
-        float y = Random.Range(bounds.min.y, bounds.max.y);
-        return new Vector3(x, y, 0f);
+        UpdateUI();
     }
 
     public void IncreaseUnitCount(int amount)
     {
-        unitCount += amount;
-        UpdateCountText();
+        currentCount += amount;
+        UpdateUI();
+    }
 
-        // 버튼 다시 활성화
-        if (unitCount > 0)
+    private void UpdateUI()
+    {
+        if (unitStat != null)
         {
-            Button btn = GetComponent<Button>();
-            if (btn != null)
-            {
-                btn.interactable = true;
+            if (unitIcon) unitIcon.sprite = unitStat.unitIcon;
+            if (unitNameText) unitNameText.text = unitStat.unitName;
+        }
 
-                // 버튼 색상도 다시 진하게 설정 (선택 사항)
-                if (buttonImage != null)
-                {
-                    buttonImage.color = defaultColor;
-                }
+        if (countText)
+        {
+            countText.text = currentCount.ToString();
+            if (spawnButton) spawnButton.interactable = currentCount > 0;
+        }
+    }
 
-                hasColorChanged = true;
-            }
+    private void OnSpawnButtonClicked()
+    {
+        if (BattleBeforeUI.IsInPlacementMode)
+        {
+            if (currentCount <= 0) return;
+            battleBeforeUI.RequestPlaceUnit(unitStat);
+        }
+        else
+        {
+            Debug.Log("회수 모드에서는 씬에 있는 유닛을 직접 클릭하여 회수해야 합니다.");
         }
     }
 }

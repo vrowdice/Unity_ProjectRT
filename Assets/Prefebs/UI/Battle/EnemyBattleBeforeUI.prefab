@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 5682176211491971024}
   m_Layer: 5
-  m_Name: EUnitCountUIShort
-  m_TagString: Untagged
+  m_Name: EUnitCountUIMelee
+  m_TagString: Melee
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -34,8 +34,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 600, y: -100}
-  m_SizeDelta: {x: 200, y: 100}
+  m_AnchoredPosition: {x: 420, y: -100}
+  m_SizeDelta: {x: 200, y: 93.8538}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &883269428495868712
 GameObject:
@@ -50,7 +50,7 @@ GameObject:
   - component: {fileID: 8323524760255898994}
   m_Layer: 5
   m_Name: DefenseUnitIcon
-  m_TagString: Untagged
+  m_TagString: defence
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -71,7 +71,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 376, y: -11}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8383192397640516752
@@ -145,9 +145,9 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 5594664650660787717}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -100, y: -100}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 1817, y: -108}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8173339580492607550
@@ -242,8 +242,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1790677743706644325}
   m_Layer: 5
-  m_Name: EUnitCountUILong
-  m_TagString: Untagged
+  m_Name: EUnitCountUIRange
+  m_TagString: Range
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -266,8 +266,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 200, y: -100}
-  m_SizeDelta: {x: 200, y: 100}
+  m_AnchoredPosition: {x: 220, y: -100}
+  m_SizeDelta: {x: 200, y: 93.8538}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &3065767417189904444
 GameObject:
@@ -282,7 +282,7 @@ GameObject:
   - component: {fileID: 8516821366134555111}
   m_Layer: 5
   m_Name: DefenseUnitCountText
-  m_TagString: Untagged
+  m_TagString: defence
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -303,7 +303,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 376, y: -11}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3828585179722160295
@@ -436,9 +436,9 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 5594664650660787717}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -250, y: -99}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 1717, y: -108}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5518104294615059890
@@ -535,8 +535,8 @@ GameObject:
   - component: {fileID: 6186236877932122414}
   - component: {fileID: 7654239318947149159}
   m_Layer: 5
-  m_Name: ShortUnitCountText
-  m_TagString: Untagged
+  m_Name: MeleeUnitCountText
+  m_TagString: Melee
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -557,7 +557,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 163, y: -3}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6186236877932122414
@@ -691,11 +691,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 5594664650660787717}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0.5}
-  m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -100, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 2912.7, y: -1112.8}
   m_SizeDelta: {x: 100, y: 150}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 11.457202, y: -3.318418}
 --- !u!222 &6692793221321427635
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -780,7 +780,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 7669639472623338254}
         m_TargetAssemblyTypeName: MoverightBut, Assembly-CSharp
-        m_MethodName: MoveRightCamera
+        m_MethodName: OnClick_ToggleView
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -802,7 +802,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e5a8cfcb0918c048ad99b2ef5f9e10d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  battleBeforeUIFeb: {fileID: 7749625856373780653, guid: e64dff44c55b1344f8a74da4b875fe4a, type: 3}
 --- !u!1 &6125517291855054762
 GameObject:
   m_ObjectHideFlags: 0
@@ -814,7 +813,7 @@ GameObject:
   - component: {fileID: 7386392578291710544}
   m_Layer: 5
   m_Name: EUnitCountUIDefense
-  m_TagString: Untagged
+  m_TagString: defence
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -837,8 +836,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1000, y: -100}
-  m_SizeDelta: {x: 200, y: 100}
+  m_AnchoredPosition: {x: 620, y: -100}
+  m_SizeDelta: {x: 200, y: 93.8538}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &6168391940479804643
 GameObject:
@@ -852,8 +851,8 @@ GameObject:
   - component: {fileID: 1493316793279493310}
   - component: {fileID: 4672938545082624611}
   m_Layer: 5
-  m_Name: LongUnitIcon
-  m_TagString: Untagged
+  m_Name: RangeUnitIcon
+  m_TagString: Range
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -927,8 +926,8 @@ GameObject:
   - component: {fileID: 1402903785869389849}
   - component: {fileID: 2922563782441367411}
   m_Layer: 5
-  m_Name: ShortUnitIocn
-  m_TagString: Untagged
+  m_Name: MeleeUnitIocn
+  m_TagString: Melee
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -949,7 +948,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 163, y: -3}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1402903785869389849
@@ -1029,9 +1028,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -13, y: 1082.1}
   m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0.5202969, y: 0.5}
 --- !u!114 &7466919915709021944
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1044,9 +1043,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19cf4f3518b1b37489c2b162f73bbd18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LongUnitCountText: {fileID: 7681922336714377987}
-  ShortUnitCountText: {fileID: 5084867596612087696}
-  DefenseUnitCountText: {fileID: 3065767417189904444}
+  rangeUnitCountText: {fileID: 3778364380500526303}
+  meleeUnitCountText: {fileID: 7654239318947149159}
+  defenseUnitCountText: {fileID: 8516821366134555111}
 --- !u!1 &7681922336714377987
 GameObject:
   m_ObjectHideFlags: 0
@@ -1059,8 +1058,8 @@ GameObject:
   - component: {fileID: 2571659570163101286}
   - component: {fileID: 3778364380500526303}
   m_Layer: 5
-  m_Name: LongUnitCountText
-  m_TagString: Untagged
+  m_Name: RangeUnitCountText
+  m_TagString: Range
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
