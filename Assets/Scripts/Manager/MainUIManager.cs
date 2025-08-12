@@ -36,14 +36,6 @@ public class MainUIManager : MonoBehaviour, IUIManager
     [Header("Resource Add Info Panel")]
     [SerializeField]
     GameObject m_resourceAddInfoPanelPrefab = null;
-    [SerializeField]
-    Transform m_woodButtonTransform = null;
-    [SerializeField]
-    Transform m_ironButtonTransform = null;
-    [SerializeField]
-    Transform m_foodButtonTransform = null;
-    [SerializeField]
-    Transform m_techButtonTransform = null;
 
     [Header("Game Info Text")]
     [SerializeField]
