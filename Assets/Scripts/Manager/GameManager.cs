@@ -33,6 +33,7 @@ public class GameManager : MonoBehaviour
     // 싱글톤 인스턴스
     public static GameManager Instance { get; private set; }
     public GameDataManager GameDataManager => m_gameDataManager;
+    public IUIManager MainUiManager => m_nowUIManager;
 
     // 게임 상태 데이터
     public int Date { get; private set; }
@@ -45,6 +46,8 @@ public class GameManager : MonoBehaviour
     // 리소스 관리 딕셔너리
     private Dictionary<ResourceType.TYPE, long> m_resourcesDict = new();
     private Dictionary<ResourceType.TYPE, long> m_producedResourcesDict = new();
+    private Dictionary<ResourceType.TYPE, long> m_buildingProductionDict = new();
+    private Dictionary<ResourceType.TYPE, long> m_territoryProductionDict = new();
 
     /// <summary>
     /// 싱글톤 패턴 초기화
@@ -90,6 +93,8 @@ public class GameManager : MonoBehaviour
         {
             m_resourcesDict[resourceType] = INITIAL_RESOURCE_AMOUNT;
             m_producedResourcesDict[resourceType] = MIN_RESOURCE_AMOUNT;
+            m_buildingProductionDict[resourceType] = MIN_RESOURCE_AMOUNT;
+            m_territoryProductionDict[resourceType] = MIN_RESOURCE_AMOUNT;
         }
     }
 
@@ -113,7 +118,7 @@ public class GameManager : MonoBehaviour
 
         if (m_nowUIManager != null)
         {
-            m_nowUIManager.Initialize(this);
+            m_nowUIManager.Initialize(this, m_gameDataManager);
         }
         else
         {
@@ -306,6 +311,7 @@ public class GameManager : MonoBehaviour
     {
         ResetProductionResources();
         CalculateBuildingProduction();
+        CalculateTerritoryProduction();
     }
 
     /// <summary>
@@ -316,6 +322,8 @@ public class GameManager : MonoBehaviour
         foreach (ResourceType.TYPE resourceType in m_producedResourcesDict.Keys.ToList())
         {
             m_producedResourcesDict[resourceType] = MIN_RESOURCE_AMOUNT;
+            m_buildingProductionDict[resourceType] = MIN_RESOURCE_AMOUNT;
+            m_territoryProductionDict[resourceType] = MIN_RESOURCE_AMOUNT;
         }
     }
 
@@ -358,6 +366,7 @@ public class GameManager : MonoBehaviour
             // 합연산 후 곱연산 적용
             long finalAmount = (long)((production.m_amount + addition) * multiplier);
             m_producedResourcesDict[production.m_type] += finalAmount;
+            m_buildingProductionDict[production.m_type] += finalAmount;
         }
     }
 
@@ -383,6 +392,99 @@ public class GameManager : MonoBehaviour
     private float GetResourceAddition(ResourceType.TYPE resourceType)
     {
         if (m_gameDataManager.EventManager.EventState.m_buildingResourceAddDic.TryGetValue(resourceType, out float addValue))
+        {
+            return addValue;
+        }
+        return DEFAULT_ADDITION;
+    }
+
+    /// <summary>
+    /// 영토 생산량 계산
+    /// </summary>
+    private void CalculateTerritoryProduction()
+    {
+        if (m_gameDataManager.TileMapManager?.TileMap == null)
+        {
+            return;
+        }
+
+        Vector2Int mapSize = m_gameDataManager.TileMapManager.GetTileMapSize();
+        
+        for (int x = 0; x < mapSize.x; x++)
+        {
+            for (int y = 0; y < mapSize.y; y++)
+            {
+                TileMapState tileState = m_gameDataManager.TileMapManager.GetTileMapState(x, y);
+                if (tileState != null && tileState.m_isFriendlyArea)
+                {
+                    TileMapData tileData = m_gameDataManager.TileMapManager.GetTileMapData(tileState.m_terrainType);
+                    if (tileData != null)
+                    {
+                        // 기본 영토 생산량 (타일당 1씩)
+                        long baseTerritoryProduction = 1;
+                        
+                        // 지형별 배수 적용
+                        float woodMultiplier = tileData.m_woodMul;
+                        float ironMultiplier = tileData.m_iromMul;
+                        float foodMultiplier = tileData.m_foodMul;
+                        float techMultiplier = tileData.m_techMul;
+                        
+                        // 영토 이펙트 적용
+                        float territoryWoodMultiplier = GetTerritoryResourceMultiplier(ResourceType.TYPE.Wood);
+                        float territoryIronMultiplier = GetTerritoryResourceMultiplier(ResourceType.TYPE.Iron);
+                        float territoryFoodMultiplier = GetTerritoryResourceMultiplier(ResourceType.TYPE.Food);
+                        float territoryTechMultiplier = GetTerritoryResourceMultiplier(ResourceType.TYPE.Tech);
+                        
+                        float territoryWoodAddition = GetTerritoryResourceAddition(ResourceType.TYPE.Wood);
+                        float territoryIronAddition = GetTerritoryResourceAddition(ResourceType.TYPE.Iron);
+                        float territoryFoodAddition = GetTerritoryResourceAddition(ResourceType.TYPE.Food);
+                        float territoryTechAddition = GetTerritoryResourceAddition(ResourceType.TYPE.Tech);
+                        
+                        // 최종 영토 생산량 계산
+                        long woodProduction = (long)((baseTerritoryProduction * woodMultiplier + territoryWoodAddition) * territoryWoodMultiplier);
+                        long ironProduction = (long)((baseTerritoryProduction * ironMultiplier + territoryIronAddition) * territoryIronMultiplier);
+                        long foodProduction = (long)((baseTerritoryProduction * foodMultiplier + territoryFoodAddition) * territoryFoodMultiplier);
+                        long techProduction = (long)((baseTerritoryProduction * techMultiplier + territoryTechAddition) * territoryTechMultiplier);
+                        
+                        // 영토 생산량에 추가
+                        m_territoryProductionDict[ResourceType.TYPE.Wood] += woodProduction;
+                        m_territoryProductionDict[ResourceType.TYPE.Iron] += ironProduction;
+                        m_territoryProductionDict[ResourceType.TYPE.Food] += foodProduction;
+                        m_territoryProductionDict[ResourceType.TYPE.Tech] += techProduction;
+                        
+                        // 전체 생산량에도 추가
+                        m_producedResourcesDict[ResourceType.TYPE.Wood] += woodProduction;
+                        m_producedResourcesDict[ResourceType.TYPE.Iron] += ironProduction;
+                        m_producedResourcesDict[ResourceType.TYPE.Food] += foodProduction;
+                        m_producedResourcesDict[ResourceType.TYPE.Tech] += techProduction;
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 영토 리소스 곱연산 값 가져오기
+    /// </summary>
+    /// <param name="resourceType">리소스 타입</param>
+    /// <returns>곱연산 값</returns>
+    private float GetTerritoryResourceMultiplier(ResourceType.TYPE resourceType)
+    {
+        if (m_gameDataManager.EventManager.EventState.m_territoryResourceModDic.TryGetValue(resourceType, out float modValue))
+        {
+            return (modValue == 0f) ? DEFAULT_MULTIPLIER : modValue;
+        }
+        return DEFAULT_MULTIPLIER;
+    }
+
+    /// <summary>
+    /// 영토 리소스 합연산 값 가져오기
+    /// </summary>
+    /// <param name="resourceType">리소스 타입</param>
+    /// <returns>합연산 값</returns>
+    private float GetTerritoryResourceAddition(ResourceType.TYPE resourceType)
+    {
+        if (m_gameDataManager.EventManager.EventState.m_territoryResourceAddDic.TryGetValue(resourceType, out float addValue))
         {
             return addValue;
         }
@@ -423,6 +525,26 @@ public class GameManager : MonoBehaviour
     public long GetDayAddResource(ResourceType.TYPE argType)
     {
         return m_producedResourcesDict.TryGetValue(argType, out long value) ? value : 0;
+    }
+
+    /// <summary>
+    /// 특정 리소스의 건물 생산량을 가져옴
+    /// </summary>
+    /// <param name="argType">리소스 타입</param>
+    /// <returns>건물 생산량</returns>
+    public long GetBuildingProduction(ResourceType.TYPE argType)
+    {
+        return m_buildingProductionDict.TryGetValue(argType, out long value) ? value : 0;
+    }
+
+    /// <summary>
+    /// 특정 리소스의 영토 생산량을 가져옴
+    /// </summary>
+    /// <param name="argType">리소스 타입</param>
+    /// <returns>영토 생산량</returns>
+    public long GetTerritoryProduction(ResourceType.TYPE argType)
+    {
+        return m_territoryProductionDict.TryGetValue(argType, out long value) ? value : 0;
     }
 
     /// <summary>

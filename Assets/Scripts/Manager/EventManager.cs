@@ -129,6 +129,8 @@ public class EventManager : MonoBehaviour
             }
         }
 
+        GameManager.Instance.MainUiManager.UpdateAllMainText();
+
         return isAddEvent;
     }
 

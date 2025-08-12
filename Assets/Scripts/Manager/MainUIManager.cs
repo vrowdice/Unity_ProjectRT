@@ -1,8 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
+using System.Collections;
 
 /// <summary>
 /// 메인 UI를 관리하는 매니저 클래스
@@ -22,9 +21,9 @@ public class MainUIManager : MonoBehaviour, IUIManager
     [SerializeField]
     TextMeshProUGUI m_addWoodText = null;
     [SerializeField]
-    TextMeshProUGUI m_metalText = null;
+    TextMeshProUGUI m_ironText = null;
     [SerializeField]
-    TextMeshProUGUI m_addMetalText = null;
+    TextMeshProUGUI m_addIronText = null;
     [SerializeField]
     TextMeshProUGUI m_foodText = null;
     [SerializeField]
@@ -34,23 +33,17 @@ public class MainUIManager : MonoBehaviour, IUIManager
     [SerializeField]
     TextMeshProUGUI m_addTechText = null;
 
-    [Header("Resource Icon Button")]
-    [SerializeField]
-    Button m_woodIconBtn = null;
-    [SerializeField]
-    Button m_metalIconBtn = null;
-    [SerializeField]
-    Button m_foodIconBtn = null;
-    [SerializeField]
-    Button m_techIconBtn = null;
-
     [Header("Resource Add Info Panel")]
     [SerializeField]
-    GameObject m_resourceAddInfoPanel = null;
+    GameObject m_resourceAddInfoPanelPrefab = null;
     [SerializeField]
-    TextMeshProUGUI m_resourceAddInfoTextPrefab = null;
+    Transform m_woodButtonTransform = null;
     [SerializeField]
-    Transform m_resourceAddInfoContent = null;
+    Transform m_ironButtonTransform = null;
+    [SerializeField]
+    Transform m_foodButtonTransform = null;
+    [SerializeField]
+    Transform m_techButtonTransform = null;
 
     [Header("Game Info Text")]
     [SerializeField]
@@ -70,9 +63,14 @@ public class MainUIManager : MonoBehaviour, IUIManager
 
     // 참조 변수들
     private GameManager m_gameManager = null;
+    private GameDataManager m_gameDataManager = null;
     private List<IUIPanel> m_iPanelList = new List<IUIPanel>();
     private Transform m_canvasTrans = null;
     private int m_nowPanelIndex = 0;
+    
+    // 동적 패널 관리
+    private ResourceAddInfoPanel m_currentInfoPanel = null;
+    private GameObject m_backgroundBlocker = null;
 
     // 프로퍼티들
     public GameObject ResourceIconTextPrefeb { get => m_resourceIconTextPrefeb; }
@@ -93,7 +91,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
                 m_woodText.text = formattedAmount;
                 break;
             case ResourceType.TYPE.Iron:
-                m_metalText.text = formattedAmount;
+                m_ironText.text = formattedAmount;
                 break;
             case ResourceType.TYPE.Food:
                 m_foodText.text = formattedAmount;
@@ -124,7 +122,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
                 m_addWoodText.text = "+ " + formattedAmount;
                 break;
             case ResourceType.TYPE.Iron:
-                m_addMetalText.text = "+ " + formattedAmount;
+                m_addIronText.text = "+ " + formattedAmount;
                 break;
             case ResourceType.TYPE.Food:
                 m_addFoodText.text = "+ " + formattedAmount;
@@ -142,10 +140,11 @@ public class MainUIManager : MonoBehaviour, IUIManager
     /// UI 매니저 초기화
     /// 패널 리스트 설정 및 첫 번째 패널 활성화
     /// </summary>
-    /// <param name="gameManager">게임 매니저 참조</param>
-    public void Initialize(GameManager gameManager)
+    /// <param name="argGameManager">게임 매니저 참조</param>
+    public void Initialize(GameManager argGameManager, GameDataManager argGameDataManager)
     {
-        m_gameManager = gameManager;
+        m_gameManager = argGameManager;
+        m_gameDataManager = argGameDataManager;
         m_canvasTrans = transform;
 
         //패널 초기화
@@ -179,16 +178,149 @@ public class MainUIManager : MonoBehaviour, IUIManager
 
     }
 
-    public void SetResourceAddInfoPanel()
+    public void OpenResourceAddInfoPanel(int argTypeInt)
     {
-        m_resourceAddInfoPanel.SetActive(false);
+        // 인트 값을 ResourceType.TYPE으로 직접 캐스팅
+        if (!System.Enum.IsDefined(typeof(ResourceType.TYPE), argTypeInt))
+        {
+            Debug.LogWarning($"Invalid resource type index: {argTypeInt}");
+            return;
+        }
+        
+        ResourceType.TYPE resourceType = (ResourceType.TYPE)argTypeInt;
+        
+        // 이미 패널이 열려있으면 닫기
+        if (m_currentInfoPanel != null)
+        {
+            CloseCurrentInfoPanel();
+            return;
+        }
+        
+        // 프리팹이 없으면 에러
+        if (m_resourceAddInfoPanelPrefab == null)
+        {
+            Debug.LogError("Resource add info panel prefab is not assigned!");
+            return;
+        }
+        
+        // 배경 블로커 생성 (아무 곳이나 누르면 패널이 닫히도록)
+        CreateBackgroundBlocker();
+        
+        // 패널 생성
+        GameObject panelObject = Instantiate(m_resourceAddInfoPanelPrefab, m_canvasTrans);
+        m_currentInfoPanel = panelObject.GetComponent<ResourceAddInfoPanel>();
+        
+        if (m_currentInfoPanel == null)
+        {
+            Debug.LogError("ResourceAddInfoPanel component not found on prefab!");
+            Destroy(panelObject);
+            return;
+        }
+        
+        // 활성화된 모든 이펙트 가져오기
+        List<EffectBase> activeEffects = m_gameDataManager.EffectManager.GetAllActiveEffects();
+        
+        // 패널 초기화
+        m_currentInfoPanel.Init(activeEffects, resourceType);
+        
+        // 패널 위치 설정 (버튼 아래에 배치)
+        SetPanelPosition(argTypeInt);
     }
-
-    public void OpenResourceAddInfoPanel(ResourceType.TYPE argType)
+    
+    /// <summary>
+    /// 현재 열린 정보 패널 닫기
+    /// </summary>
+    private void CloseCurrentInfoPanel()
     {
-        m_resourceAddInfoPanel.SetActive(true);
-        TextMeshProUGUI text = Instantiate(m_resourceAddInfoTextPrefab, m_resourceAddInfoContent);
-        text.text = argType.ToString();
+        if (m_currentInfoPanel != null)
+        {
+            Destroy(m_currentInfoPanel.gameObject);
+            m_currentInfoPanel = null;
+        }
+        
+        if (m_backgroundBlocker != null)
+        {
+            Destroy(m_backgroundBlocker);
+            m_backgroundBlocker = null;
+        }
+    }
+    
+    /// <summary>
+    /// 배경 블로커 생성 (아무 곳이나 누르면 패널이 닫히도록)
+    /// </summary>
+    private void CreateBackgroundBlocker()
+    {
+        m_backgroundBlocker = new GameObject("BackgroundBlocker");
+        m_backgroundBlocker.transform.SetParent(m_canvasTrans, false);
+        
+        // RectTransform 설정
+        RectTransform rectTransform = m_backgroundBlocker.AddComponent<RectTransform>();
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.offsetMin = Vector2.zero;
+        rectTransform.offsetMax = Vector2.zero;
+        rectTransform.SetAsLastSibling(); // 맨 앞으로 보내기
+        
+        // Image 컴포넌트 추가 (투명하게)
+        UnityEngine.UI.Image image = m_backgroundBlocker.AddComponent<UnityEngine.UI.Image>();
+        image.color = new Color(0, 0, 0, 0);
+        
+        // Button 컴포넌트 추가
+        UnityEngine.UI.Button button = m_backgroundBlocker.AddComponent<UnityEngine.UI.Button>();
+        button.onClick.AddListener(CloseCurrentInfoPanel);
+        
+        // Button 설정 개선
+        button.transition = UnityEngine.UI.Selectable.Transition.None;
+        button.navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.None };
+        
+        // RaycastTarget 활성화
+        image.raycastTarget = true;
+    }
+    
+    /// <summary>
+    /// 패널 위치 설정 (마우스 위치에 배치)
+    /// </summary>
+    /// <param name="resourceTypeIndex">리소스 타입 인덱스 (사용하지 않음)</param>
+    private void SetPanelPosition(int resourceTypeIndex)
+    {
+        if (m_currentInfoPanel == null) return;
+        
+        RectTransform panelRect = m_currentInfoPanel.GetComponent<RectTransform>();
+        if (panelRect != null)
+        {
+            // 마우스 위치를 Canvas 좌표로 변환
+            Vector2 mousePosition;
+            Canvas canvas = m_canvasTrans.GetComponent<Canvas>();
+            
+            if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceCamera)
+            {
+                // ScreenSpaceCamera 모드일 때
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    m_canvasTrans as RectTransform,
+                    Input.mousePosition,
+                    canvas.worldCamera,
+                    out mousePosition
+                );
+            }
+            else
+            {
+                // ScreenSpaceOverlay 모드일 때
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    m_canvasTrans as RectTransform,
+                    Input.mousePosition,
+                    null,
+                    out mousePosition
+                );
+            }
+            
+            // 패널을 마우스 위치에 배치
+            panelRect.anchoredPosition = mousePosition;
+            
+            // 패널의 앵커를 중앙으로 설정
+            panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+            panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRect.pivot = new Vector2(0f, 1f); // 왼쪽 상단을 피벗으로 설정
+        }
     }
 
     /// <summary>
