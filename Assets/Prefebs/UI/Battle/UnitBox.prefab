@@ -537,7 +537,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0544778581d00143983b6117a46771a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitPrefab: {fileID: 8758676270530081962, guid: 682625c063ffee64fb3e4ee70e175600, type: 3}
+  unitIcon: {fileID: 3722349740199666513}
+  unitNameText: {fileID: 8077943930641289756}
+  countText: {fileID: 1818344297707780418}
+  spawnButton: {fileID: 2800607968463463907}
 --- !u!1 &5626588621040040893
 GameObject:
   m_ObjectHideFlags: 0

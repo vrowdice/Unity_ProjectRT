@@ -4,51 +4,59 @@ using UnityEngine;
 public abstract class BaseAttack : MonoBehaviour
 {
     [Header("공격 데이터")]
-    public float attackRange;
+    public float attackRange; 
 
-    // 공격 상태
-    public bool IsAttacking { get; protected set; } = false;
+    public bool IsAttacking { get; protected set; }
 
     protected UnitBase owner;
     protected GameObject target;
     private Coroutine attackCoroutine;
 
-    // 공격 로직을 코루틴으로 실행하기 위한 메서드
     public void StartAttack(UnitBase attacker, GameObject targetEnemy)
     {
         if (IsAttacking) return;
+        if (attacker == null || targetEnemy == null || !targetEnemy.activeSelf) return;
 
         owner = attacker;
         target = targetEnemy;
+        IsAttacking = true;
+
+        // 이펙트, 기본공격 시작
+        UnitImpactEmitter.Emit(attacker.gameObject, ImpactEventType.BasicAttackStart, attacker, targetEnemy, 0.0f, null);
+
         attackCoroutine = StartCoroutine(PerformAttackRoutine(owner, target));
     }
 
     public void StopAttack()
     {
-        if (attackCoroutine != null)
-        {
-            StopCoroutine(attackCoroutine);
-        }
+        if (attackCoroutine != null) StopCoroutine(attackCoroutine);
+        attackCoroutine = null;
         IsAttacking = false;
         owner = null;
         target = null;
     }
 
-    // 하위 클래스에서 반드시 구현해야 할 추상 코루틴 메서드
     protected abstract IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject target);
 
-    // ApplyDamage 메서드는 BaseAttack 클래스에 구현
     protected void ApplyDamage(UnitBase attacker, GameObject target, float rawDamage)
     {
         if (target == null || !target.activeSelf) return;
 
-        UnitBase targetUnit = target.GetComponent<UnitBase>();
-        if (targetUnit != null)
-        {
-            targetUnit.TakeDamage(rawDamage);
-            Debug.Log($"{attacker.unitName}이(가) {targetUnit.unitName}에게 {rawDamage}의 피해를 입혔습니다.");
+        var unit = target.GetComponent<UnitBase>();
+        if (unit == null) return;
 
-            attacker.currentMana += attacker.manaRecoveryOnBasicAttack;
-        }
+        unit.TakeDamage(rawDamage);
+        attacker.AddMana(attacker.ManaRecoveryOnBasicAttack);
+
+        // 이펙트
+        UnitImpactEmitter.Emit(attacker.gameObject, target ? ImpactEventType.BasicAttackHit : ImpactEventType.BasicAttackHit, attacker, target, rawDamage, null);
+        UnitImpactEmitter.Emit(target, ImpactEventType.Damaged, attacker, target, rawDamage, null);
     }
+
+    protected float GetRange(UnitBase attacker)
+    {
+        return attackRange > 0.0f ? attackRange : attacker.AttackRange;
+    }
+
+    private void OnDisable() => StopAttack();
 }
