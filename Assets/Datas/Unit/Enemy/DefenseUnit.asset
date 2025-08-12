@@ -12,52 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b380b4e2ae264a42b0bcd4938beb528, type: 3}
   m_Name: DefenseUnit
   m_EditorClassIdentifier: 
-  prefab: {fileID: 8758676270530081962, guid: 682625c063ffee64fb3e4ee70e175600, type: 3}
   unitName: Defense
-  unitType: Defense
-  affiliation: lion
+  unitIcon: {fileID: 0}
+  factionType: 5
+  unitTagType: 2
   attackPower: 100
   defensePower: 30
   maxHealth: 1000
   moveSpeed: 15
-  maxMana: 50
-  manaRecoveryOnBasicAttack: 10
-  manaRecoveryPerSecond: 2
-  isAttack: 1
-  activatedResearchList: []
-  unitIllustration: {fileID: 0}
-  basicAttackName: 0
-  basicAttackType: 0
-  damageCoefficient: 0
-  attackFrequency: 0
-  attackCount: 0
   attackRange: 0
-  multiTargetRange: 0
-  maxMultiTargets: 0
-  areaAttackPrefab: {fileID: 0}
-  areaAttackDirection: {x: 0, y: 0}
-  areaAttackSpawnPosition: {x: 0, y: 0}
-  isAreaAttackFlipped: 0
-  activeSkillName: 
-  activeSkillType: 
-  activeSkillCooldown: 0
-  isSkillFinished: 0
-  activeSkillDamageCoefficient: 0
-  activeSkillAttackCount: 0
-  activeMultiTargetRange: 0
-  activeMaxMultiTargets: 0
-  activeAreaAttackPrefab: {fileID: 0}
-  activeAreaAttackDirection: {x: 0, y: 0}
-  activeAreaAttackSpawnPosition: {x: 0, y: 0}
-  isActiveAreaAttackFlipped: 0
-  otherSkillCoefficient: 0
-  otherSkillRange: 0
-  passiveSkillCoefficient: 0
-  passiveSkillRange: 0
-  isAttacker: 0
-  isCombatInProgress: 0
-  isTargetingAvailable: 0
-  targetedEnemy: {fileID: 0}
-  isTargetEliminated: 0
+  attackSpeed: 0
+  baseMana: 0
+  maxMana: 50
+  manaRecoveryOnAttack: 0
+  manaRecoveryPerSecond: 2
+  attackCount: 100
+  damageCoefficient: 0
   enemySearchRange: 0
-  distanceToTargetedEnemy: 0
+  prefab: {fileID: 8176063569506090599, guid: 834f8cd36a72e444283642b8eaedb979, type: 3}
+  unitIllustration: {fileID: 21300000, guid: b3fa3a4e47bfe1a47970ca178ec68e73, type: 3}
