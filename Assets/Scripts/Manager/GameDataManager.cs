@@ -14,20 +14,27 @@ public class GameDataManager : MonoBehaviour
     private EffectManager m_effectManager;
     private TileMapManager m_tileMapManager;
     
-    [Header("Game Data")]
-    [SerializeField] private List<FactionData> m_factionDataList = new();
-    [SerializeField] private List<ResearchData> m_commonResearchDataList = new();
-    [SerializeField] private List<BuildingData> m_buildingDataList = new();
-    [SerializeField] private List<RequestLineTemplate> m_requestLineTemplateList = new();
-    [SerializeField] private RequestLineTemplate m_contactLineTemplate;
-    [SerializeField] private List<EventGroupData> m_eventGroupDataList = new();
-    [SerializeField] private List<TileMapData> m_tileMapDataList = new();
-
-    [Header("Common Data")]
+    [Header("Data Paths")]
+    [SerializeField] private string m_factionDataPath = "Assets/Datas/Faction";
+    [SerializeField] private string m_buildingDataPath = "Assets/Datas/Building";
+    [SerializeField] private string m_requestLineTemplatePath = "Assets/Datas/RequestLineTemplate";
+    [SerializeField] private string m_eventGroupDataPath = "Assets/Datas/Event/EventGroup";
+    [SerializeField] private string m_tileMapDataPath = "Assets/Datas/TileMap";
+    
+    [Header("Common Data (Manual Setup)")]
     [SerializeField] private List<ResourceIcon> m_resourceIconList = new();
     [SerializeField] private List<TokenIcon> m_tokenIconList = new();
     [SerializeField] private List<RequestIcon> m_requestIconList = new();
     [SerializeField] private GameBalanceData m_gameBalanceData;
+    [SerializeField] private RequestLineTemplate m_contactLineTemplate;
+    
+    // 자동 로딩되는 데이터들 (인스펙터에서 숨김)
+    private List<FactionData> m_factionDataList = new();
+    private List<ResearchData> m_commonResearchDataList = new();
+    private List<BuildingData> m_buildingDataList = new();
+    private List<RequestLineTemplate> m_requestLineTemplateList = new();
+    private List<EventGroupData> m_eventGroupDataList = new();
+    private List<TileMapData> m_tileMapDataList = new();
 
     // 데이터 딕셔너리들
     private readonly Dictionary<FactionType.TYPE, FactionEntry> m_factionEntryDic = new();
@@ -59,13 +66,8 @@ public class GameDataManager : MonoBehaviour
     #region Unity Lifecycle
     void Awake()
     {
-        #if UNITY_EDITOR
-        if (m_factionDataList.Count == 0 || m_buildingDataList.Count == 0)
-        {
-            AutoLoadData();
-        }
-        #endif
-
+        // 게임 시작 시 자동으로 데이터 로딩
+        AutoLoadData();
         InitializeGameData();
     }
     #endregion
@@ -239,27 +241,55 @@ public class GameDataManager : MonoBehaviour
     public void AutoLoadData()
     {
         #if UNITY_EDITOR
-        LoadAllDataFromAssets();
+        LoadAllDataFromPaths();
         #else
-        Debug.LogWarning("Auto data loading is only available in editor.");
+        // 빌드에서는 Resources에서 로딩
+        LoadDataFromResources();
         #endif
     }
 
     public void LoadDataFromResources()
     {
         DataLoader.LoadAllDataFromResources(
-            null, null, m_factionDataList, m_commonResearchDataList,
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
             m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
-            m_tokenIconList, m_requestIconList, ref m_gameBalanceData);
+            m_tokenIconList, m_requestIconList, ref m_gameBalanceData,
+            GetResourcesPath(m_factionDataPath), "Research/Common",
+            GetResourcesPath(m_buildingDataPath), GetResourcesPath(m_requestLineTemplatePath),
+            GetResourcesPath(m_eventGroupDataPath), GetResourcesPath(m_tileMapDataPath));
+    }
+
+    private string GetResourcesPath(string assetPath)
+    {
+        // Assets/Resources/ 경로를 Resources/ 경로로 변환
+        if (assetPath.StartsWith("Assets/Resources/"))
+        {
+            return assetPath.Substring("Assets/Resources/".Length);
+        }
+        else if (assetPath.StartsWith("Assets/"))
+        {
+            return assetPath.Substring("Assets/".Length);
+        }
+        return assetPath;
     }
 
     #if UNITY_EDITOR
     private void LoadAllDataFromAssets()
     {
         DataLoader.LoadAllDataFromAssets(
-            null, null, m_factionDataList, m_commonResearchDataList,
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
             m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
             m_tokenIconList, m_requestIconList, ref m_gameBalanceData);
+    }
+
+    private void LoadAllDataFromPaths()
+    {
+        DataLoader.LoadAllDataFromPaths(
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
+            m_tokenIconList, m_requestIconList, ref m_gameBalanceData,
+            m_factionDataPath, "Assets/Datas/Research/Common", m_buildingDataPath, m_requestLineTemplatePath,
+            m_eventGroupDataPath, m_tileMapDataPath);
     }
     #endif
     #endregion
