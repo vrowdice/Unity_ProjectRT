@@ -14,7 +14,6 @@ public class BattleRuntimeManager : MonoBehaviour
 {
     public Action<BattleOutcome> OnBattleFinished;
 
-    // 런타임 내부에서만 쓰는 로컬 복사본 (원본 BSM 리스트는 건드리지 않음)
     private List<UnitBase> allies;
     private List<UnitBase> enemies;
 
@@ -24,25 +23,28 @@ public class BattleRuntimeManager : MonoBehaviour
     private Vector3 allyForward;
     private Vector3 enemyForward;
 
-    // === 전투 시작: BSM에서 호출 ===
     public void Begin(List<UnitBase> ally, List<UnitBase> enemy, bool /*isPlayerAttacker*/ _)
     {
-        // 방어적 복사: 외부 리스트는 변경하지 않음
         allies = new List<UnitBase>(ally ?? new List<UnitBase>());
         enemies = new List<UnitBase>(enemy ?? new List<UnitBase>());
 
-        allyForward = ComputeAllyForward();   // 스폰 구역 기준 +x 또는 -x
+        // 시작 즉시 전멸 케이스(튜토리얼 등 제외 시 바로 종료)
+        if ((allies?.Count ?? 0) == 0 || (enemies?.Count ?? 0) == 0)
+        {
+            Finish();
+            return;
+        }
+
+        allyForward = ComputeAllyForward();
         enemyForward = -allyForward;
 
-        // 의존성 보장 후 전투 초기화
         foreach (var u in allies) StartUnit(u, allyForward);
         foreach (var u in enemies) StartUnit(u, enemyForward);
 
         running = true;
-        elapsed = 0f;
+        elapsed = 0.0f;
     }
 
-    // 스폰 두 구역 중심을 비교해서 아군의 전진 방향 결정
     private Vector3 ComputeAllyForward()
     {
         var mgr = BattleSystemManager.Instance;
@@ -54,34 +56,25 @@ public class BattleRuntimeManager : MonoBehaviour
             {
                 float dx = e.bounds.center.x - a.bounds.center.x;
                 float sign = Mathf.Sign(dx);
-                if (Mathf.Approximately(sign, 0f)) sign = 1f; // 같은 곳이면 +x
-                return new Vector3(sign, 0f, 0f);
+                if (Mathf.Approximately(sign, 0.0f)) sign = 1.0f;
+                return new Vector3(sign, 0.0f, 0.0f);
             }
         }
-        return Vector3.right; // 폴백
+        return Vector3.right;
     }
 
-    // 유닛 하나 전투 준비
     private void StartUnit(UnitBase u, Vector3 forward)
     {
         if (!u) return;
 
-        // 1) 의존성 먼저 보장(RequireComponent 자동 추가 로그 방지)
-        if (!u.GetComponent<UnitMovementController>())
-            u.gameObject.AddComponent<UnitMovementController>();
+        if (!u.GetComponent<UnitMovementController>()) u.gameObject.AddComponent<UnitMovementController>();
+        if (!u.GetComponent<UnitTargetingController>()) u.gameObject.AddComponent<UnitTargetingController>();
 
-        if (!u.GetComponent<UnitTargetingController>())
-            u.gameObject.AddComponent<UnitTargetingController>();
-
-        // 2) Combat Controller 준비
         var cc = u.GetComponent<UnitCombatController>();
         if (!cc) cc = u.gameObject.AddComponent<UnitCombatController>();
-
-        // 3) 초기화(전진 시작 포함)
         cc.InitForBattle(forward);
     }
 
-    // 모든 유닛 전투 정지
     private void StopAll()
     {
         if (allies != null)
@@ -97,11 +90,11 @@ public class BattleRuntimeManager : MonoBehaviour
 
         elapsed += Time.deltaTime;
 
-        // 죽었거나 비활성화된 유닛 제거 (로컬 복사본만 정리)
+        // 사망/비활성 제거
         allies?.RemoveAll(u => !IsAlive(u));
         enemies?.RemoveAll(u => !IsAlive(u));
 
-        // 한 쪽이 전멸하면 종료
+        // 한쪽 전멸 → 종료
         if (allies == null || enemies == null || allies.Count == 0 || enemies.Count == 0)
         {
             Finish();
@@ -115,9 +108,12 @@ public class BattleRuntimeManager : MonoBehaviour
 
     private void Finish()
     {
-        if (!running) return;
-        running = false;
+        if (!running)
+        {
+            // Begin에서 즉시 Finish 호출된 케이스도 outcome은 내보낸다
+        }
 
+        running = false;
         StopAll();
 
         var outcome = new BattleOutcome
