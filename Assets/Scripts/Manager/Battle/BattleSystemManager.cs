@@ -10,25 +10,26 @@ public class BattleSystemManager : MonoBehaviour
 {
     public static BattleSystemManager Instance { get; private set; }
 
-    [Header("로딩 UI (옵션)")]
+    [Header("로딩 UI")]
     [SerializeField] private GameObject loadingPanel;
     [SerializeField] private Image progressBar;
     [SerializeField] private TextMeshProUGUI loadingText;
 
-    [Header("스폰 영역 (씬 오브젝트)")]
+    [Header("스폰 영역")]
     [SerializeField] private BoxCollider2D attackSpawnArea;
     [SerializeField] private BoxCollider2D defenseSpawnArea;
 
-    [Header("카메라 포인트 (씬 오브젝트)")]
+    [Header("카메라 포인트")]
     [SerializeField] private Transform attackCameraPoint;
     [SerializeField] private Transform defenseCameraPoint;
     [SerializeField] private Camera mainCamera;
 
-    [Header("유닛 데이터 (SO)")]
+    [Header("유닛 데이터")]
+    [Tooltip("Unit Data에 따라 유닛 생성 칸+랜덤소환되는 enemey 수가 변함")]
     [SerializeField] private AllyArmyData allyArmyData;
     [SerializeField] private EnemyArmyData enemyArmyData;
 
-    [Header("적 수동 배치 (옵션)")]
+    [Header("적 수동 배치(옵션)")]
     [Tooltip("디자이너가 씬에 미리 배치한 적 유닛들의 부모 Transform")]
     [SerializeField] private Transform enemyUnitHolder;
     [SerializeField] private bool useManualEnemyPlacement = true;
@@ -38,33 +39,34 @@ public class BattleSystemManager : MonoBehaviour
     [SerializeField] private bool repositionEnemiesOnStart = false;
 
     [Header("결과 UI")]
-    [SerializeField] private GameObject resultUIPrefab;   
-    [SerializeField] private Canvas targetCanvas;       
+    [SerializeField] private GameObject resultUIPrefab;
+    [SerializeField] private Canvas targetCanvas;
 
     [Header("전투 중 카메라 드래그")]
-    [SerializeField] private CameraDragPan camPan;     
-    [SerializeField] private BoxCollider2D mapBounds;    
+    [SerializeField] private CameraDragPan camPan;
+    [SerializeField] private BoxCollider2D mapBounds;
 
     // 런타임 상태
     public List<UnitBase> allyUnits = new();
     public List<UnitBase> enemyUnits = new();
 
-    private bool isPlayerAttacker = true;
-
+    // 프로퍼티 노출 시켜주는 코드/ 이거 빠지면 타켓팅 등에서 오류 발생
     public List<UnitBase> AllyUnits => allyUnits;
     public List<UnitBase> EnemyUnits => enemyUnits;
 
-    public Transform AttackCameraPoint => attackCameraPoint;
-    public Transform DefenseCameraPoint => defenseCameraPoint;
+    private bool isPlayerAttacker = true;
     public bool IsPlayerAttacker => isPlayerAttacker;
-
     public bool IsBattleRunning { get; private set; } = false;
     public bool IsViewingAllyBase { get; private set; } = true;
+
+    public Transform AttackCameraPoint => attackCameraPoint;
+    public Transform DefenseCameraPoint => defenseCameraPoint;
 
     public System.Action UnitsChanged;
     private void NotifyUnitsChanged() => UnitsChanged?.Invoke();
 
     private BattleRuntimeManager runtime;
+    private BattleUIManager ui;
 
     private Transform leftBoundTmp;
     private Transform rightBoundTmp;
@@ -75,6 +77,11 @@ public class BattleSystemManager : MonoBehaviour
         Instance = this;
 
         if (!mainCamera) mainCamera = Camera.main;
+        ui = BattleUIManager.Instance;
+
+        // 카메라 팬 경계 1차 적용 /camPan에 mapBounds 전달은 CameraDragPan에서 처리
+        EnsurePanBoundsTransforms();
+        ApplyPanBoundsFromMap();
     }
 
     private void Start()
@@ -88,27 +95,25 @@ public class BattleSystemManager : MonoBehaviour
         if (progressBar) progressBar.fillAmount = 0.0f;
         if (loadingText) loadingText.text = "Preparing";
 
+        yield return null; // 한 프레임 양보
+
         // 적 스폰
         yield return StartCoroutine(SpawnEnemyUnits());
 
-        // 배치 UI 생성/초기화 
-        BattleUIManager.Instance?.InitializeUI(allyArmyData?.units);
+        // 배치 UI 초기화
+        if (ui == null) ui = BattleUIManager.Instance;
+        ui?.InitializeUI(allyArmyData?.units);
 
         if (loadingText) loadingText.text = "Finish!";
         yield return new WaitForSeconds(0.2f);
         if (loadingPanel) loadingPanel.SetActive(false);
     }
 
-    public Transform GetAllyCameraPointByState()
-    {
-        return isPlayerAttacker ? attackCameraPoint : defenseCameraPoint;
-    }
+    // 진영 상태에 따른 카메라 포인트
+    public Transform GetAllyCameraPointByState() => isPlayerAttacker ? attackCameraPoint : defenseCameraPoint;
+    public Transform GetEnemyCameraPointByState() => isPlayerAttacker ? defenseCameraPoint : attackCameraPoint;
 
-    public Transform GetEnemyCameraPointByState()
-    {
-        return isPlayerAttacker ? defenseCameraPoint : attackCameraPoint;
-    }
-
+    // 아군/적 시점 토글
     public void ToggleView()
     {
         IsViewingAllyBase = !IsViewingAllyBase;
@@ -116,20 +121,18 @@ public class BattleSystemManager : MonoBehaviour
         if (IsViewingAllyBase)
         {
             BattleCameraManager.Instance?.MoveToAllyPosition();
-            BattleUIManager.Instance?.SwitchToAllyUI();
+            ui?.SwitchToAllyUI();
         }
         else
         {
             BattleCameraManager.Instance?.MoveToEnemyPosition();
-            BattleUIManager.Instance?.SwitchToEnemyUI();
+            ui?.SwitchToEnemyUI();
         }
 
         RefreshDragEnabled();
-
- 
-        FindObjectOfType<BattleBeforeUI>(true)?.UpdateDeployedUnitCounters();
     }
 
+    // 배치 중에만 아군 드래그 허용
     public void RefreshDragEnabled()
     {
         bool allowDrag = IsViewingAllyBase && !IsBattleRunning;
@@ -142,38 +145,33 @@ public class BattleSystemManager : MonoBehaviour
     {
         Debug.Log("[BattleSystemManager] StartBattle");
 
-        // 배치 UI 숨김
-        BattleUIManager.Instance?.HideAllUI();
+        ui?.HideAllUI();
 
-        // 전투 시작 시 재배치
         if (repositionAlliesOnStart) SpawnUnits(allyUnits, GetAllySpawnArea());
         if (repositionEnemiesOnStart) SpawnUnits(enemyUnits, GetEnemySpawnArea());
 
-        // 유닛 드래그 비활성
         IsBattleRunning = true;
         RefreshDragEnabled();
 
-        // 전투 런타임 시작
+        // 중복 구독 방지
+        if (runtime != null) runtime.OnBattleFinished -= HandleBattleFinished;
+
         runtime = gameObject.AddComponent<BattleRuntimeManager>();
         runtime.OnBattleFinished += HandleBattleFinished;
         runtime.Begin(allyUnits, enemyUnits, IsPlayerAttacker);
 
         if (camPan)
         {
-            EnsurePanBoundsTransforms();
-            ApplyPanBoundsFromMap(); 
+            ApplyPanBoundsFromMap();
             camPan.Enable(true);
         }
-
     }
 
     private void HandleBattleFinished(BattleOutcome outcome)
     {
         IsBattleRunning = false;
 
-        // 드래그 종료
         if (camPan) camPan.Enable(false);
-
         ShowResult(outcome);
     }
 
@@ -182,25 +180,25 @@ public class BattleSystemManager : MonoBehaviour
         if (resultUIPrefab && targetCanvas)
         {
             var go = Instantiate(resultUIPrefab, targetCanvas.transform);
-            var ui = go.GetComponent<BattleResultUI>();
-            if (ui != null)
+            var uiResult = go.GetComponent<BattleResultUI>();
+            if (uiResult != null)
             {
-                ui.Show(outcome);
+                uiResult.Show(outcome);
 
-                ui.OnContinue = () =>
+                uiResult.OnContinue = () =>
                 {
                     Destroy(go);
                     Debug.Log("Continue pressed");
                 };
 
-                ui.OnRetry = () =>
+                uiResult.OnRetry = () =>
                 {
                     SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
                 };
             }
             else
             {
-                Debug.LogWarning("BattleResultUI 컴포넌트를 프리팹에서 찾지 못했습니다.");
+                Debug.LogWarning("BattleResultUI 컴포넌트가 프리팹에 없습니다.");
             }
         }
         else
@@ -213,21 +211,21 @@ public class BattleSystemManager : MonoBehaviour
         }
     }
 
+    // 스폰
     private IEnumerator SpawnEnemyUnits()
     {
         enemyUnits.Clear();
 
         if (useManualEnemyPlacement && enemyUnitHolder)
         {
-            if (loadingText) loadingText.text = "적군 수동 배치 적용 중...";
+            if (loadingText) loadingText.text = "Applying manual enemy placement...";
             foreach (Transform child in enemyUnitHolder)
             {
                 var ub = child.GetComponent<UnitBase>();
                 if (!ub) continue;
                 if (ub.UnitStat == null)
                 {
-                    Debug.LogError($"[BattleSystemManager] 수동 배치 유닛 '{ub.name}'의 UnitStat이 null입니다. " +
-                                   $"씬에서 유닛에 스탯(SO)을 할당하거나 코드로 Initialize(stat)를 호출하세요.");
+                    Debug.LogError($"[BattleSystemManager] 수동 배치 유닛 '{ub.name}'의 UnitStat이 null입니다. 스탯 할당 또는 Initialize(stat) 호출 필요.");
                     continue;
                 }
                 AddEnemyUnit(ub);
@@ -241,14 +239,14 @@ public class BattleSystemManager : MonoBehaviour
             yield break;
         }
 
-        if (loadingText) loadingText.text = "적군 랜덤 배치 중...";
+        if (loadingText) loadingText.text = "Spawning enemies...";
         int total = enemyArmyData.units.Count;
         int i = 0;
 
         var enemyArea = GetEnemySpawnArea();
         if (!enemyArea)
         {
-            Debug.LogError("[BattleSystemManager] 적 스폰 구역을 찾을 수 없음");
+            Debug.LogError("[BattleSystemManager] 적 스폰 구역 없음");
             yield break;
         }
 
@@ -317,35 +315,6 @@ public class BattleSystemManager : MonoBehaviour
         }
     }
 
-
-    public BoxCollider2D GetEnemySpawnArea()
-    {
-        return isPlayerAttacker ? defenseSpawnArea : attackSpawnArea;
-    }
-
-    public BoxCollider2D GetAllySpawnArea()
-    {
-        return isPlayerAttacker ? attackSpawnArea : defenseSpawnArea;
-    }
-
-    // === 내부 유틸 ===
-    private void SpawnUnits(List<UnitBase> list, BoxCollider2D area)
-    {
-        if (!area) return;
-        foreach (var u in list)
-        {
-            if (!u) continue;
-            u.transform.position = GetRandomPointInCollider(area);
-        }
-    }
-
-    private Vector3 GetRandomPointInCollider(BoxCollider2D col)
-    {
-        if (!col) { Debug.LogError("[BattleSystemManager] Collider null"); return Vector3.zero; }
-        var b = col.bounds;
-        return new Vector3(Random.Range(b.min.x, b.max.x), Random.Range(b.min.y, b.max.y), 0f);
-    }
-
     public void RegisterUnit(UnitBase unit)
     {
         if (!unit) return;
@@ -365,10 +334,11 @@ public class BattleSystemManager : MonoBehaviour
 
     private void CheckWinCondition()
     {
-        if (allyUnits.Count == 0) Debug.Log("[BattleSystemManager] 패배 아군 전멸");
-        else if (enemyUnits.Count == 0) Debug.Log("[BattleSystemManager] 승리 적군 전멸");
+        if (allyUnits.Count == 0) Debug.Log("[BattleSystemManager] 패배 - 아군 전멸");
+        else if (enemyUnits.Count == 0) Debug.Log("[BattleSystemManager] 승리 - 적군 전멸");
     }
 
+    // 카테고리 카운트 샘플
     public Dictionary<UnitTagType, int> GetCountsInSpawnAreas()
     {
         var counts = new Dictionary<UnitTagType, int>
@@ -409,6 +379,37 @@ public class BattleSystemManager : MonoBehaviour
         }
     }
 
+    private void SpawnUnits(List<UnitBase> list, BoxCollider2D area)
+    {
+        if (!area) return;
+        foreach (var u in list)
+        {
+            if (!u) continue;
+            u.transform.position = GetRandomPointInCollider(area);
+        }
+    }
+
+    // 겹침 최소화 랜덤 스폰
+    private Vector3 GetRandomPointInCollider(BoxCollider2D col)
+    {
+        if (!col) { Debug.LogError("[BattleSystemManager] Collider null"); return Vector3.zero; }
+        var b = col.bounds;
+
+        const int MAX_TRY = 20;
+        const float RADIUS = 0.3f; 
+        for (int i = 0; i < MAX_TRY; i++)
+        {
+            Vector3 p = new Vector3(
+                Random.Range(b.min.x, b.max.x),
+                Random.Range(b.min.y, b.max.y),
+                0f
+            );
+            if (!Physics2D.OverlapCircle(p, RADIUS))
+                return p;
+        }
+        return new Vector3(Random.Range(b.min.x, b.max.x), Random.Range(b.min.y, b.max.y), 0f);
+    }
+
     private void EnsurePanBoundsTransforms()
     {
         if (!leftBoundTmp)
@@ -424,7 +425,6 @@ public class BattleSystemManager : MonoBehaviour
             rightBoundTmp = go.transform;
         }
     }
-
     private void ApplyPanBoundsFromMap()
     {
         if (!camPan) return;
@@ -437,13 +437,9 @@ public class BattleSystemManager : MonoBehaviour
 
             leftBoundTmp.position = new Vector3(b.min.x, cy, cz);
             rightBoundTmp.position = new Vector3(b.max.x, cy, cz);
-            camPan.SetBounds(leftBoundTmp, rightBoundTmp);
-        }
-        else
-        {
-            var leftT = GetAllyCameraPointByState();
-            var rightT = GetEnemyCameraPointByState();
-            camPan.SetBounds(leftT, rightT);
         }
     }
+
+    public BoxCollider2D GetEnemySpawnArea() => isPlayerAttacker ? defenseSpawnArea : attackSpawnArea;
+    public BoxCollider2D GetAllySpawnArea() => isPlayerAttacker ? attackSpawnArea : defenseSpawnArea;
 }

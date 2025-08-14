@@ -5,13 +5,13 @@ public class BattleUIManager : MonoBehaviour
 {
     public static BattleUIManager Instance { get; private set; }
 
-    [Header("UI 프리팹 (씬 오브젝트도 가능)")]
+    [Header("UI 프리팹")]
     [SerializeField] private GameObject allyUI;
     [SerializeField] private GameObject enemyUI;
 
     private BattleBeforeUI allyUIInstance;
-    private GameObject enemyUIInstance; // 구조가 다를 수 있으니 GameObject로 관리
-    private BattleBeforeUI enemyUIBattleScript; // 있으면 참조, 없으면 null
+    private GameObject enemyUIInstance;
+    private BattleBeforeUI enemyUIBattleScript;
 
     private void Awake()
     {
@@ -19,29 +19,28 @@ public class BattleUIManager : MonoBehaviour
         Instance = this;
     }
 
-    /// <summary>
-    /// 전투 UI 초기화 (아군 UI만 생성)
-    /// </summary>
+    /// 아군 배치 UI 초기화
     public void InitializeUI(List<UnitStatBase> allyUnitStats)
     {
-        if (allyUI)
+        if (allyUI && !allyUIInstance)
         {
             var go = Instantiate(allyUI, transform);
             allyUIInstance = go.GetComponent<BattleBeforeUI>();
-            if (allyUIInstance)
-            {
-                allyUIInstance.InitDeploymentUI(allyUnitStats);
-            }
+            if (allyUIInstance) allyUIInstance.InitDeploymentUI(allyUnitStats);
             go.SetActive(true);
+        }
+        else if (allyUIInstance)
+        {
+            allyUIInstance.InitDeploymentUI(allyUnitStats);
+            allyUIInstance.gameObject.SetActive(true);
         }
     }
 
-    /// <summary>
-    /// 아군 UI로 전환
-    /// </summary>
     public void SwitchToAllyUI()
     {
         if (enemyUIInstance) enemyUIInstance.SetActive(false);
+        if (enemyUIInstance && enemyUIBattleScript) enemyUIBattleScript.gameObject.SetActive(false);
+
         if (allyUIInstance)
         {
             allyUIInstance.gameObject.SetActive(true);
@@ -49,33 +48,25 @@ public class BattleUIManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 적군 UI로 전환
-    /// </summary>
     public void SwitchToEnemyUI()
     {
         if (!enemyUIInstance && enemyUI)
         {
             enemyUIInstance = Instantiate(enemyUI, transform);
-            enemyUIBattleScript = enemyUIInstance.GetComponent<BattleBeforeUI>();
-            if (!enemyUIBattleScript)
-            {
-                enemyUIBattleScript = enemyUIInstance.GetComponentInChildren<BattleBeforeUI>();
-            }
+            enemyUIBattleScript = enemyUIInstance.GetComponent<BattleBeforeUI>() ??
+                                  enemyUIInstance.GetComponentInChildren<BattleBeforeUI>();
             enemyUIInstance.SetActive(false); // 생성 직후 숨김
         }
 
         if (allyUIInstance) allyUIInstance.gameObject.SetActive(false);
+
         if (enemyUIInstance)
         {
             enemyUIInstance.SetActive(true);
-            enemyUIBattleScript?.UpdateDeployedUnitCounters(); // 스크립트 있을 때만 호출
+            enemyUIBattleScript?.UpdateDeployedUnitCounters();
         }
     }
 
-    /// <summary>
-    /// 모든 UI 숨김
-    /// </summary>
     public void HideAllUI()
     {
         if (allyUIInstance) allyUIInstance.gameObject.SetActive(false);

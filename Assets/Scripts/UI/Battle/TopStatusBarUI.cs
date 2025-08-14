@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+[DisallowMultipleComponent]
 public class TopStatusBarUI : MonoBehaviour
 {
     [Header("UI refs")]
@@ -15,6 +16,7 @@ public class TopStatusBarUI : MonoBehaviour
     [SerializeField] private Button settingsButton;
 
     [Header("옵션")]
+    [Tooltip("정기 갱신 간격")]
     [SerializeField] private float refreshInterval = 0.25f;
 
     private BattleSystemManager bsm;
@@ -22,19 +24,15 @@ public class TopStatusBarUI : MonoBehaviour
 
     private void Awake()
     {
-        // 화면 클릭 방해하지 않도록 기본적으로 모든 Graphic의 raycastTarget 끄기
-        // (단, 버튼 하위 Graphic은 다시 켜줌)
-        var allGraphics = GetComponentsInChildren<Graphic>(true);
-        foreach (var g in allGraphics) g.raycastTarget = false;
-
-        EnableButtonRaycasts(helpButton, true);
-        EnableButtonRaycasts(settingsButton, true);
-
-        // 전체 루트는 상호작용 필요 없으니 꺼둠(버튼은 자체적으로 켜져 있음)
-        var cg = GetComponent<CanvasGroup>();
-        if (!cg) cg = gameObject.AddComponent<CanvasGroup>();
+        var cg = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
         cg.interactable = false;
         cg.blocksRaycasts = false;
+
+        // 모든 Graphic의 raycastTarget 비활성 → 버튼 하위만 다시 활성
+        var allGraphics = GetComponentsInChildren<Graphic>(true);
+        foreach (var g in allGraphics) g.raycastTarget = false;
+        EnableButtonRaycasts(helpButton, true);
+        EnableButtonRaycasts(settingsButton, true);
     }
 
     private void OnEnable()
@@ -43,7 +41,9 @@ public class TopStatusBarUI : MonoBehaviour
         if (bsm != null) bsm.UnitsChanged += UpdateCountsNow;
 
         UpdateCountsNow();
-        if (loop == null) loop = StartCoroutine(RefreshLoop());
+
+        if (loop == null && refreshInterval > 0f)
+            loop = StartCoroutine(RefreshLoop());
     }
 
     private void OnDisable()
@@ -64,32 +64,42 @@ public class TopStatusBarUI : MonoBehaviour
 
     private void UpdateCountsNow()
     {
+        if (!enemyCountText || !allyCountText)
+            return;
+
         if (bsm == null)
         {
-            if (enemyCountText) enemyCountText.text = "--";
-            if (allyCountText) allyCountText.text = "--";
+            enemyCountText.text = "--";
+            allyCountText.text = "--";
             return;
         }
 
         int enemy = CountAlive(bsm.EnemyUnits);
         int ally = CountAlive(bsm.AllyUnits);
 
-        if (enemyCountText) enemyCountText.text = enemy.ToString();
-        if (allyCountText) allyCountText.text = ally.ToString();
+        enemyCountText.text = enemy.ToString();
+        allyCountText.text = ally.ToString();
     }
 
-    private int CountAlive(List<UnitBase> list)
+    private static int CountAlive(List<UnitBase> list)
     {
+        if (list == null || list.Count == 0) return 0;
         int c = 0;
-        foreach (var u in list)
+        for (int i = 0; i < list.Count; i++)
+        {
+            var u = list[i];
             if (u && u.gameObject.activeSelf && !u.IsDead) c++;
+        }
         return c;
     }
 
-    private void EnableButtonRaycasts(Button btn, bool on)
+    private static void EnableButtonRaycasts(Button btn, bool on)
     {
         if (!btn) return;
         var g = btn.GetComponentsInChildren<Graphic>(true);
         foreach (var gg in g) gg.raycastTarget = on;
+        // 버튼 자체 상호작용은 유지
+        var cg = btn.GetComponentInParent<CanvasGroup>();
+        if (cg) { /* 루트 CanvasGroup은 이미 비상호작용. 버튼 자체는 클릭 가능(그래픽만 허용) */ }
     }
 }
