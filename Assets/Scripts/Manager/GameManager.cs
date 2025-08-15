@@ -128,7 +128,7 @@ public class GameManager : MonoBehaviour
 
     /// <summary>
     /// 날짜를 추가하고 관련 로직 실행
-    /// 리소스 생산, 요청 생성, 이벤트 체크 등을 수행
+    /// 리소스 생산, 요청 생성, 이벤트 체크, 연구 진행 등을 수행
     /// </summary>
     /// <param name="argAddDate">추가할 날짜 수</param>
     public void AddDate(int argAddDate)
@@ -151,6 +151,7 @@ public class GameManager : MonoBehaviour
         Date += argAddDate;
 
         UpdateGameBalance();
+        UpdateResearchProgress(argAddDate);
         CheckAndProcessRequests();
         CheckAndProcessEvents();
 
@@ -194,6 +195,40 @@ public class GameManager : MonoBehaviour
         if (m_gameDataManager.EventManager.ProcessEventDate())
         {
             Warning(InfoMessages.EventOccurs);
+        }
+    }
+
+    /// <summary>
+    /// 연구 진행도 업데이트
+    /// </summary>
+    /// <param name="daysPassed">경과한 일수</param>
+    private void UpdateResearchProgress(int daysPassed)
+    {
+        if (m_gameDataManager?.CommonResearchEntryDict == null) return;
+
+        foreach (var researchEntry in m_gameDataManager.CommonResearchEntryDict.Values)
+        {
+            if (researchEntry == null || researchEntry.m_data == null) continue;
+
+            // 연구가 진행 중인 경우에만 진행도 증가
+            if (researchEntry.m_state.IsInProgress)
+            {
+                // 진행도 증가
+                researchEntry.m_state.m_progress += daysPassed;
+
+                // 연구 완료 체크
+                if (researchEntry.m_state.m_progress >= researchEntry.m_data.m_duration)
+                {
+                    // 연구 완료
+                    researchEntry.m_state.m_progress = (int)researchEntry.m_data.m_duration;
+                    researchEntry.m_state.m_isResearched = true;
+                    
+                    // 연구 완료 시 이펙트 활성화
+                    researchEntry.CompleteResearch(m_gameDataManager);
+                    
+                    Debug.Log($"Research completed: {researchEntry.m_data.m_name}");
+                }
+            }
         }
     }
 

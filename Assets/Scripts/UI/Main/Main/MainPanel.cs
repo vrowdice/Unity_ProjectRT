@@ -26,8 +26,6 @@ public class MainPanel : BasePanel
 
     protected override void OnPanelOpen()
     {
-        // 메인 패널은 정보 패널을 표시하지 않음
-        m_showInfoPanel = false;
         SetPanelName("");
         SetBuildingLevel("");
     }

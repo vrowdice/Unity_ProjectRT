@@ -43,12 +43,6 @@ public class MainUIManager : MonoBehaviour, IUIManager
     [SerializeField]
     TextMeshProUGUI m_requestText = null;
 
-    [Header("Panel Info Panel")]
-    [SerializeField]
-    GameObject m_panelInfoPanel = null;
-    [SerializeField]
-    TextMeshProUGUI m_panelInfoText = null;
-
     [Header("Common UI")]
     [SerializeField]
     GameObject m_resourceIconTextPrefeb = null;
@@ -450,29 +444,6 @@ public class MainUIManager : MonoBehaviour, IUIManager
         {
             Debug.LogWarning($"IUIPanel at index {m_nowPanelIndex} is null!");
         }
-    }
-
-    /// <summary>
-    /// 패널 설명 패널 설정
-    /// </summary>
-    /// <param name="argIsOn">활성화 여부</param>
-    /// <param name="argTextContent">텍스트 내용</param>
-    public void ManagePanelInfoPanel(bool argIsOn, string argTextContent)
-    {
-        if (m_panelInfoPanel == null)
-        {
-            Debug.LogError("m_panelInfoPanel is null!");
-            return;
-        }
-        
-        if (m_panelInfoText == null)
-        {
-            Debug.LogError("m_panelInfoText is null!");
-            return;
-        }
-        
-        m_panelInfoPanel.SetActive(argIsOn);
-        m_panelInfoText.text = argTextContent;
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 /// <summary>
 /// 모든 패널의 기본 클래스
@@ -7,8 +8,8 @@ using UnityEngine;
 public abstract class BasePanel : MonoBehaviour, IUIPanel
 {
     [Header("Panel Settings")]
+    [SerializeField] protected TextMeshProUGUI m_showInfoPanelText = null;
     [SerializeField] protected string m_panelName = "";
-    [SerializeField] protected bool m_showInfoPanel = true;
     [SerializeField] protected string m_buildingCodeForLevel = ""; // 빌딩 코드 (문자열로 설정)
     [SerializeField] protected string m_levelPrefix = "LV. "; // 레벨 표시 접두사
 
@@ -44,7 +45,11 @@ public abstract class BasePanel : MonoBehaviour, IUIPanel
 
         // 패널 정보 설정 (OnPanelOpen 이후에 호출하여 설정된 값들 사용)
         string infoText = GetPanelInfoText();
-        argUIManager.ManagePanelInfoPanel(m_showInfoPanel, infoText);
+
+        if(m_showInfoPanelText != null)
+        {
+            m_showInfoPanelText.text = infoText;
+        }
     }
 
     /// <summary>
@@ -131,15 +136,6 @@ public abstract class BasePanel : MonoBehaviour, IUIPanel
     protected void SetPanelName(string panelName)
     {
         m_panelName = panelName;
-    }
-
-    /// <summary>
-    /// 정보 패널 표시 여부를 동적으로 설정
-    /// </summary>
-    /// <param name="show">표시 여부</param>
-    protected void SetShowInfoPanel(bool show)
-    {
-        m_showInfoPanel = show;
     }
 
     /// <summary>
