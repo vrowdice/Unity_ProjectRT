@@ -8,121 +8,176 @@ public class UnitCombatController : MonoBehaviour
     private UnitBase _unit;
     private UnitTargetingController _targeting;
     private UnitMovementController _move;
+    private Transform _tr;
 
-    [Header("외부 로직(선택)")]
-    public BaseAttack attackLogic;
-    public BaseSkill skillLogic;
+    [Header("외부 로직")]
+    public BaseAttack attackLogic;   
+    public BaseSkill skillLogic;    
 
-    [Header("문서값")]
     [Range(0.5f, 1.0f)][SerializeField] private float stopAtRangePercent = 0.9f;
-    [SerializeField] private float retargetEvery = 0.20f;
+    [SerializeField, Min(0.05f)] private float retargetEvery = 0.20f; 
     [Range(1.0f, 2.0f)][SerializeField] private float releaseRangeMultiplier = 1.0f;
     [SerializeField] private bool resetManaOnSkill = true;
     [SerializeField] private bool keepMarchingWhenNoTarget = true;
 
     private bool _running;
-    private float _attackTimer;
     private float _retargetTimer;
     private Vector3 _forwardDir = Vector3.right;
+
     private bool _hadTargetPrev;
+    private bool _isMoving;       
+    private bool _attackTempoSet;
+
+    private float _stopDistSqr;      
+    private float _releaseDistSqr;   
 
     private void Awake()
     {
+        _tr = transform;
         _unit = GetComponent<UnitBase>();
         _targeting = GetComponent<UnitTargetingController>();
         _move = GetComponent<UnitMovementController>();
+
+        if (!attackLogic) attackLogic = GetComponent<BaseAttack>(); 
     }
 
+    // 전투 시작시 1회 호출
     public void InitForBattle(Vector3 forwardDir)
     {
+        // 방향/타이머/플래그 초기화
         _forwardDir = forwardDir.sqrMagnitude > 0.0f ? forwardDir.normalized : Vector3.right;
-        _attackTimer = 0.0f;
-        _retargetTimer = 0.0f;
+        _retargetTimer = 0f;
         _running = true;
         _hadTargetPrev = false;
+        _isMoving = false;
+        _attackTempoSet = false;
 
-        _move.StartMoveInDirection(_forwardDir, _unit.MoveSpeed);
+        float stopDist = _unit.AttackRange * stopAtRangePercent;
+        _stopDistSqr = stopDist * stopDist;
+        float release = _unit.EnemySearchRange * releaseRangeMultiplier;
+        _releaseDistSqr = release * release;
+
+        if (attackLogic)
+        {
+            attackLogic.SetTempo(_unit.AttackActiveSec, _unit.AttackRecoverySec);
+            _attackTempoSet = true;
+        }
+
+        StartMoveForwardIfNeeded();
+        _unit.NotifyAttackActiveEnd(); 
     }
 
     public void StopBattle()
     {
         _running = false;
-        attackLogic?.StopAttack();
-        _move?.StopMove();
+
+        if (attackLogic) attackLogic.StopAttack();
+
+        if (_isMoving) { _move.StopMove(); _isMoving = false; }
+
+        _unit.NotifyAttackActiveEnd();
     }
 
     private void Update()
     {
         if (!_running || _unit == null) return;
 
-        // 상시 마나 회복
-        _unit.AddMana(_unit.ManaRecoveryPerSecond * Time.deltaTime);
+        if (_unit.ManaRecoveryPerSecond > 0.0f)
+            _unit.AddMana(_unit.ManaRecoveryPerSecond * Time.deltaTime);
 
         EnsureTargetWithinMyRule();
 
-        var target = _targeting.TargetedEnemy;
-        bool hasTarget = target != null && target.activeSelf;
+        var targetGO = _targeting.TargetedEnemy;
+        bool hasTarget = targetGO && targetGO.activeSelf;
 
         if (hasTarget && !_hadTargetPrev)
         {
-            _move.StopMove();
-            attackLogic?.StopAttack();
+            StopMoveIfNeeded();
+            if (attackLogic) attackLogic.StopAttack();
+            _unit.NotifyAttackActiveEnd();
         }
         _hadTargetPrev = hasTarget;
 
         if (!hasTarget)
         {
-            attackLogic?.StopAttack();
+            if (attackLogic) attackLogic.StopAttack();
+            _unit.NotifyAttackActiveEnd();
+
             if (keepMarchingWhenNoTarget)
-                _move.StartMoveInDirection(_forwardDir, _unit.MoveSpeed);
+                StartMoveForwardIfNeeded();
+
             return;
         }
 
-        float stopDist = _unit.AttackRange * stopAtRangePercent;
-        float dist = Vector3.Distance(transform.position, target.transform.position);
+        Transform tgtTr = targetGO.transform;
 
-        if (dist <= stopDist)
+        float distSqr = (_tr.position - tgtTr.position).sqrMagnitude;
+
+        if (distSqr <= _stopDistSqr)
         {
-            _move.StopMove();
-            RunAttackFlow(target);
+            StopMoveIfNeeded();
+
+            if (_unit.AttackSpeed <= 0.0f)
+            {
+                if (attackLogic) attackLogic.StopAttack();
+                _unit.NotifyAttackActiveEnd();
+                return;
+            }
+
+            if (TryCastSkill(targetGO)) return;
+
+            if (attackLogic != null && !attackLogic.IsAttacking)
+            {
+                if (!_attackTempoSet) 
+                {
+                    attackLogic.SetTempo(_unit.AttackActiveSec, _unit.AttackRecoverySec);
+                    _attackTempoSet = true;
+                }
+                attackLogic.StartAttack(_unit, targetGO);
+            }
         }
         else
         {
-            attackLogic?.StopAttack();
-            _move.MoveTo(target.transform.position, _unit.MoveSpeed);
+            if (attackLogic) attackLogic.StopAttack();
+            _unit.NotifyAttackActiveEnd();
+
+            _move.MoveTo(tgtTr.position, _unit.MoveSpeed);
+            _isMoving = true;
         }
     }
 
-    private void RunAttackFlow(GameObject target)
+    private bool TryCastSkill(GameObject target)
     {
-        bool canUseSkill = skillLogic != null &&
-                           !skillLogic.IsCasting &&
-                           _unit.CurrentMana >= skillLogic.manaCost;
+        if (!skillLogic || skillLogic.IsCasting) return false;
+        if (_unit.CurrentMana < skillLogic.manaCost) return false;
 
-        if (canUseSkill)
+        var stat = _unit.UnitStat;
+        if (skillLogic is IConfigurableSkill cfg && stat != null)
+            cfg.ApplyConfigFromStat(stat);
+
+        if (stat != null && stat.active != null)
         {
-            skillLogic.StartCast(_unit, target);
-            if (resetManaOnSkill) _unit.AddMana(-_unit.CurrentMana);
-            return;
+            skillLogic.manaCost = stat.active.manaCost;
+            if (!string.IsNullOrEmpty(stat.active.displayName))
+                skillLogic.skillName = stat.active.displayName;
+            else
+                skillLogic.skillName = stat.active.skillLogic;
         }
 
-        _attackTimer += Time.deltaTime;
-        if (_attackTimer >= _unit.AttackFrequency)
-        {
-            _attackTimer = 0.0f;
-            if (attackLogic != null)
-            {
-                attackLogic.StartAttack(_unit, target);
-                _unit.AddMana(_unit.ManaRecoveryOnBasicAttack);
-            }
-        }
+        skillLogic.StartCast(_unit, target);
+
+        if (resetManaOnSkill) _unit.AddMana(-_unit.CurrentMana);
+        else _unit.UseMana(skillLogic.manaCost);
+
+        _attackTempoSet = false;
+        return true;
     }
 
     private void EnsureTargetWithinMyRule()
     {
         var cur = _targeting.TargetedEnemy;
 
-        if (cur != null)
+        if (cur)
         {
             if (!cur.activeSelf)
             {
@@ -131,9 +186,8 @@ public class UnitCombatController : MonoBehaviour
             }
             else
             {
-                float d = Vector3.Distance(transform.position, cur.transform.position);
-                float releaseDist = _unit.EnemySearchRange * releaseRangeMultiplier;
-                if (d > releaseDist)
+                float dSqr = (_tr.position - cur.transform.position).sqrMagnitude;
+                if (dSqr > _releaseDistSqr)
                 {
                     _targeting.SetTarget(null);
                     cur = null;
@@ -147,5 +201,19 @@ public class UnitCombatController : MonoBehaviour
             _retargetTimer = 0.0f;
             _targeting.FindNewTarget();
         }
+    }
+
+    private void StartMoveForwardIfNeeded()
+    {
+        if (_isMoving) return;
+        _move.StartMoveInDirection(_forwardDir, _unit.MoveSpeed);
+        _isMoving = true;
+    }
+
+    private void StopMoveIfNeeded()
+    {
+        if (!_isMoving) return;
+        _move.StopMove();
+        _isMoving = false;
     }
 }

@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+[DefaultExecutionOrder(10)]
 [DisallowMultipleComponent]
 public class TopStatusBarUI : MonoBehaviour
 {
@@ -16,23 +17,35 @@ public class TopStatusBarUI : MonoBehaviour
     [SerializeField] private Button settingsButton;
 
     [Header("옵션")]
-    [Tooltip("정기 갱신 간격")]
-    [SerializeField] private float refreshInterval = 0.25f;
+    private float refreshInterval = 0.25f;
 
     private BattleSystemManager bsm;
     private Coroutine loop;
+    private WaitForSeconds cachedWait;
 
     private void Awake()
     {
-        var cg = GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
-        cg.interactable = false;
-        cg.blocksRaycasts = false;
+        if (TryGetComponent<CanvasGroup>(out var cg))
+        {
+            cg.alpha = 1f;
+            cg.interactable = true;
+            cg.blocksRaycasts = true;
+        }
 
-        // 모든 Graphic의 raycastTarget 비활성 → 버튼 하위만 다시 활성
-        var allGraphics = GetComponentsInChildren<Graphic>(true);
-        foreach (var g in allGraphics) g.raycastTarget = false;
+        foreach (var g in GetComponentsInChildren<Graphic>(true))
+            g.raycastTarget = false;
+
         EnableButtonRaycasts(helpButton, true);
         EnableButtonRaycasts(settingsButton, true);
+
+        // 루트 RectTransform 앵커 보정(상단 고정, 가로 스트레치)
+        if (transform is RectTransform rt)
+        {
+            rt.anchorMin = new Vector2(0.0f, 1.0f);
+            rt.anchorMax = new Vector2(1.0f, 1.0f);
+            rt.pivot = new Vector2(0.5f, 1.0f);
+            rt.anchoredPosition = Vector2.zero;
+        }
     }
 
     private void OnEnable()
@@ -40,9 +53,11 @@ public class TopStatusBarUI : MonoBehaviour
         bsm = BattleSystemManager.Instance;
         if (bsm != null) bsm.UnitsChanged += UpdateCountsNow;
 
+        cachedWait = (refreshInterval > 0.0f) ? new WaitForSeconds(refreshInterval) : null;
+
         UpdateCountsNow();
 
-        if (loop == null && refreshInterval > 0f)
+        if (loop == null && refreshInterval > 0.0f)
             loop = StartCoroutine(RefreshLoop());
     }
 
@@ -54,12 +69,12 @@ public class TopStatusBarUI : MonoBehaviour
 
     private IEnumerator RefreshLoop()
     {
-        var wait = new WaitForSeconds(refreshInterval);
-        while (true)
+        while (enabled && gameObject.activeInHierarchy && refreshInterval > 0.0f)
         {
             UpdateCountsNow();
-            yield return wait;
+            yield return cachedWait ?? new WaitForSeconds(refreshInterval);
         }
+        loop = null;
     }
 
     private void UpdateCountsNow()
@@ -74,21 +89,20 @@ public class TopStatusBarUI : MonoBehaviour
             return;
         }
 
-        int enemy = CountAlive(bsm.EnemyUnits);
-        int ally = CountAlive(bsm.AllyUnits);
-
-        enemyCountText.text = enemy.ToString();
-        allyCountText.text = ally.ToString();
+        enemyCountText.text = CountAlive(bsm.EnemyUnits).ToString();
+        allyCountText.text = CountAlive(bsm.AllyUnits).ToString();
     }
 
-    private static int CountAlive(List<UnitBase> list)
+    private static int CountAlive(IReadOnlyList<UnitBase> list)
     {
-        if (list == null || list.Count == 0) return 0;
+        if (list == null) return 0;
+
         int c = 0;
         for (int i = 0; i < list.Count; i++)
         {
             var u = list[i];
-            if (u && u.gameObject.activeSelf && !u.IsDead) c++;
+            if (u && u.gameObject.activeInHierarchy && !u.IsDead)
+                c++;
         }
         return c;
     }
@@ -96,10 +110,10 @@ public class TopStatusBarUI : MonoBehaviour
     private static void EnableButtonRaycasts(Button btn, bool on)
     {
         if (!btn) return;
-        var g = btn.GetComponentsInChildren<Graphic>(true);
-        foreach (var gg in g) gg.raycastTarget = on;
-        // 버튼 자체 상호작용은 유지
-        var cg = btn.GetComponentInParent<CanvasGroup>();
-        if (cg) { /* 루트 CanvasGroup은 이미 비상호작용. 버튼 자체는 클릭 가능(그래픽만 허용) */ }
+        foreach (var gg in btn.GetComponentsInChildren<Graphic>(true))
+            gg.raycastTarget = on;
+        if (btn.image) btn.image.raycastTarget = on;
     }
+
+    public void RefreshNow() => UpdateCountsNow();
 }

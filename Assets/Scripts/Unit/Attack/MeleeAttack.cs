@@ -3,34 +3,26 @@ using UnityEngine;
 
 public class MeleeAttack : BaseAttack
 {
-    protected override IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject target)
+    protected override IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject targetGO)
     {
-        IsAttacking = true;
+        if (attacker == null || !IsTargetAlive(targetGO)) yield break;
+        if (!InEffectiveRange(attacker.transform, targetGO.transform, 1.05f)) yield break;
 
-        // PascalCase 변수 사용
-        float intervalBetweenHits = attacker.AttackFrequency / attacker.AttackCount;
+        int hits = Mathf.Max(1, attacker.AttackCount);
+        float act = ActiveSec;
+        float step = (hits > 1 && act > 0.0f) ? act / hits : 0.0f;
 
-        // PascalCase 변수 사용
-        Debug.Log($"{attacker.UnitName} 근접 공격을 시작");
-
-        // PascalCase 변수 사용
-        for (int i = 0; i < attacker.AttackCount; i++)
+        for (int i = 0; i < hits; i++)
         {
-            if (target == null || !target.activeSelf)
-            {
-                StopAttack();
-                yield break;
-            }
+            if (!IsTargetAlive(targetGO)) break;
+            if (i > 0 && step > 0.0f) yield return new WaitForSeconds(step);
 
-            // PascalCase 변수 사용
-            float rawDamage = attacker.AttackPower * attacker.DamageCoefficient;
-            ApplyDamage(attacker, target, rawDamage);
-
-            yield return new WaitForSeconds(intervalBetweenHits);
+            float raw = attacker.AttackPower * attacker.DamageCoefficient;
+            ApplyDamage(attacker, targetGO, raw);
         }
 
-        IsAttacking = false;
-        // PascalCase 변수 사용
-        Debug.Log($"{attacker.UnitName}의 근접 공격이 끝.");
+        float consumed = (hits > 1) ? step * (hits - 1) : 0.0f;
+        float remain = Mathf.Max(0.0f, act - consumed);
+        if (remain > 0.0f) yield return new WaitForSeconds(remain);
     }
 }

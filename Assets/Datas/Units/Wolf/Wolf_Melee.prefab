@@ -10,17 +10,16 @@ GameObject:
   m_Component:
   - component: {fileID: 3299552498204068191}
   - component: {fileID: 4300245392352757035}
-  - component: {fileID: -1078238763458490825}
   - component: {fileID: 1417197230055112447}
   - component: {fileID: -7034959524798964637}
   - component: {fileID: -7880659660371984583}
-  - component: {fileID: 1196521431111011709}
-  - component: {fileID: -9065248132271531539}
-  - component: {fileID: 4805266689067302322}
-  - component: {fileID: 4837668002567834425}
+  - component: {fileID: -8417917059010784136}
+  - component: {fileID: 2341903776392395555}
+  - component: {fileID: 2400582571196771288}
+  - component: {fileID: 3893418127338917686}
   m_Layer: 6
-  m_Name: Ally_Defence
-  m_TagString: Defense
+  m_Name: Wolf_Melee
+  m_TagString: Melee
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -52,20 +51,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658834302946056439df5936296b03a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialStat: {fileID: 0}
---- !u!114 &-1078238763458490825
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7622308344849817174}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37896842628c5a34089899a311cfd1a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackRange: 10
+  initialStat: {fileID: 11400000, guid: a847de7a6aacece4cafa3b77fcf5f49f, type: 2}
 --- !u!114 &1417197230055112447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -78,6 +64,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6636097cdad98134baf7a135fb9c2ffb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 256
+  skin: 0.02
+  stopEpsilon: 0.01
 --- !u!212 &-7034959524798964637
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -175,19 +166,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1.15, y: 0.98}
   m_EdgeRadius: 0
---- !u!114 &1196521431111011709
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7622308344849817174}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3dd16535e1b414e4eb750fa0fab857a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &-9065248132271531539
+--- !u!114 &-8417917059010784136
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -199,10 +178,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b8c165641d7668439b00c0e8d53f2a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackLogic: {fileID: 0}
-  skillLogic: {fileID: 4837668002567834425}
-  passiveLogic: {fileID: 0}
---- !u!114 &4805266689067302322
+  attackLogic: {fileID: 2400582571196771288}
+  skillLogic: {fileID: 0}
+  stopAtRangePercent: 0.9
+  retargetEvery: 0.2
+  releaseRangeMultiplier: 1
+  resetManaOnSkill: 1
+  keepMarchingWhenNoTarget: 1
+--- !u!114 &2341903776392395555
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -214,7 +197,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 497ea741daa632540a6f851b45dbb138, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &4837668002567834425
+  owner: {fileID: 0}
+--- !u!114 &2400582571196771288
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -223,12 +207,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 7622308344849817174}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1729c817c6519f544b751bc8135db3f8, type: 3}
+  m_Script: {fileID: 11500000, guid: 37896842628c5a34089899a311cfd1a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillName: 
-  manaCost: 0
-  skillDamageCoefficient: 0
-  skillAttackCount: 0
-  otherSkillCoefficient: 0
-  otherSkillRange: 0
+  attackRange: 0
+--- !u!114 &3893418127338917686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dd16535e1b414e4eb750fa0fab857a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

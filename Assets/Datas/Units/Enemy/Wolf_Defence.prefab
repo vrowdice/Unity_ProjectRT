@@ -10,17 +10,16 @@ GameObject:
   m_Component:
   - component: {fileID: 3299552498204068191}
   - component: {fileID: 4300245392352757035}
-  - component: {fileID: -1078238763458490825}
   - component: {fileID: 1417197230055112447}
   - component: {fileID: -7034959524798964637}
   - component: {fileID: -7880659660371984583}
-  - component: {fileID: 7998784290560601733}
-  - component: {fileID: -6469102327995590534}
-  - component: {fileID: 8396702382813981326}
-  - component: {fileID: 3939356665275763763}
-  m_Layer: 6
-  m_Name: Ally_Range
-  m_TagString: Range
+  - component: {fileID: -9065248132271531539}
+  - component: {fileID: 4805266689067302322}
+  - component: {fileID: 4837668002567834425}
+  - component: {fileID: -8204378220083167667}
+  m_Layer: 7
+  m_Name: Wolf_Defence
+  m_TagString: Defense
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -52,20 +51,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658834302946056439df5936296b03a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialStat: {fileID: 0}
---- !u!114 &-1078238763458490825
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7622308344849817174}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37896842628c5a34089899a311cfd1a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackRange: 10
+  initialStat: {fileID: 11400000, guid: 94dbc4395c07cef499c5380fe4b26599, type: 2}
 --- !u!114 &1417197230055112447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -78,6 +64,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6636097cdad98134baf7a135fb9c2ffb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 256
+  skin: 0.02
+  stopEpsilon: 0.01
 --- !u!212 &-7034959524798964637
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -120,7 +111,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: ad65963212e8e4a43a106f2bcacf3c0f, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.39811313, b: 0.39811313, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -175,31 +166,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1.15, y: 0.98}
   m_EdgeRadius: 0
---- !u!114 &7998784290560601733
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7622308344849817174}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3dd16535e1b414e4eb750fa0fab857a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &-6469102327995590534
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7622308344849817174}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 497ea741daa632540a6f851b45dbb138, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &8396702382813981326
+--- !u!114 &-9065248132271531539
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -211,10 +178,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b8c165641d7668439b00c0e8d53f2a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackLogic: {fileID: 3939356665275763763}
+  attackLogic: {fileID: 0}
   skillLogic: {fileID: 0}
-  passiveLogic: {fileID: 0}
---- !u!114 &3939356665275763763
+  stopAtRangePercent: 0.9
+  retargetEvery: 0.2
+  releaseRangeMultiplier: 1
+  resetManaOnSkill: 1
+  keepMarchingWhenNoTarget: 1
+--- !u!114 &4805266689067302322
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -223,7 +194,39 @@ MonoBehaviour:
   m_GameObject: {fileID: 7622308344849817174}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37896842628c5a34089899a311cfd1a6, type: 3}
+  m_Script: {fileID: 11500000, guid: 497ea741daa632540a6f851b45dbb138, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackRange: 0
+  owner: {fileID: 0}
+--- !u!114 &4837668002567834425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1729c817c6519f544b751bc8135db3f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  skillName: ThirstOfHunt
+  manaCost: 50
+  otherSkillRange: 500
+  otherSkillCoefficient: 10
+  includeCaster: 0
+  freezeRigidbody2D: 1
+  freezeAnimatorRootMotion: 1
+  lockYByMover: 1
+--- !u!114 &-8204378220083167667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dd16535e1b414e4eb750fa0fab857a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

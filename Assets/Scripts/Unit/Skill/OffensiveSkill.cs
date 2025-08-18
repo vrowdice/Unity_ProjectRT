@@ -1,32 +1,49 @@
 using System.Collections;
 using UnityEngine;
 
-// 공격형 스킬 코어 -> 단일 공격 스킬로 역할 변경
-public class OffensiveSkill : BaseSkill
+public class OffensiveSkill : BaseSkill, IConfigurableSkill
 {
+    [Header("기본값(테이블이 오면 덮어씀)")]
+    [Min(0)] public float skillDamageCoefficient = 1.0f;
+    [Min(0)] public int skillAttackCount = 1;
+    [Min(0)] public float hitInterval = 0.1f;
+
+    public void ApplyConfigFromStat(UnitStatBase stat)
+    {
+        if (stat == null || stat.active == null) return;
+        if (stat.active.damageCoeff > 0f) skillDamageCoefficient = stat.active.damageCoeff;
+        if (stat.active.attackCount > 0) skillAttackCount = stat.active.attackCount;
+
+        manaCost = stat.active.manaCost;
+        skillName = string.IsNullOrEmpty(stat.active.displayName) ? stat.active.skillLogic : stat.active.displayName;
+    }
+
     protected override IEnumerator PerformSkillRoutine(UnitBase caster, GameObject target)
     {
-        _isCasting = true;
-        // 수정된 부분: UnitName 프로퍼티 사용
-        Debug.Log($"{caster.UnitName}가 단일 공격 스킬 '{skillName}'을 시전");
+        if (caster == null) yield break;
 
-        // 수정된 부분: AttackPower 프로퍼티 사용
-        float damage = caster.AttackPower * skillDamageCoefficient;
+        int hits = Mathf.Max(1, skillAttackCount);
+        float dmg = caster.AttackPower * skillDamageCoefficient;
 
-        for (int i = 0; i < skillAttackCount; i++)
+        for (int i = 0; i < hits; i++)
         {
-            if (target == null || !target.activeSelf)
-            {
-                StopCast();
-                yield break;
-            }
+            if (!ValidTarget(caster, target)) break;
 
-            ApplySkillDamage(caster, target, damage);
+            var victim = target.GetComponent<UnitBase>();
+            victim.TakeDamage(dmg);
+            UnitImpactEmitter.Emit(caster.gameObject, ImpactEventType.SkillCastHit, caster, target, dmg, skillName);
 
-            yield return new WaitForSeconds(0.1f);
+            if (hitInterval > 0.0f) yield return new WaitForSeconds(hitInterval);
+            else yield return null;
         }
+    }
 
-        _isCasting = false;
-        Debug.Log("스킬 사용 종료");
+    private bool ValidTarget(UnitBase caster, GameObject t)
+    {
+        if (t == null || !t.activeSelf) return false;
+        var ub = t.GetComponent<UnitBase>();
+        if (ub == null || ub.IsDead) return false;
+        if (ub.Team == caster.Team) return false;
+        return true;
     }
 }
