@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93fb73814869783458a2263a475b4f9c, type: 3}
   m_Name: Forest
   m_EditorClassIdentifier: 
-  m_terrainType: 3
+  m_terrainType: 2
   m_isMoveable: 1
   m_weight: 15
   m_closeTileMul: 0

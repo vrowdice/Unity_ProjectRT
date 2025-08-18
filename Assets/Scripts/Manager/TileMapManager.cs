@@ -69,13 +69,20 @@ public class TileMapManager : MonoBehaviour
         int enemySettleCount = m_gameDataManager.GameBalanceEntry.m_data.m_enemySettle;
 
         // MapDataGenerator를 사용하여 맵 생성
+        var balance = m_gameDataManager.GameBalanceEntry;
+        var data = balance.m_data;
         MapDataGenerator mapGenerator = new MapDataGenerator(
             mapSize,
             m_tileMapDataList,
             TerrainType.TYPE.Settlement, // 친화적 정착지 타입
             friendlySettleCount,
             TerrainType.TYPE.Settlement, // 적대적 정착지 타입 (같은 타입 사용)
-            enemySettleCount
+            enemySettleCount,
+            data.m_friendlySettleResourceBase,
+            data.m_normalTileResourceBase,
+            data.m_enemyTileResourceBase,
+            data.m_settleMul,
+            balance.m_state.m_mainMul
         );
 
         m_tileMap = mapGenerator.GenerateMapData();
@@ -98,6 +105,8 @@ public class TileMapManager : MonoBehaviour
         int enemySettleCount = m_gameDataManager.GameBalanceEntry.m_data.m_enemySettle;
 
         // MapDataGenerator를 사용하여 맵 생성 (시드 지정)
+        var balance = m_gameDataManager.GameBalanceEntry;
+        var data = balance.m_data;
         MapDataGenerator mapGenerator = new MapDataGenerator(
             mapSize,
             m_tileMapDataList,
@@ -105,7 +114,12 @@ public class TileMapManager : MonoBehaviour
             TerrainType.TYPE.Settlement,
             friendlySettleCount,
             TerrainType.TYPE.Settlement,
-            enemySettleCount
+            enemySettleCount,
+            data.m_friendlySettleResourceBase,
+            data.m_normalTileResourceBase,
+            data.m_enemyTileResourceBase,
+            data.m_settleMul,
+            balance.m_state.m_mainMul
         );
 
         m_tileMap = mapGenerator.GenerateMapData();

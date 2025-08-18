@@ -455,14 +455,11 @@ public class GameManager : MonoBehaviour
                     TileMapData tileData = m_gameDataManager.TileMapManager.GetTileMapData(tileState.m_terrainType);
                     if (tileData != null)
                     {
-                        // 기본 영토 생산량 (타일당 1씩)
-                        long baseTerritoryProduction = 1;
-                        
-                        // 지형별 배수 적용
-                        float woodMultiplier = tileData.m_woodMul;
-                        float ironMultiplier = tileData.m_iromMul;
-                        float foodMultiplier = tileData.m_foodMul;
-                        float techMultiplier = tileData.m_techMul;
+                        // 타일 상태의 기본 자원값 사용 (지형 배수는 MapDataGenerator에서 반영됨)
+                        long baseWood = tileState.m_resources?.GetAmount(ResourceType.TYPE.Wood) ?? 0;
+                        long baseIron = tileState.m_resources?.GetAmount(ResourceType.TYPE.Iron) ?? 0;
+                        long baseFood = tileState.m_resources?.GetAmount(ResourceType.TYPE.Food) ?? 0;
+                        long baseTech = tileState.m_resources?.GetAmount(ResourceType.TYPE.Tech) ?? 0;
                         
                         // 영토 이펙트 적용
                         float territoryWoodMultiplier = GetTerritoryResourceMultiplier(ResourceType.TYPE.Wood);
@@ -476,10 +473,10 @@ public class GameManager : MonoBehaviour
                         float territoryTechAddition = GetTerritoryResourceAddition(ResourceType.TYPE.Tech);
                         
                         // 최종 영토 생산량 계산
-                        long woodProduction = (long)((baseTerritoryProduction * woodMultiplier + territoryWoodAddition) * territoryWoodMultiplier);
-                        long ironProduction = (long)((baseTerritoryProduction * ironMultiplier + territoryIronAddition) * territoryIronMultiplier);
-                        long foodProduction = (long)((baseTerritoryProduction * foodMultiplier + territoryFoodAddition) * territoryFoodMultiplier);
-                        long techProduction = (long)((baseTerritoryProduction * techMultiplier + territoryTechAddition) * territoryTechMultiplier);
+                        long woodProduction = (long)((baseWood + territoryWoodAddition) * territoryWoodMultiplier);
+                        long ironProduction = (long)((baseIron + territoryIronAddition) * territoryIronMultiplier);
+                        long foodProduction = (long)((baseFood + territoryFoodAddition) * territoryFoodMultiplier);
+                        long techProduction = (long)((baseTech + territoryTechAddition) * territoryTechMultiplier);
                         
                         // 영토 생산량에 추가
                         m_territoryProductionDict[ResourceType.TYPE.Wood] += woodProduction;
