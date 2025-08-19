@@ -1,36 +1,29 @@
-using System.Collections;
 using UnityEngine;
 
 [DisallowMultipleComponent]
 public class UnitBase : MonoBehaviour
 {
-    [Header("초기 스탯")]
+    [Header("초기 템플릿")]
     [SerializeField] private UnitStatBase initialStat;
 
     private UnitStatBase stat;
     public UnitStatBase UnitStat => stat;
 
-    // 데이터에서 파생되는 읽기전용 값들
+    // 파생/최종 값(컨트롤러가 여길 인식함)
     public string UnitName { get; private set; }
     public float AttackPower { get; private set; }
     public float DefensePower { get; private set; }
     public float MaxHealth { get; private set; }
     public float MoveSpeed { get; private set; }
     public float AttackRange { get; private set; }
-    public float AttackSpeed { get; private set; }      // APS
+    public float EnemySearchRange { get; private set; }
+
+    public float AttackSpeed { get; private set; }    // APS
     public float AttackCycleSec { get; private set; }
     public float AttackActiveSec { get; private set; }
     public float AttackRecoverySec { get; private set; }
-    public float DamageCoefficient { get; private set; }
     public int AttackCount { get; private set; }
-    public float EnemySearchRange { get; private set; }
-
-    // 종족(Race) - 기존 Faction 호환
-    public FactionType.TYPE Faction => stat != null ? stat.factionType : FactionType.TYPE.None;
-    public FactionType.TYPE Race => Faction;
-
-    // 팀(Ally/Enemy) - 전투 피아 판정
-    public TeamSide Team { get; private set; } = TeamSide.Neutral;
+    public float DamageCoefficient { get; private set; }
 
     // 자원/체력
     public float CurrentMana { get; private set; }
@@ -38,166 +31,185 @@ public class UnitBase : MonoBehaviour
     public float ManaRecoveryOnBasicAttack { get; private set; }
     public float ManaRecoveryPerSecond { get; private set; }
     public float CurrentHealth { get; private set; }
+    public bool IsDead => CurrentHealth <= 0.0f;
+
+    // 팀/진영
+    public FactionType.TYPE Faction => stat ? stat.factionType : FactionType.TYPE.None;
+    public TeamSide Team { get; private set; } = TeamSide.Neutral;
 
     // 상태
     public bool IsCombatInProgress { get; private set; }
-    public bool IsDead => CurrentHealth <= 0;
 
-    // 컴포넌트
-    private UnitMovementController movementLogic;
-    private UnitTargetingController targetingLogic;
+    // 캐시
+    private UnitMovementController movement;
+    private UnitTargetingController targeting;
     private BaseAttack attackLogic;
-
-    private Coroutine manaCoroutine;
 
     private void Awake()
     {
-        movementLogic = GetComponent<UnitMovementController>();
-        targetingLogic = GetComponent<UnitTargetingController>();
+        movement = GetComponent<UnitMovementController>();
+        targeting = GetComponent<UnitTargetingController>();
         attackLogic = GetComponent<BaseAttack>();
 
-        if (stat == null && initialStat != null)
-            Initialize(initialStat);
+        if (!stat && initialStat) Initialize(initialStat);
+        else EnsureSafeDefaults();
     }
 
-    private void OnDisable()
+    private void OnEnable()
     {
-        if (manaCoroutine != null) { StopCoroutine(manaCoroutine); manaCoroutine = null; }
-        IsCombatInProgress = false;
+        ApplyLayerToHierarchy(gameObject, TeamLayers.GetUnitLayer(Team));
     }
 
-    // 런타임 팀 지정 + 레이어 반영
+    private void EnsureSafeDefaults()
+    {
+        MaxHealth = Mathf.Max(1.0f, MaxHealth);
+        CurrentHealth = MaxHealth;
+        CurrentMana = Mathf.Clamp(CurrentMana, 0.0f, MaxMana);
+    }
+
+    // 팀/레이어
+    // inspector에서 레이어 지정하는거 잊지 않기 제발
     public void AssignTeam(TeamSide newTeam, bool applyLayerRecursive = true)
     {
         Team = newTeam;
-
-        // 레이어 동기화
         int layer = TeamLayers.GetUnitLayer(newTeam);
-        if (applyLayerRecursive) ApplyLayerRecursive(gameObject, layer);
+        if (applyLayerRecursive) ApplyLayerToHierarchy(gameObject, layer);
         else gameObject.layer = layer;
-
-        // 타게팅 마스크 갱신
-        GetComponent<UnitTargetingController>()?.RefreshMask();
+        targeting?.RefreshMask();
     }
 
-    // 레이어 재귀 적용(내부 유틸)
-    private void ApplyLayerRecursive(GameObject go, int layer)
+    private static void ApplyLayerToHierarchy(GameObject root, int layer)
     {
-        go.layer = layer;
-        foreach (Transform t in go.transform)
-            ApplyLayerRecursive(t.gameObject, layer);
-    }
-    private void OnEnable()
-    {
-        int layer = TeamLayers.GetUnitLayer(Team);
-        ApplyLayerRecursive(gameObject, layer);
+        var s = new System.Collections.Generic.Stack<Transform>(32);
+        s.Push(root.transform);
+        while (s.Count > 0)
+        {
+            var t = s.Pop();
+            t.gameObject.layer = layer;
+            for (int i = 0; i < t.childCount; i++) s.Push(t.GetChild(i));
+        }
     }
 
-
-    // 초기화
     public void Initialize(UnitStatBase newStat)
     {
-        if (newStat == null)
-        {
-            Debug.LogError($"[{name}] Initialize 실패: stat이 null");
-            return;
-        }
-
+        if (!newStat) { Debug.LogError($"[{name}] Initialize 실패: stat null"); return; }
         stat = newStat;
 
-        UnitName = stat.unitName;
-        AttackPower = stat.attackPower;
-        DefensePower = stat.defensePower;
-        MaxHealth = stat.maxHealth;
-        MoveSpeed = stat.moveSpeed;
-        AttackRange = stat.attackRange;
+        // SO 기본값
+        float attackPower = Mathf.Max(0.0f, stat.attackPower);
+        float defensePower = Mathf.Max(0.0f, stat.defensePower);
+        float maxHealth = Mathf.Max(1.0f, stat.maxHealth);
+        float moveSpeed = Mathf.Max(0.0f, stat.moveSpeed);
+        float attackRange = Mathf.Max(0.0f, stat.attackRange);
+        float enemySearch = Mathf.Max(0.0f, stat.enemySearchRange);
+        float attackSpeed = Mathf.Max(0.0f, stat.attackSpeed);
+        int attackCount = stat.attackCount > 0 ? stat.attackCount : 1;
+        float damageCoeff = stat.damageCoefficient > 0.0f ? stat.damageCoefficient : 1.0f;
+        float delayRatio = Mathf.Clamp01(stat.attackDelayRatio);
 
-        AttackSpeed = Mathf.Max(0.0f, stat.attackSpeed);
-        AttackCount = Mathf.Max(1, stat.attackCount);
-        DamageCoefficient = stat.damageCoefficient;
-        EnemySearchRange = stat.enemySearchRange;
+        float maxMana = Mathf.Max(0.0f, stat.maxMana);
+        float baseMana = Mathf.Clamp(stat.baseMana, 0.0f, maxMana);
+        float manaOnAtk = Mathf.Max(0.0f, stat.manaRecoveryOnAttack);
+        float manaPerSec = Mathf.Max(0.0f, stat.manaRecoveryPerSecond);
+
+        // 프리팹 오버라이드 병합
+        var ov = GetComponent<UnitStatOverride>();
+        if (ov)
+        {
+            attackPower = ov.attackPower.Merge(attackPower);
+            defensePower = ov.defensePower.Merge(defensePower);
+            maxHealth = Mathf.Max(1.0f, ov.maxHealth.Merge(maxHealth));
+            moveSpeed = ov.moveSpeed.Merge(moveSpeed);
+            attackRange = ov.attackRange.Merge(attackRange);
+            enemySearch = ov.enemySearchRange.Merge(enemySearch);
+
+            attackSpeed = ov.attackSpeed.Merge(attackSpeed);
+            if (ov.attackDelayRatioOverride >= 0.0f) delayRatio = Mathf.Clamp01(ov.attackDelayRatioOverride);
+            if (ov.attackCountOverride >= 1) attackCount = ov.attackCountOverride;
+            damageCoeff = ov.damageCoefficient.Merge(damageCoeff);
+
+            maxMana = ov.maxMana.Merge(maxMana);
+            baseMana = Mathf.Clamp(ov.baseMana.Merge(baseMana), 0.0f, maxMana);
+            manaOnAtk = ov.manaRecoveryOnAttack.Merge(manaOnAtk);
+            manaPerSec = ov.manaRecoveryPerSecond.Merge(manaPerSec);
+        }
+
+        // 최종 반영
+        UnitName = stat.unitName;
+        AttackPower = attackPower;
+        DefensePower = defensePower;
+        MaxHealth = maxHealth;
+        MoveSpeed = moveSpeed;
+        AttackRange = attackRange;
+        EnemySearchRange = enemySearch;
+        AttackSpeed = attackSpeed;
+        AttackCount = attackCount;
+        DamageCoefficient = damageCoeff;
 
         if (AttackSpeed > 0.0f)
         {
             AttackCycleSec = 1.0f / AttackSpeed;
-            float r = Mathf.Clamp01(stat.attackDelayRatio);
-            AttackRecoverySec = AttackCycleSec * r;
-            AttackActiveSec = AttackCycleSec - AttackRecoverySec;
+            AttackRecoverySec = AttackCycleSec * delayRatio;
+            AttackActiveSec = Mathf.Max(0f, AttackCycleSec - AttackRecoverySec);
         }
         else
         {
             AttackCycleSec = AttackActiveSec = AttackRecoverySec = 0.0f;
         }
 
-        MaxMana = stat.maxMana;
-        CurrentMana = Mathf.Clamp(stat.baseMana, 0f, MaxMana);
-        ManaRecoveryOnBasicAttack = stat.manaRecoveryOnAttack;
-        ManaRecoveryPerSecond = stat.manaRecoveryPerSecond;
+        MaxMana = maxMana;
+        CurrentMana = baseMana;
+        ManaRecoveryOnBasicAttack = manaOnAtk;
+        ManaRecoveryPerSecond = manaPerSec;
 
         CurrentHealth = MaxHealth;
         IsCombatInProgress = false;
 
-        if (manaCoroutine != null) StopCoroutine(manaCoroutine);
-        manaCoroutine = StartCoroutine(ManaRecoveryRoutine());
-
-        // 공격 템포 주입(있으면)
+        // 공격 템포있으면 발동
         attackLogic?.SetTempo(AttackActiveSec, AttackRecoverySec);
     }
 
-    // 마나
+    // 자원/체력 
     public void AddMana(float amount)
     {
-        if (MaxMana <= 0.0f) return;
+        if (MaxMana <= 0.0f || amount == 0.0f) return;
         CurrentMana = Mathf.Clamp(CurrentMana + amount, 0.0f, MaxMana);
     }
-
     public bool UseMana(float amount)
     {
         if (amount <= 0.0f) return true;
         if (CurrentMana >= amount) { CurrentMana -= amount; return true; }
         return false;
     }
-
     public void OnBasicAttackLanded()
     {
-        AddMana(ManaRecoveryOnBasicAttack);
+        if (ManaRecoveryOnBasicAttack > 0.0f) AddMana(ManaRecoveryOnBasicAttack);
     }
 
-    private IEnumerator ManaRecoveryRoutine()
-    {
-        var wait = new WaitForSeconds(1.0f);
-        while (!IsDead)
-        {
-            if (!IsCombatInProgress)
-                AddMana(ManaRecoveryPerSecond);
-            yield return wait;
-        }
-    }
-
-    // 체력/사망
     public void Heal(float amount)
     {
-        if (MaxHealth <= 0.0f) return;
-        CurrentHealth = Mathf.Clamp(CurrentHealth + Mathf.Max(0.0f, amount), 0.0f, MaxHealth);
+        if (MaxHealth <= 0.0f || amount <= 0.0f) return;
+        CurrentHealth = Mathf.Clamp(CurrentHealth + amount, 0.0f, MaxHealth);
     }
-
     public void TakeDamage(float damage)
     {
         if (IsDead) return;
-        CurrentHealth = Mathf.Max(CurrentHealth - Mathf.Max(0.0f, damage), 0.0f);
-        OnDamaged?.Invoke(this, damage, null);
+        float applied = Mathf.Max(0.0f, damage) - Mathf.Max(0.0f, DefensePower);
+        if (applied < 0.0f) applied = 0.0f;
+
+        CurrentHealth = Mathf.Max(0f, CurrentHealth - applied);
+        OnDamaged?.Invoke(this, applied, null);
         if (IsDead) OnDeath();
     }
-
     private void OnDeath()
     {
         OnDied?.Invoke(this);
         attackLogic?.StopAttack();
-        movementLogic?.StopMove();
-        gameObject.SetActive(false); // 풀링 전제
+        movement?.StopMove();
+        gameObject.SetActive(false);
     }
 
-    // 이벤트
+    // 이벤트/알림
     public event System.Action<UnitBase, GameObject> OnBasicAttackStarted;
     public event System.Action<UnitBase, GameObject, float> OnBasicAttackHit;
     public event System.Action<UnitBase, GameObject> OnSkillCastStarted;

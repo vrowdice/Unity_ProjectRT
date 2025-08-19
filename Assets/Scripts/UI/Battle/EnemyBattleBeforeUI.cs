@@ -10,14 +10,15 @@ public class EnemyBattleBeforeUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI defenseUnitCountText;
 
     [Header("표시 옵션")]
-    [SerializeField] private bool padTo3Digits = true; 
-    private const string PadFormat = "D3";
+    [SerializeField] private bool padTo3Digits = true;
+    private const string PadFormat = "D1";
 
     private void OnEnable()
     {
-        UpdateDeployedUnitCounters(); // 켜질 때 1회 갱신
         if (BattleSystemManager.Instance != null)
             BattleSystemManager.Instance.UnitsChanged += UpdateDeployedUnitCounters;
+
+        UpdateDeployedUnitCounters(); // 켜질 때 1회
     }
 
     private void OnDisable()
@@ -26,13 +27,19 @@ public class EnemyBattleBeforeUI : MonoBehaviour
             BattleSystemManager.Instance.UnitsChanged -= UpdateDeployedUnitCounters;
     }
 
+    public void OnImmediateRefresh() => UpdateDeployedUnitCounters();
+
+
+    private void OnToggleView()
+    {
+        BattleSystemManager.Instance?.ToggleView();
+        UpdateDeployedUnitCounters(); 
+    }
+
     public void UpdateDeployedUnitCounters()
     {
         var mgr = BattleSystemManager.Instance;
-        if (mgr == null) return;
-
-        var counts = mgr.GetEnemyCountsInSpawnAreas();
-        if (counts == null) 
+        if (mgr == null)
         {
             WriteCount(rangeUnitCountText, 0);
             WriteCount(meleeUnitCountText, 0);
@@ -40,6 +47,7 @@ public class EnemyBattleBeforeUI : MonoBehaviour
             return;
         }
 
+        var counts = mgr.GetEnemyCountsInSpawnAreas();
         WriteCount(rangeUnitCountText, GetSafe(counts, UnitTagType.Range));
         WriteCount(meleeUnitCountText, GetSafe(counts, UnitTagType.Melee));
         WriteCount(defenseUnitCountText, GetSafe(counts, UnitTagType.Defense));
@@ -49,7 +57,7 @@ public class EnemyBattleBeforeUI : MonoBehaviour
     private void ForceUpdateInEditor() => UpdateDeployedUnitCounters();
 
     private static int GetSafe(Dictionary<UnitTagType, int> map, UnitTagType key)
-        => map != null && map.TryGetValue(key, out int v) ? v : 0;
+        => (map != null && map.TryGetValue(key, out int v)) ? v : 0;
 
     private void WriteCount(TextMeshProUGUI label, int value)
     {

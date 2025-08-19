@@ -15,7 +15,7 @@ public class UnitPreBattleProbe : MonoBehaviour
             bool hasStat = u.UnitStat != null;
             float hp = u.CurrentHealth;
             float max = u.MaxHealth;
-            var race = u.Race;
+            var faction = u.Faction;  
             var team = u.Team;
 
             string why = "";
@@ -23,7 +23,7 @@ public class UnitPreBattleProbe : MonoBehaviour
             if (max <= 0f) why += " [MAX_HEALTH=0]";
             if (hp <= 0f) why += " [DEAD]";
 
-            Debug.Log($"[Probe] {go} team={team} race={race} hp={hp}/{max} stat={(hasStat ? u.UnitStat.name : "null")}{why}");
+            Debug.Log($"[Probe] {go} team={team} faction={faction} hp={hp}/{max} stat={(hasStat ? u.UnitStat.name : "null")}{why}");
 
             if (!u.IsDead && team == TeamSide.Ally) aliveAllies++;
             if (!u.IsDead && team == TeamSide.Enemy) aliveEnemies++;

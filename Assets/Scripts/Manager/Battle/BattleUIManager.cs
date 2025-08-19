@@ -26,16 +26,19 @@ public class BattleUIManager : MonoBehaviour
     {
         if (Instance && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+
+        if (topBar == null)
+            topBar = FindObjectOfType<TopStatusBarUI>(true);
     }
 
-    /// 아군 배치 UI 초기화
+
     public void InitializeUI(List<UnitStatBase> allyUnitStats)
     {
         if (allyUI && !allyUIInstance)
         {
             var go = Instantiate(allyUI, transform);
             allyUIInstance = go.GetComponent<BattleBeforeUI>();
-            if (allyUIInstance) allyUIInstance.InitDeploymentUI(allyUnitStats);
+            allyUIInstance?.InitDeploymentUI(allyUnitStats);
             go.SetActive(true);
         }
         else if (allyUIInstance)
@@ -43,8 +46,18 @@ public class BattleUIManager : MonoBehaviour
             allyUIInstance.InitDeploymentUI(allyUnitStats);
             allyUIInstance.gameObject.SetActive(true);
         }
-        HideTopBar(); 
+
+        if (!enemyUIInstance && enemyUI)
+        {
+            enemyUIInstance = Instantiate(enemyUI, transform);
+            enemyUIBattleScript = enemyUIInstance.GetComponent<BattleBeforeUI>() ??
+                                  enemyUIInstance.GetComponentInChildren<BattleBeforeUI>();
+            enemyUIInstance.SetActive(false);
+        }
+
+        HideTopBar();
     }
+
 
     public void SwitchToAllyUI()
     {

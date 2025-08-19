@@ -7,10 +7,12 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 [DefaultExecutionOrder(-50)]
+[DisallowMultipleComponent]
 public class BattleSystemManager : MonoBehaviour
 {
-    public static BattleSystemManager Instance { get; private set; }
+    #region Singleton & Refs
 
+    public static BattleSystemManager Instance { get; private set; }
 
     [Header("로딩 UI")]
     [SerializeField] private GameObject loadingPanel;
@@ -42,8 +44,12 @@ public class BattleSystemManager : MonoBehaviour
     [SerializeField] private CameraDragPan camPan;
     [SerializeField] private BoxCollider2D mapBounds;
 
-    [Header("스폰 충돌 검사(무할당)")]
+    [Header("스폰 충돌 검사(무할당=All)")]
     [SerializeField] private LayerMask unitLayerMask = -1;
+
+    #endregion
+
+    #region Runtime State & Properties & Events
 
     private readonly List<UnitBase> allyUnits = new();
     private readonly List<UnitBase> enemyUnits = new();
@@ -53,16 +59,16 @@ public class BattleSystemManager : MonoBehaviour
 
     private bool isPlayerAttacker = true;
     public bool IsPlayerAttacker => isPlayerAttacker;
-    public bool IsBattleRunning { get; private set; }
+
+    public bool IsBattleRunning { get; private set; } = false;
     public bool IsViewingAllyBase { get; private set; } = true;
 
     public Transform AttackCameraPoint => attackCameraPoint;
     public Transform DefenseCameraPoint => defenseCameraPoint;
 
-    // 전투 중 유닛 변경 이벤트
+
     public event UnityAction UnitsChanged;
 
-    // 내부 캐시
     private BattleRuntimeManager runtime;
     private BattleUIManager ui;
 
@@ -70,18 +76,22 @@ public class BattleSystemManager : MonoBehaviour
     private Transform rightBoundTmp;
 
     private static readonly Collider2D[] s_overlapBuf = new Collider2D[1];
-
     private static readonly WaitForSeconds s_waitShort = new WaitForSeconds(0.2f);
+
+    #endregion
+
+    #region Unity Lifetime
 
     private void Awake()
     {
-        if (Instance != this && Instance != null) { Destroy(gameObject); return; }
+        if (Instance && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
 
         if (!mainCamera) mainCamera = Camera.main;
+
         ui = BattleUIManager.Instance;
 
-        EnsurePanBoundsTransforms();
+        EnsurePanBoundAnchors();
         ApplyPanBoundsFromMap();
     }
 
@@ -90,12 +100,22 @@ public class BattleSystemManager : MonoBehaviour
         StartCoroutine(InitializeBattleScene());
     }
 
+    private void OnDestroy()
+    {
+        if (runtime != null) runtime.OnBattleFinished -= HandleBattleFinished;
+    }
+
+    #endregion
+
+    #region Scene Initialization & Flow
+
     private IEnumerator InitializeBattleScene()
     {
         if (loadingPanel) loadingPanel.SetActive(true);
         if (progressBar) progressBar.fillAmount = 0.0f;
         if (loadingText) loadingText.text = "Preparing";
-        yield return null; 
+
+        yield return null;
 
         yield return SpawnEnemyUnits();
 
@@ -106,6 +126,10 @@ public class BattleSystemManager : MonoBehaviour
         yield return s_waitShort;
         if (loadingPanel) loadingPanel.SetActive(false);
     }
+
+    #endregion
+
+    #region Camera View Toggle
 
     public Transform GetAllyCameraPointByState() => isPlayerAttacker ? attackCameraPoint : defenseCameraPoint;
     public Transform GetEnemyCameraPointByState() => isPlayerAttacker ? defenseCameraPoint : attackCameraPoint;
@@ -128,7 +152,7 @@ public class BattleSystemManager : MonoBehaviour
         RefreshDragEnabled();
     }
 
-    public void RefreshDragEnabled()
+    private void RefreshDragEnabled()
     {
         bool allowDrag = IsViewingAllyBase && !IsBattleRunning;
         for (int i = 0; i < allyUnits.Count; i++)
@@ -140,32 +164,20 @@ public class BattleSystemManager : MonoBehaviour
         }
     }
 
-    private void EnsureTeams()
-    {
-        for (int i = 0; i < allyUnits.Count; i++)
-            FastAssignTeamAndMask(allyUnits[i], TeamSide.Ally);
+    #endregion
 
-        for (int i = 0; i < enemyUnits.Count; i++)
-            FastAssignTeamAndMask(enemyUnits[i], TeamSide.Enemy);
-    }
+    #region Battle Start / Finish
 
-    private static void FastAssignTeamAndMask(UnitBase ub, TeamSide team)
-    {
-        if (!ub) return;
-        if (ub.Team != team) ub.AssignTeam(team);
-        if (ub.TryGetComponent<UnitTargetingController>(out var tgt))
-            tgt.RefreshMask();
-    }
     public void StartBattle()
     {
-        Debug.Log($"[BattleSystemManager] StartBattle  Allies={allyUnits.Count}  Enemies={enemyUnits.Count}");
+        Debug.Log($"[BSM] StartBattle  Allies={allyUnits.Count}  Enemies={enemyUnits.Count}");
 
         EnsureTeams();
 
         ui?.HideAllUI(exceptTopBar: true);
         ui?.ShowTopBar();
 
-        // 전투 컨트롤러 초기화(방향 고정: 2D, z=0)
+        // 전투 컨트롤러 초기화
         for (int i = 0; i < allyUnits.Count; i++)
             allyUnits[i]?.GetComponent<UnitCombatController>()?.InitForBattle(Vector3.right);
 
@@ -177,7 +189,7 @@ public class BattleSystemManager : MonoBehaviour
         ApplyPanBoundsFromMap();
         if (camPan) camPan.Enable(true);
 
-        // 즉시 종료 케이스 처리
+        // 즉시 종료 케이스
         if (allyUnits.Count == 0 || enemyUnits.Count == 0)
         {
             HandleBattleFinished(new BattleOutcome
@@ -190,7 +202,7 @@ public class BattleSystemManager : MonoBehaviour
             return;
         }
 
-        // 전투 시작
+        // 런타임 구동
         if (runtime != null) runtime.OnBattleFinished -= HandleBattleFinished;
         runtime = gameObject.AddComponent<BattleRuntimeManager>();
         runtime.OnBattleFinished += HandleBattleFinished;
@@ -218,7 +230,7 @@ public class BattleSystemManager : MonoBehaviour
                 uiResult.OnContinue = () =>
                 {
                     Destroy(go);
-                    Debug.Log("Continue pressed");
+                    Debug.Log("[BSM] Continue pressed");
                 };
 
                 uiResult.OnRetry = () =>
@@ -228,25 +240,31 @@ public class BattleSystemManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning("BattleResultUI 컴포넌트가 프리팹에 없습니다.");
+                Debug.LogWarning("[BSM] BattleResultUI 컴포넌트를 찾지 못했습니다.");
             }
         }
         else
         {
-            Debug.Log($"Result => {(outcome.victory ? "VICTORY" : "DEFEAT")} | " +
+            Debug.Log($"[BSM] Result => {(outcome.victory ? "VICTORY" : "DEFEAT")} | " +
                       $"Allies:{outcome.allyRemaining} Enemies:{outcome.enemyRemaining} " +
                       $"Time:{outcome.elapsed:0.0}s");
         }
     }
 
+    #endregion
+
+    #region Spawn / Placement
+
     private IEnumerator SpawnEnemyUnits()
     {
         enemyUnits.Clear();
 
+        // 수동 배치 우선
         if (useManualEnemyPlacement && enemyUnitHolder)
         {
             if (loadingText) loadingText.text = "Applying manual enemy placement...";
             int childCount = enemyUnitHolder.childCount;
+
             for (int i = 0; i < childCount; i++)
             {
                 var t = enemyUnitHolder.GetChild(i);
@@ -254,7 +272,7 @@ public class BattleSystemManager : MonoBehaviour
 
                 if (ub.UnitStat == null)
                 {
-                    Debug.LogError($"[BattleSystemManager] 수동 배치 유닛 '{ub.name}'의 UnitStat이 null입니다. Initialize(stat) 필요.");
+                    Debug.LogError($"[BSM] 수동 배치 '{ub.name}'의 UnitStat이 null입니다. Initialize(stat) 필요.");
                     continue;
                 }
 
@@ -264,10 +282,10 @@ public class BattleSystemManager : MonoBehaviour
             yield break;
         }
 
-        // 적군 데이터가 없으면 경고 후 종료
+        // 데이터 스폰
         if (!enemyArmyData)
         {
-            Debug.LogWarning("[BattleSystemManager] enemyArmyData 미할당");
+            Debug.LogWarning("[BSM] enemyArmyData 미할당");
             yield break;
         }
 
@@ -276,12 +294,13 @@ public class BattleSystemManager : MonoBehaviour
         var enemyArea = GetEnemySpawnArea();
         if (!enemyArea)
         {
-            Debug.LogError("[BattleSystemManager] 적 스폰 구역 없음");
+            Debug.LogError("[BSM] 적 스폰 구역이 없습니다.");
             yield break;
         }
 
         var list = enemyArmyData.units;
         int total = list.Count;
+
         for (int i = 0; i < total; i++)
         {
             var stat = list[i];
@@ -301,18 +320,22 @@ public class BattleSystemManager : MonoBehaviour
         }
     }
 
+    // BattleSystemManager.cs
+
     public UnitBase RequestSpawnAlly(UnitStatBase stat)
     {
         if (!stat || !stat.prefab) return null;
-
         var area = GetAllySpawnArea();
+        if (!area) { Debug.LogError("[BSM] 아군 스폰 구역이 없습니다."); return null; }
+
         var go = Instantiate(stat.prefab, GetRandomPointInCollider(area), Quaternion.identity);
 
         if (go.TryGetComponent<UnitBase>(out var ub))
         {
             ub.Initialize(stat);
             ub.AssignTeam(TeamSide.Ally);
-            RegisterUnit(ub);
+            RegisterUnit(ub);              
+                                       
             return ub;
         }
 
@@ -324,32 +347,33 @@ public class BattleSystemManager : MonoBehaviour
     {
         if (!unit) return false;
 
-        allyUnits.Remove(unit);
+        bool removed = allyUnits.Remove(unit);
+        if (!removed) return false;
+
         Destroy(unit.gameObject);
-        UnitsChanged?.Invoke();
+
+        UnitsChanged?.Invoke();         
+
         return true;
     }
 
-    public void UnregisterUnit(UnitBase unit)
+
+    // 팀 부여
+    private static void FastAssignTeamAndMask(UnitBase ub, TeamSide team)
     {
-        if (!unit) return;
-        allyUnits.Remove(unit);
-        enemyUnits.Remove(unit);
-        UnitsChanged?.Invoke();
-        CheckWinCondition();
+        if (!ub) return;
+        if (ub.Team != team) ub.AssignTeam(team);
+        if (ub.TryGetComponent<UnitTargetingController>(out var tgt))
+            tgt.RefreshMask();
     }
 
-    public void AddEnemyUnit(UnitBase unit)
+    private void EnsureTeams()
     {
-        if (!unit) return;
-        if (!enemyUnits.Contains(unit))
-        {
-            FastAssignTeamAndMask(unit, TeamSide.Enemy);
-            enemyUnits.Add(unit);
-            UnitsChanged?.Invoke();
-        }
+        for (int i = 0; i < allyUnits.Count; i++) FastAssignTeamAndMask(allyUnits[i], TeamSide.Ally);
+        for (int i = 0; i < enemyUnits.Count; i++) FastAssignTeamAndMask(enemyUnits[i], TeamSide.Enemy);
     }
 
+    // 등록/해제
     public void RegisterUnit(UnitBase unit)
     {
         if (!unit) return;
@@ -372,57 +396,90 @@ public class BattleSystemManager : MonoBehaviour
         UnitsChanged?.Invoke();
     }
 
+    public void UnregisterUnit(UnitBase unit)
+    {
+        if (!unit) return;
+
+        allyUnits.Remove(unit);
+        enemyUnits.Remove(unit);
+
+        UnitsChanged?.Invoke();
+        CheckWinCondition();
+    }
+
+    public void AddEnemyUnit(UnitBase unit)
+    {
+        if (!unit) return;
+        if (enemyUnits.Contains(unit)) return;
+
+        FastAssignTeamAndMask(unit, TeamSide.Enemy);
+        enemyUnits.Add(unit);
+        UnitsChanged?.Invoke();
+    }
+
     private void CheckWinCondition()
     {
-        if (allyUnits.Count == 0) Debug.Log("[BattleSystemManager] 패배 - 아군 전멸");
-        else if (enemyUnits.Count == 0) Debug.Log("[BattleSystemManager] 승리 - 적군 전멸");
+        if (allyUnits.Count == 0) Debug.Log("[BSM] 패배 - 아군 전멸");
+        else if (enemyUnits.Count == 0) Debug.Log("[BSM] 승리 - 적군 전멸");
     }
+
+    #endregion
+
+    #region UI Counter APIs (배치 UI에서 사용)
 
     public Dictionary<UnitTagType, int> GetCountsInSpawnAreas()
     {
-        var counts = new Dictionary<UnitTagType, int>
-        {
-            { UnitTagType.Melee, 0 },
-            { UnitTagType.Range, 0 },
-            { UnitTagType.Defense, 0 }
-        };
+        var counts = NewTagCounter();
         CountUnitsInAreaByList(GetAllySpawnArea(), counts, allyUnits);
         return counts;
     }
 
     public Dictionary<UnitTagType, int> GetEnemyCountsInSpawnAreas()
     {
-        var counts = new Dictionary<UnitTagType, int>
-        {
-            { UnitTagType.Melee, 0 },
-            { UnitTagType.Range, 0 },
-            { UnitTagType.Defense, 0 }
-        };
+        var counts = NewTagCounter();
         CountUnitsInAreaByList(GetEnemySpawnArea(), counts, enemyUnits);
         return counts;
     }
 
+    private static Dictionary<UnitTagType, int> NewTagCounter()
+    {
+        return new Dictionary<UnitTagType, int>
+        {
+            { UnitTagType.Melee,   0 },
+            { UnitTagType.Range,   0 },
+            { UnitTagType.Defense, 0 }
+        };
+    }
+
     private static void CountUnitsInAreaByList(BoxCollider2D area, Dictionary<UnitTagType, int> counts, List<UnitBase> list)
     {
-        if (!area) { Debug.LogError("카운트를 셀 스폰 구역이 null"); return; }
-        var b = area.bounds;
+        if (!area) { Debug.LogError("[BSM] 카운트 영역이 null"); return; }
+        if (list == null || list.Count == 0) return;
 
+        var b = area.bounds;
         for (int i = 0; i < list.Count; i++)
         {
             var unit = list[i];
-            if (!unit || unit.UnitStat == null) continue;
-            if (b.Contains(unit.transform.position))
-            {
-                var tag = unit.UnitStat.unitTagType;
-                if (counts.ContainsKey(tag)) counts[tag]++;
-            }
+            if (!unit) continue;
+
+            var stat = unit.UnitStat;
+            if (stat == null) continue;
+
+            if (!b.Contains(unit.transform.position)) continue;
+
+            var tag = stat.unitTagType;
+            if (counts.ContainsKey(tag)) counts[tag]++;
         }
     }
 
-    // 스폰 위치 선정
+    #endregion
+
+    #region Spawn Utilities
+
     private Vector3 GetRandomPointInCollider(BoxCollider2D col)
     {
-        if (!col) { Debug.LogError("[BattleSystemManager] Collider null"); return Vector3.zero; }
+        if (!col) { Debug.LogError("[BSM] Collider null"); return Vector3.zero; }
+
         var b = col.bounds;
 
         const int MAX_TRY = 20;
@@ -434,14 +491,20 @@ public class BattleSystemManager : MonoBehaviour
             float y = Random.Range(b.min.y, b.max.y);
             var p = new Vector3(x, y, 0f);
 
+            // 충돌 없으면 채택
             int hit = Physics2D.OverlapCircleNonAlloc(p, RADIUS, s_overlapBuf, unitLayerMask);
-            if (hit == 0) return p; 
+            if (hit == 0) return p;
         }
 
+        // 실패 시 마지막으로 랜덤 포인트 반환
         return new Vector3(Random.Range(b.min.x, b.max.x), Random.Range(b.min.y, b.max.y), 0.0f);
     }
 
-    private void EnsurePanBoundsTransforms()
+    #endregion
+
+    #region Camera Pan Bounds
+
+    private void EnsurePanBoundAnchors()
     {
         if (!leftBoundTmp)
         {
@@ -469,6 +532,12 @@ public class BattleSystemManager : MonoBehaviour
         rightBoundTmp.position = new Vector3(b.max.x, cy, cz);
     }
 
+    #endregion
+
+    #region Ally/Enemy Spawn Area Accessors
+
     public BoxCollider2D GetEnemySpawnArea() => isPlayerAttacker ? defenseSpawnArea : attackSpawnArea;
     public BoxCollider2D GetAllySpawnArea() => isPlayerAttacker ? attackSpawnArea : defenseSpawnArea;
+
+    #endregion
 }
