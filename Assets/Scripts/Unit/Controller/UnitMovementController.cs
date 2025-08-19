@@ -1,47 +1,158 @@
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public class UnitMovementController : MonoBehaviour
 {
+    [Header("충돌/지형")]
+    [Tooltip("벽/지형 레이어만 선택. (유닛/투사체 등은 제외)")]
+    [SerializeField] private LayerMask obstacleMask;
+    [Tooltip("벽에 너무 붙어 보이지 않게 하는 안전 여백(미세 거리).")]
+    [SerializeField] private float skin = 0.02f;
+
+    [Header("이동 파라미터(디버그/튜닝)")]
+    [SerializeField] private float stopEpsilon = 0.01f; // 목표점 근접 판정
+
     private Vector3 _targetPosition;
     private Vector3 _dir;
     private float _moveSpeed;
     private bool _isMoving = false;
     private bool _directional = false;
 
+    private Rigidbody2D _rb2d;
+    private Collider2D _col2d;
+
+    private readonly RaycastHit2D[] _hitBuf = new RaycastHit2D[8];
+    private ContactFilter2D _contactFilter;
+
+    private void Awake()
+    {
+        _rb2d = GetComponent<Rigidbody2D>();
+        _col2d = GetComponent<Collider2D>();
+
+        _contactFilter = new ContactFilter2D
+        {
+            useLayerMask = true,
+            useTriggers = false
+        };
+        _contactFilter.SetLayerMask(obstacleMask);
+
+        if (_rb2d)
+        {
+            _rb2d.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            _rb2d.interpolation = RigidbodyInterpolation2D.Interpolate;
+        }
+    }
+
     public void MoveTo(Vector3 target, float speed)
     {
         _directional = false;
         _targetPosition = target;
-        _moveSpeed = speed;
+        _moveSpeed = Mathf.Max(0f, speed);
         _isMoving = true;
     }
 
     public void StartMoveInDirection(Vector3 direction, float speed)
     {
         _directional = true;
-        _dir = direction.normalized;
-        _moveSpeed = speed;
+        _dir = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector3.right;
+        _moveSpeed = Mathf.Max(0f, speed);
         _isMoving = true;
     }
 
     public void StopMove()
     {
         _isMoving = false;
+        if (_rb2d) _rb2d.velocity = Vector2.zero;
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (!_isMoving) return;
 
+        float dt = Time.fixedDeltaTime;
+
         if (_directional)
         {
-            transform.position += _dir * _moveSpeed * Time.deltaTime;
+            Vector3 delta = _dir * _moveSpeed * dt;
+            Vector3 allowed = ComputeAllowedDelta(delta);
+            ApplyDelta(allowed);
+            if (allowed.sqrMagnitude < 1e-6f) StopMove();
         }
         else
         {
-            transform.position = Vector3.MoveTowards(transform.position, _targetPosition, _moveSpeed * Time.deltaTime);
-            if (Vector3.Distance(transform.position, _targetPosition) < 0.1f)
+            Vector3 cur = transform.position;
+            Vector3 toTarget = _targetPosition - cur;
+
+            if (toTarget.sqrMagnitude <= stopEpsilon * stopEpsilon)
+            {
                 StopMove();
+                return;
+            }
+
+            float maxThisFrame = _moveSpeed * dt;
+            Vector3 delta = Vector3.ClampMagnitude(toTarget, maxThisFrame);
+
+            Vector3 allowed = ComputeAllowedDelta(delta);
+            ApplyDelta(allowed);
+
+            if (allowed.sqrMagnitude < 1e-6f ||
+                (Vector3.SqrMagnitude(_targetPosition - transform.position) <= stopEpsilon * stopEpsilon))
+            {
+                StopMove();
+            }
+        }
+    }
+
+
+    private Vector3 ComputeAllowedDelta(Vector3 delta)
+    {
+        float dist = delta.magnitude;
+        if (dist <= 1e-6f) return Vector3.zero;
+
+        Vector2 dir = (Vector2)(delta / dist);
+        float allowedDist = dist; 
+
+        int hitCount = 0;
+
+        if (_rb2d)
+        {
+            hitCount = _rb2d.Cast(dir, _contactFilter, _hitBuf, dist + skin);
+        }
+        else if (_col2d)
+        {
+            hitCount = _col2d.Cast(dir, _contactFilter, _hitBuf, dist + skin);
+        }
+        else
+        {
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, dir, dist + skin, obstacleMask);
+            if (hit.collider != null) { _hitBuf[0] = hit; hitCount = 1; }
+        }
+
+        if (hitCount > 0)
+        {
+            for (int i = 0; i < hitCount; i++)
+            {
+                var h = _hitBuf[i];
+                if (h.collider == null) continue;
+                float cand = Mathf.Max(0f, h.distance - skin);
+                allowedDist = Mathf.Min(allowedDist, cand);
+            }
+        }
+
+        return (Vector3)(dir * allowedDist);
+    }
+
+    private void ApplyDelta(Vector3 delta)
+    {
+        if (delta.sqrMagnitude <= 1e-12f) return;
+
+        if (_rb2d && !_rb2d.isKinematic)
+        {
+            _rb2d.MovePosition(_rb2d.position + (Vector2)delta);
+        }
+        else
+        {
+            transform.position += delta;
         }
     }
 }

@@ -10,16 +10,15 @@ GameObject:
   m_Component:
   - component: {fileID: 3299552498204068191}
   - component: {fileID: 4300245392352757035}
-  - component: {fileID: -1078238763458490825}
   - component: {fileID: 1417197230055112447}
   - component: {fileID: -7034959524798964637}
   - component: {fileID: -7880659660371984583}
-  - component: {fileID: 7998784290560601733}
   - component: {fileID: -6469102327995590534}
   - component: {fileID: 8396702382813981326}
-  - component: {fileID: 3939356665275763763}
+  - component: {fileID: 6719226703890725400}
+  - component: {fileID: -6282534339866478900}
   m_Layer: 6
-  m_Name: Ally_Range
+  m_Name: Wolf_Range
   m_TagString: Range
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -52,20 +51,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658834302946056439df5936296b03a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialStat: {fileID: 0}
---- !u!114 &-1078238763458490825
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7622308344849817174}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37896842628c5a34089899a311cfd1a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackRange: 10
+  initialStat: {fileID: 11400000, guid: 480ae2ab332ad424780f9f03320498df, type: 2}
 --- !u!114 &1417197230055112447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -78,6 +64,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6636097cdad98134baf7a135fb9c2ffb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 256
+  skin: 0.02
+  stopEpsilon: 0.01
 --- !u!212 &-7034959524798964637
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -175,18 +166,6 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1.15, y: 0.98}
   m_EdgeRadius: 0
---- !u!114 &7998784290560601733
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7622308344849817174}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3dd16535e1b414e4eb750fa0fab857a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &-6469102327995590534
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -199,6 +178,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 497ea741daa632540a6f851b45dbb138, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  owner: {fileID: 4300245392352757035}
 --- !u!114 &8396702382813981326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -211,10 +191,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b8c165641d7668439b00c0e8d53f2a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackLogic: {fileID: 3939356665275763763}
+  attackLogic: {fileID: 6719226703890725400}
   skillLogic: {fileID: 0}
-  passiveLogic: {fileID: 0}
---- !u!114 &3939356665275763763
+  stopAtRangePercent: 0.9
+  retargetEvery: 0.2
+  releaseRangeMultiplier: 1
+  resetManaOnSkill: 1
+  keepMarchingWhenNoTarget: 1
+--- !u!114 &6719226703890725400
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -223,7 +207,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 7622308344849817174}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37896842628c5a34089899a311cfd1a6, type: 3}
+  m_Script: {fileID: 11500000, guid: 75b28be16510e6642921bb90fd40b68f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   attackRange: 0
+  projectilePrefab: {fileID: 0}
+  shootPoint: {fileID: 0}
+  delivery: 0
+--- !u!114 &-6282534339866478900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dd16535e1b414e4eb750fa0fab857a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

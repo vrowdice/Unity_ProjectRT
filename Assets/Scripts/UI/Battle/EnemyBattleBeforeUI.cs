@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class EnemyBattleBeforeUI : MonoBehaviour
 {
@@ -8,15 +9,16 @@ public class EnemyBattleBeforeUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI meleeUnitCountText;
     [SerializeField] private TextMeshProUGUI defenseUnitCountText;
 
-    private const string NumFormat = "0"; // 3자리 0패딩
+    [Header("표시 옵션")]
+    [SerializeField] private bool padTo3Digits = true;
+    private const string PadFormat = "D1";
 
     private void OnEnable()
     {
-        // 켜질 때 1회 갱신
-        UpdateDeployedUnitCounters();
-
         if (BattleSystemManager.Instance != null)
             BattleSystemManager.Instance.UnitsChanged += UpdateDeployedUnitCounters;
+
+        UpdateDeployedUnitCounters(); // 켜질 때 1회
     }
 
     private void OnDisable()
@@ -25,15 +27,41 @@ public class EnemyBattleBeforeUI : MonoBehaviour
             BattleSystemManager.Instance.UnitsChanged -= UpdateDeployedUnitCounters;
     }
 
+    public void OnImmediateRefresh() => UpdateDeployedUnitCounters();
+
+
+    private void OnToggleView()
+    {
+        BattleSystemManager.Instance?.ToggleView();
+        UpdateDeployedUnitCounters(); 
+    }
+
     public void UpdateDeployedUnitCounters()
     {
         var mgr = BattleSystemManager.Instance;
-        if (mgr == null) return;
+        if (mgr == null)
+        {
+            WriteCount(rangeUnitCountText, 0);
+            WriteCount(meleeUnitCountText, 0);
+            WriteCount(defenseUnitCountText, 0);
+            return;
+        }
 
         var counts = mgr.GetEnemyCountsInSpawnAreas();
+        WriteCount(rangeUnitCountText, GetSafe(counts, UnitTagType.Range));
+        WriteCount(meleeUnitCountText, GetSafe(counts, UnitTagType.Melee));
+        WriteCount(defenseUnitCountText, GetSafe(counts, UnitTagType.Defense));
+    }
 
-        if (rangeUnitCountText) rangeUnitCountText.text = counts[UnitTagType.Range].ToString(NumFormat);
-        if (meleeUnitCountText) meleeUnitCountText.text = counts[UnitTagType.Melee].ToString(NumFormat);
-        if (defenseUnitCountText) defenseUnitCountText.text = counts[UnitTagType.Defense].ToString(NumFormat);
+    [ContextMenu("Force Update")]
+    private void ForceUpdateInEditor() => UpdateDeployedUnitCounters();
+
+    private static int GetSafe(Dictionary<UnitTagType, int> map, UnitTagType key)
+        => (map != null && map.TryGetValue(key, out int v)) ? v : 0;
+
+    private void WriteCount(TextMeshProUGUI label, int value)
+    {
+        if (!label) return;
+        label.text = padTo3Digits ? value.ToString(PadFormat) : value.ToString();
     }
 }

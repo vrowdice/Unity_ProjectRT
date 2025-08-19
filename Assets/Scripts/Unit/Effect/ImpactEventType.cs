@@ -7,6 +7,7 @@ public enum ImpactEventType
     SkillCastStart,
     SkillCastHit,
     SkillCastFinish,
+    CustomEvent,
     Damaged,
     Died
 }

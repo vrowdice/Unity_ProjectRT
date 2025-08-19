@@ -1,40 +1,44 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class RangedAttack : BaseAttack
 {
+    [Header("발사체")]
     public GameObject projectilePrefab;
     public Transform shootPoint;
 
-    protected override IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject target)
+    [Header("전달 방식")]
+    public HitDeliveryStrategy delivery = HitDeliveryStrategy.Projectile;
+
+    protected override IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject targetGO)
     {
-        IsAttacking = true;
+        if (attacker == null || !IsTargetAlive(targetGO)) yield break;
+        if (!InEffectiveRange(attacker.transform, targetGO.transform, 1.05f)) yield break;
 
-        for (int i = 0; i < attacker.AttackCount; i++)
+        int shots = Mathf.Max(1, attacker.AttackCount);
+        float act = ActiveSec;                               
+        float step = (shots > 1 && act > 0.0f) ? act / shots : 0; // 연사 간 간격
+
+        for (int i = 0; i < shots; i++)
         {
-            if (target == null || !target.activeSelf)
-            {
-                StopAttack();
-                yield break;
-            }
+            if (!IsTargetAlive(targetGO)) break;
+            if (i > 0 && step > 0f) yield return new WaitForSeconds(step);
 
-            if (projectilePrefab != null && shootPoint != null)
-            {
-                GameObject projectile = Instantiate(projectilePrefab, shootPoint.position, Quaternion.identity);
-               // 공격 데미지
-                ProjectileContoller projectileComponent = projectile.GetComponent<ProjectileContoller>();
-                if (projectileComponent != null)
-                {
-                    projectileComponent.Initialize(attacker, target, attacker.AttackPower * attacker.DamageCoefficient);
-                }
+            float rawDamage = attacker.AttackPower * attacker.DamageCoefficient;
+            var origin = (shootPoint != null) ? shootPoint : attacker.transform;
 
-            }
-
-            yield return new WaitForSeconds(attacker.AttackFrequency / attacker.AttackCount);
+            HitDeliverer.Deliver(
+                attacker,
+                targetGO,
+                rawDamage,
+                delivery,
+                projectilePrefab,
+                origin,
+                contextName: name);
         }
 
-        IsAttacking = false;
-        Debug.Log(attacker.UnitName + "의 원거리 공격이 끝.");
+        float consumed = (shots > 1) ? step * (shots - 1) : 0.0f;
+        float remain = Mathf.Max(0f, act - consumed);
+        if (remain > 0.0f) yield return new WaitForSeconds(remain);
     }
 }
