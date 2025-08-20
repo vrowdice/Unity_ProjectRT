@@ -78,7 +78,7 @@ public class RequestPanel : BasePanel
         {
             FactionEntry _tmpEntry = item.Value;
 
-            if (_tmpEntry.m_data.m_factionType == FactionType.TYPE.None || !_tmpEntry.m_state.m_have)
+            if (_tmpEntry.m_data.m_factionType == FactionType.TYPE.None || _tmpEntry.m_state.m_like <= 0)
             {
                 continue;
             }
@@ -137,7 +137,7 @@ public class RequestPanel : BasePanel
             GameObject _btnObj = Instantiate(m_requestBtnPrefeb, m_requestBtnScrollViewContentTrans);
             RequestBtn _requestBtn = _btnObj.GetComponent<RequestBtn>();
             _requestBtn.Initialize(
-                true,
+                argIsAcceptable,  // 올바른 값 전달
                 this,
                 m_gameDataManager.GetFactionEntry(_state.m_factionType).m_data.m_icon,
                 m_gameDataManager.GetRequestIcon(_state.m_requestType),
@@ -182,8 +182,65 @@ public class RequestPanel : BasePanel
         m_mainUIManager.UpdateAllMainText();
     }
 
+    public void CompleteRequest(RequestState argState)
+    {
+        Debug.Log($"Completing request: {argState.m_title}");
+        
+        // 요청 완료 처리
+        // 보상 지급
+        if (GameManager.Instance != null)
+        {
+            // 리소스 보상 지급
+            foreach (ResourceAmount resourceReward in argState.m_resourceRewardList)
+            {
+                bool success = GameManager.Instance.TryChangeResource(resourceReward.m_type, resourceReward.m_amount);
+            }
+
+            // 토큰 보상 지급 (토큰 시스템이 구현되면 추가)
+            // foreach (TokenAmount tokenReward in argState.m_tokenRewardList)
+            // {
+            //     // 토큰 지급 로직
+            // }
+        }
+        else
+        {
+            Debug.LogError("GameManager.Instance is null!");
+        }
+
+        // 팩션 호감도 증가
+        if (argState.m_factionType != FactionType.TYPE.None)
+        {
+            var factionEntry = m_gameDataManager.GetFactionEntry(argState.m_factionType);
+            if (factionEntry != null)
+            {
+                int oldLike = factionEntry.m_state.m_like;
+                factionEntry.m_state.m_like += argState.m_factionAddLike;
+                Debug.Log($"Faction {argState.m_factionType} like increased: {oldLike} -> {factionEntry.m_state.m_like} (+{argState.m_factionAddLike})");
+            }
+            else
+            {
+                Debug.LogError($"Faction entry not found for {argState.m_factionType}");
+            }
+        }
+
+        // 요청 목록에서 제거
+        bool removed = m_gameDataManager.AcceptedRequestList.Remove(argState);
+
+        InitializeRequestPanel();
+        m_mainUIManager.UpdateAllMainText();
+    }
+
+    public void CancelRequest(RequestState argState)
+    {
+        // 요청 취소 처리
+        // 요청 목록에서 제거
+        m_gameDataManager.AcceptedRequestList.Remove(argState);
+        UpdateRequestBtns();
+        m_mainUIManager.UpdateAllMainText();
+    }
+
     public void OpenRequestDetailPanel(bool argIsAcceptable, RequestState argRequestIndex)
     {
-        m_requestDetailPanel.OnOpen(this, argIsAcceptable, argRequestIndex);
+        m_requestDetailPanel.OnOpen(m_mainUIManager ,this, argIsAcceptable, argRequestIndex);
     }
 }

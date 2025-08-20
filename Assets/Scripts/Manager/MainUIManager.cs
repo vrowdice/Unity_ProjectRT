@@ -46,6 +46,8 @@ public class MainUIManager : MonoBehaviour, IUIManager
     [Header("Common UI")]
     [SerializeField]
     GameObject m_resourceIconTextPrefeb = null;
+    [SerializeField]
+    GameObject m_conditionPanelTextPrefeb = null;
 
     // 참조 변수들
     private GameManager m_gameManager = null;
@@ -60,6 +62,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
 
     // 프로퍼티들
     public GameObject ResourceIconTextPrefeb { get => m_resourceIconTextPrefeb; }
+    public GameObject ConditionPanelTextPrefeb { get => m_conditionPanelTextPrefeb; }
     public Transform CanvasTrans => m_canvasTrans;
 
     /// <summary>
