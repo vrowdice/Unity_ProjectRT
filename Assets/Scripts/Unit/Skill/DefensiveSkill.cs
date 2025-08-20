@@ -1,85 +1,69 @@
 using System.Collections;
+using System.Reflection;
 using UnityEngine;
 
-// 방어형 스킬 코어
-public class DefensiveSkill : BaseSkill
+public class DefensiveSkill : BaseSkill, IConfigurableSkill
 {
+    [Header("기본값")]
+    public float otherSkillRange = 0.0f;        // 반경
+    public float otherSkillCoefficient = 0.0f;  
+    public bool includeCaster = true;
+
+    public bool freezeRigidbody2D = true;
+    public bool freezeAnimatorRootMotion = true;
+    public bool lockYByMover = true;
+
+    public void ApplyConfigFromStat(UnitStatBase stat)
+    {
+        if (stat == null || stat.active == null) return;
+        if (stat.active.otherSkillRange > 0.0f) otherSkillRange = stat.active.otherSkillRange;
+        if (stat.active.otherSkillCoefficient > 0.0f) otherSkillCoefficient = stat.active.otherSkillCoefficient;
+
+        manaCost = stat.active.manaCost;
+        skillName = string.IsNullOrEmpty(stat.active.displayName) ? stat.active.skillLogic : stat.active.displayName;
+    }
+
     protected override IEnumerator PerformSkillRoutine(UnitBase caster, GameObject target)
     {
-        _isCasting = true;
-        Debug.Log($"{caster.UnitName}가 방어 스킬 '{skillName}'을 시전");
+        if (caster == null || otherSkillRange <= 0f || otherSkillCoefficient <= 0f) yield break;
 
-        var rb2d = caster.GetComponentInParent<Rigidbody2D>();
-        float oldGravity2D = 0.0f;
-        RigidbodyConstraints2D oldCons2D = default;
-        bool hadRb2D = false;
-        if (rb2d)
-        {
-            hadRb2D = true;
-            oldGravity2D = rb2d.gravityScale;
-            oldCons2D = rb2d.constraints;
-            rb2d.gravityScale = 0f;
-            rb2d.constraints |= RigidbodyConstraints2D.FreezeRotation | RigidbodyConstraints2D.FreezePositionY;
-        }
+        // (선택) 시전 중 움직임/루트모션 잠금
+        Rigidbody2D rb2d = null; float oldG = 0; RigidbodyConstraints2D oldC = default; bool appliedRb = false;
+        if (freezeRigidbody2D && (rb2d = caster.GetComponentInParent<Rigidbody2D>()) != null)
+        { appliedRb = true; oldG = rb2d.gravityScale; oldC = rb2d.constraints; rb2d.gravityScale = 0; rb2d.constraints |= RigidbodyConstraints2D.FreezeRotation | RigidbodyConstraints2D.FreezePositionY; }
 
-        var anim = caster.GetComponentInParent<Animator>();
-        bool hadAnimator = false;
-        bool oldRootMotion = false;
-        if (anim)
-        {
-            hadAnimator = true;
-            oldRootMotion = anim.applyRootMotion;
-            anim.applyRootMotion = false;
-        }
+        Animator anim = null; bool appliedAnim = false; bool oldRM = false;
+        if (freezeAnimatorRootMotion && (anim = caster.GetComponentInParent<Animator>()) != null)
+        { appliedAnim = true; oldRM = anim.applyRootMotion; anim.applyRootMotion = false; }
 
         var mover = caster.GetComponent<UnitMovementController>();
-        bool lockedYBefore = false;
-        if (mover != null)
+        MethodInfo mi = null; bool lockedY = false;
+        if (lockYByMover && mover != null && (mi = typeof(UnitMovementController).GetMethod("SetLockY")) != null)
+        { mi.Invoke(mover, new object[] { true }); lockedY = true; mover.StopMove(); }
+
+        var mask = TeamLayers.GetAllyMask(caster.Team);
+        var cols = Physics2D.OverlapCircleAll(caster.transform.position, otherSkillRange, mask);
+        float heal = caster.AttackPower * otherSkillCoefficient;
+
+        foreach (var c in cols)
         {
-            var mi = typeof(UnitMovementController).GetMethod("SetLockY");
-            if (mi != null)
-            {
-                lockedYBefore = true;
-                mi.Invoke(mover, new object[] { true });
-            }
+            var ally = c.GetComponent<UnitBase>();
+            if (ally == null || ally.IsDead) continue;
+            if (!includeCaster && ally == caster) continue;
+
+            ally.Heal(heal);
+            UnitImpactEmitter.Emit(ally.gameObject, ImpactEventType.SkillCastHit, caster, ally.gameObject, heal, skillName);
         }
 
-        float healAmount = caster.AttackPower * otherSkillCoefficient;
-        Collider2D[] allies = Physics2D.OverlapCircleAll(caster.transform.position, otherSkillRange);
-        foreach (var ally in allies)
-        {
-            UnitBase allyUnit = ally.GetComponent<UnitBase>();
-            if (allyUnit != null && allyUnit.Faction == caster.Faction)
-            {
-                float before = allyUnit.CurrentHealth;
-                allyUnit.Heal(healAmount);
-                Debug.Log($"→ {allyUnit.UnitName} 치유: {before:F1} → {allyUnit.CurrentHealth:F1}");
-
-                UnitImpactEmitter.Emit(allyUnit.gameObject, ImpactEventType.SkillCastHit, caster, allyUnit.gameObject, healAmount, skillName);
-            }
-        }
-
-        _isCasting = false;
-        Debug.Log($"{caster.UnitName}의 방어 스킬 종료");
-
-        // 이펙트 종료
-        UnitImpactEmitter.Emit(caster.gameObject, ImpactEventType.SkillCastFinish, caster, target, 0.0f, skillName);
-
-        if (hadRb2D)
-        {
-            rb2d.gravityScale = oldGravity2D;
-            rb2d.constraints = oldCons2D;
-        }
-        if (hadAnimator)
-        {
-            anim.applyRootMotion = oldRootMotion;
-        }
-        if (lockedYBefore && mover != null)
-        {
-            var mi = typeof(UnitMovementController).GetMethod("SetLockY");
-            if (mi != null) mi.Invoke(mover, new object[] { false });
-        }
-
-        yield break;
+        if (appliedRb) { rb2d.gravityScale = oldG; rb2d.constraints = oldC; }
+        if (appliedAnim) anim.applyRootMotion = oldRM;
+        if (lockedY && mover != null && mi != null) mi.Invoke(mover, new object[] { false });
     }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        if (otherSkillRange > 0) { Gizmos.color = Color.cyan; Gizmos.DrawWireSphere(transform.position, otherSkillRange); }
+    }
+#endif
 }

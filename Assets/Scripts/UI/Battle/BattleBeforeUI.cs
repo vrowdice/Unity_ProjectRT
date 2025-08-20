@@ -23,8 +23,19 @@ public class BattleBeforeUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI allyDefenseCountText;
 
     private readonly Dictionary<string, UnitBox> unitBoxMap = new();
+
+    private int _suppressUnitsChangedUntilFrame = -1;
+
+    private readonly Dictionary<UnitTagType, int> deployedLocal = new()
+    {
+        { UnitTagType.Melee,   0 },
+        { UnitTagType.Range,   0 },
+        { UnitTagType.Defense, 0 },
+    };
+
     private bool isPlacementMode = true;
     public static bool IsInPlacementMode { get; private set; } = true;
+
     private CanvasGroup canvasGroup;
 
     private void Awake()
@@ -37,6 +48,21 @@ public class BattleBeforeUI : MonoBehaviour
         if (toggleViewButton) toggleViewButton.onClick.AddListener(OnToggleView);
     }
 
+    private void OnEnable()
+    {
+        var mgr = BattleSystemManager.Instance;
+        if (mgr != null) mgr.UnitsChanged += HandleUnitsChanged;
+
+        SetCounterTexts();
+        RecomputeStartButton();
+    }
+
+    private void OnDisable()
+    {
+        var mgr = BattleSystemManager.Instance;
+        if (mgr != null) mgr.UnitsChanged -= HandleUnitsChanged;
+    }
+
     public void InitDeploymentUI(List<UnitStatBase> unitStats)
     {
         if (contentParent)
@@ -45,37 +71,34 @@ public class BattleBeforeUI : MonoBehaviour
         }
         unitBoxMap.Clear();
 
+        // 로컬 카운터 초기화
+        deployedLocal[UnitTagType.Melee] = 0;
+        deployedLocal[UnitTagType.Range] = 0;
+        deployedLocal[UnitTagType.Defense] = 0;
+
         if (unitStats != null)
-        {
             StartCoroutine(SpawnUnitBoxes(unitStats));
-        }
 
         UpdateModeUI();
         ShowUI();
 
-        Invoke("UpdateDeployedUnitCounters", 0.2f);
+        SetCounterTexts();
+        RecomputeStartButton();
     }
 
     public void UpdateDeployedUnitCounters()
     {
-        if (BattleSystemManager.Instance == null) return;
+        var mgr = BattleSystemManager.Instance;
+        if (mgr == null) return;
 
-        bool isViewingAllyBase = BattleSystemManager.Instance.IsViewingAllyBase;
+        var counts = mgr.GetCountsInSpawnAreas();
 
-        Dictionary<UnitTagType, int> counts;
+        deployedLocal[UnitTagType.Melee] = (counts != null && counts.TryGetValue(UnitTagType.Melee, out var m)) ? m : 0;
+        deployedLocal[UnitTagType.Range] = (counts != null && counts.TryGetValue(UnitTagType.Range, out var r)) ? r : 0;
+        deployedLocal[UnitTagType.Defense] = (counts != null && counts.TryGetValue(UnitTagType.Defense, out var d)) ? d : 0;
 
-        if (isViewingAllyBase)
-        {
-            counts = BattleSystemManager.Instance.GetCountsInSpawnAreas();
-        }
-        else
-        {
-            counts = BattleSystemManager.Instance.GetEnemyCountsInSpawnAreas();
-        }
-
-        if (allyMeleeCountText) allyMeleeCountText.text = counts[UnitTagType.Melee].ToString();
-        if (allyRangeCountText) allyRangeCountText.text = counts[UnitTagType.Range].ToString();
-        if (allyDefenseCountText) allyDefenseCountText.text = counts[UnitTagType.Defense].ToString();
+        SetCounterTexts();
+        RecomputeStartButton();
     }
 
     private IEnumerator SpawnUnitBoxes(List<UnitStatBase> list)
@@ -98,6 +121,7 @@ public class BattleBeforeUI : MonoBehaviour
     private void AddUnitToUIList(UnitStatBase stat, int count)
     {
         if (!stat || !unitBoxPrefab || !contentParent) return;
+
         if (unitBoxMap.TryGetValue(stat.unitName, out var box))
         {
             box.IncreaseUnitCount(count);
@@ -106,6 +130,7 @@ public class BattleBeforeUI : MonoBehaviour
 
         var go = Instantiate(unitBoxPrefab, contentParent);
         go.transform.localScale = Vector3.one;
+
         var ub = go.GetComponent<UnitBox>();
         if (ub)
         {
@@ -119,7 +144,9 @@ public class BattleBeforeUI : MonoBehaviour
         isPlacementMode = !isPlacementMode;
         IsInPlacementMode = isPlacementMode;
         UpdateModeUI();
-        UpdateDeployedUnitCounters();
+
+        SetCounterTexts();
+        RecomputeStartButton();
     }
 
     private void UpdateModeUI()
@@ -135,14 +162,15 @@ public class BattleBeforeUI : MonoBehaviour
     private void OnToggleView()
     {
         BattleSystemManager.Instance?.ToggleView();
+
+        SetCounterTexts();
+        RecomputeStartButton();
     }
 
+    // 배치 / 회수
     public UnitBase RequestPlaceUnit(UnitStatBase stat)
     {
-        if (BattleSystemManager.Instance == null || stat == null)
-        {
-            return null;
-        }
+        if (BattleSystemManager.Instance == null || stat == null) return null;
 
         if (!unitBoxMap.TryGetValue(stat.unitName, out var box) || box.CurrentCount <= 0)
         {
@@ -152,17 +180,21 @@ public class BattleBeforeUI : MonoBehaviour
 
         box.IncreaseUnitCount(-1);
 
+        SuppressUnitsChangedForOneFrame();
+
         var spawned = BattleSystemManager.Instance.RequestSpawnAlly(stat);
 
         if (spawned != null)
         {
             StartCoroutine(InitializeDragHandler(spawned, stat));
-            UpdateDeployedUnitCounters();
+
+            BumpDeployed(stat.unitTagType, +1);
         }
         else
         {
             Debug.LogWarning("유닛 소환 실패, 카운트를 복구합니다.");
             box.IncreaseUnitCount(1);
+            _suppressUnitsChangedUntilFrame = -1; 
         }
         return spawned;
     }
@@ -187,42 +219,89 @@ public class BattleBeforeUI : MonoBehaviour
     {
         if (!unit || !BattleSystemManager.Instance) return false;
 
-        bool ok = BattleSystemManager.Instance.RecallAlly(unit);
+        SuppressUnitsChangedForOneFrame();
 
+        bool ok = BattleSystemManager.Instance.RecallAlly(unit);
         if (ok)
         {
             OnUnitRecalled(unit.UnitStat);
-            UpdateDeployedUnitCounters();
         }
         return ok;
     }
 
+    /// 드래그핸들러/버튼 등에서 회수 시 ui를 먼저 즉시 갱신하기 위해 호출.
     public void OnUnitRecalled(UnitStatBase stat)
     {
         if (!stat) return;
+
         if (unitBoxMap.TryGetValue(stat.unitName, out var box))
-        {
-            box.IncreaseUnitCount(1);
-        }
+            box.IncreaseUnitCount(1); 
+
+        BumpDeployed(stat.unitTagType, -1);   
     }
-    private void OnEnable()
-    {
-        UpdateDeployedUnitCounters();
-    }
+
+    // 전투 시작
+
     private void OnBattleStart()
     {
         HideUI();
         BattleSystemManager.Instance?.StartBattle();
     }
 
-    public void ShowUI()
+    public void ShowUI() => gameObject.SetActive(true);
+    public void HideUI() => gameObject.SetActive(false);
+
+    // 내부 유틸
+
+    public void SuppressUnitsChangedForOneFrame()
     {
-        gameObject.SetActive(true);
+        _suppressUnitsChangedUntilFrame = Time.frameCount + 1;
     }
 
-    public void HideUI()
+    private void BumpDeployed(UnitTagType tag, int delta)
     {
-        gameObject.SetActive(false);
+        if (!deployedLocal.ContainsKey(tag)) return;
+
+        deployedLocal[tag] = Mathf.Max(0, deployedLocal[tag] + delta);
+
+        SetCounterTexts();    
+        RecomputeStartButton();
     }
 
+    private void SetCounterTexts()
+    {
+        WriteAndFlush(allyMeleeCountText, deployedLocal[UnitTagType.Melee]);
+        WriteAndFlush(allyRangeCountText, deployedLocal[UnitTagType.Range]);
+        WriteAndFlush(allyDefenseCountText, deployedLocal[UnitTagType.Defense]);
+    }
+
+    private static void WriteAndFlush(TextMeshProUGUI t, int v)
+    {
+        if (!t) return;
+        t.SetText("{0}", v);
+        t.ForceMeshUpdate();        
+        Canvas.ForceUpdateCanvases();
+    }
+
+    private void RecomputeStartButton()
+    {
+        if (!battleStartButton) return;
+
+        int totalRemain = 0;
+        foreach (var kv in unitBoxMap)
+        {
+            var box = kv.Value;
+            if (!box) continue;
+            totalRemain += Mathf.Max(0, box.CurrentCount);
+        }
+
+        battleStartButton.interactable = (totalRemain == 0);
+    }
+
+    private void HandleUnitsChanged()
+    {
+        if (Time.frameCount <= _suppressUnitsChangedUntilFrame) return;
+
+        UpdateDeployedUnitCounters();
+    }
 }

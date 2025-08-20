@@ -3,16 +3,18 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(Collider2D))]
-public class UnitDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class UnitDragHandler : MonoBehaviour,
+    IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
 {
     private Vector3 originalPosition;
     private Camera mainCamera;
 
     // 참조들
-    private BoxCollider2D allowedArea;
-    private UnitStatBase unitStatData;
-    private BattleBeforeUI ui;
+    private BoxCollider2D allowedArea;     // 배치 가능 영역
+    private UnitStatBase unitStatData;       
+    private BattleBeforeUI ui;               
     private Collider2D[] allColliders;
+    private UnitBase unit;                   // 회수시 캐시는 매니저로 감
 
     private bool isEnabled = true;
     public void EnableDrag(bool value) => isEnabled = value;
@@ -21,6 +23,7 @@ public class UnitDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     {
         mainCamera = Camera.main;
         allColliders = GetComponentsInChildren<Collider2D>(includeInactive: false);
+        unit = GetComponent<UnitBase>();
     }
 
     public void SetReferences(UnitStatBase stat, BoxCollider2D spawnArea, BattleBeforeUI uiRef)
@@ -31,7 +34,7 @@ public class UnitDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         isEnabled = true;
     }
 
-    // 드래그 허용 조건 수정
+    // 드래그 허용 조건: 아군 진영 뷰 + 전투중 아님 + 이 핸들러가 활성화
     private bool CanDrag
     {
         get
@@ -40,7 +43,7 @@ public class UnitDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
             return isEnabled
                 && ui != null
                 && (mgr?.IsViewingAllyBase ?? false)
-                && !(mgr?.IsBattleRunning ?? false);   
+                && !(mgr?.IsBattleRunning ?? false);
         }
     }
 
@@ -79,6 +82,21 @@ public class UnitDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
         else TryRecall();
     }
 
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        if (!isEnabled) return;
+
+        var mgr = BattleSystemManager.Instance;
+        if (mgr != null && mgr.IsBattleRunning) return;
+
+        if (BattleBeforeUI.IsInPlacementMode) return;
+
+        TryRecall();
+    }
+
     private void TryPlacement()
     {
         if (allowedArea && !allowedArea.OverlapPoint(transform.position))
@@ -87,6 +105,7 @@ public class UnitDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
             return;
         }
 
+        // 최소 간격 체크
         const float minDistance = 0.5f;
         var overlaps = Physics2D.OverlapCircleAll(transform.position, minDistance);
         bool tooClose = overlaps.Any(c =>
@@ -103,11 +122,28 @@ public class UnitDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, I
 
     private void TryRecall()
     {
-        Debug.Log("유닛 회수");
-        ui?.OnUnitRecalled(unitStatData);
-        var mgr = BattleSystemManager.Instance;
-        if (mgr) mgr.UnregisterUnit(GetComponent<UnitBase>());
+        // 방어 코드: 참조 없으면 중단
+        if (ui == null || unitStatData == null || unit == null)
+        {
+            Debug.LogWarning("[UnitDragHandler] 회수 실패: 참조 누락");
+            return;
+        }
 
-        Destroy(gameObject);
+        ui.OnUnitRecalled(unitStatData);
+
+        var mgr = BattleSystemManager.Instance;
+        if (mgr != null)
+        {
+            bool ok = mgr.RecallAlly(unit);
+            if (!ok)
+            {
+                Debug.LogWarning("[UnitDragHandler] RecallAlly 실패 ");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[UnitDragHandler] BattleSystemManager 없음");
+            Destroy(gameObject);
+        }
     }
 }
