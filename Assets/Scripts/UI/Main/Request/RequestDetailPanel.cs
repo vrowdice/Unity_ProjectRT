@@ -42,11 +42,16 @@ public class RequestDetailPanel : MonoBehaviour
         {
             m_acceptBtnText.text = "Accept";
             m_refuseBtnText.text = "Refuse";
+            m_acceptBtn.interactable = true;
         }
         else
         {
             m_acceptBtnText.text = "Complete";
             m_refuseBtnText.text = "Cancel";
+            
+            // 조건이 달성되었는지 확인하여 완료 버튼 활성화/비활성화
+            bool canComplete = IsRequestConditionMet(argState);
+            m_acceptBtn.interactable = canComplete;
         }
 
         GameObjectUtils.ClearChildren(m_conditionContentTrans);
@@ -109,5 +114,54 @@ public class RequestDetailPanel : MonoBehaviour
         }
 
         gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// 요청 조건이 달성되었는지 확인
+    /// </summary>
+    /// <param name="argState">확인할 요청 상태</param>
+    /// <returns>조건 달성 여부</returns>
+    private bool IsRequestConditionMet(RequestState argState)
+    {
+        if (argState.m_requestCompleteCondition == null)
+        {
+            return false;
+        }
+
+        var condition = argState.m_requestCompleteCondition;
+        
+        switch (argState.m_requestType)
+        {
+            case RequestType.TYPE.Battle:
+                // 전투 승리 조건 - 현재는 단순히 목표값 확인
+                return condition.m_nowCompleteValue >= condition.m_completeValue;
+                
+            case RequestType.TYPE.Conquest:
+                // 영토 정복 조건 - 현재는 단순히 목표값 확인
+                return condition.m_nowCompleteValue >= condition.m_completeValue;
+                
+            case RequestType.TYPE.Production:
+                // 특정 자원 생산 조건 - 현재 보유량 확인
+                if (GameManager.Instance != null)
+                {
+                    ResourceType.TYPE resourceType = (ResourceType.TYPE)condition.m_completeTargetInfo;
+                    long currentAmount = GameManager.Instance.GetResource(resourceType);
+                    return currentAmount >= condition.m_completeValue;
+                }
+                return false;
+                
+            case RequestType.TYPE.Stockpile:
+                // 특정 자원 보유 조건 - 현재 보유량 확인
+                if (GameManager.Instance != null)
+                {
+                    ResourceType.TYPE resourceType = (ResourceType.TYPE)condition.m_completeTargetInfo;
+                    long currentAmount = GameManager.Instance.GetResource(resourceType);
+                    return currentAmount >= condition.m_completeValue;
+                }
+                return false;
+                
+            default:
+                return false;
+        }
     }
 }

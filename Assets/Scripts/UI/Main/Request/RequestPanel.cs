@@ -186,6 +186,14 @@ public class RequestPanel : BasePanel
     {
         Debug.Log($"Completing request: {argState.m_title}");
         
+        // 조건 확인
+        if (!IsRequestConditionMet(argState))
+        {
+            Debug.Log("Request conditions not met. Cannot complete.");
+            GameManager.Instance.Warning("Request conditions not met. Cannot complete.");
+            return;
+        }
+        
         // 요청 완료 처리
         // 보상 지급
         if (GameManager.Instance != null)
@@ -195,12 +203,6 @@ public class RequestPanel : BasePanel
             {
                 bool success = GameManager.Instance.TryChangeResource(resourceReward.m_type, resourceReward.m_amount);
             }
-
-            // 토큰 보상 지급 (토큰 시스템이 구현되면 추가)
-            // foreach (TokenAmount tokenReward in argState.m_tokenRewardList)
-            // {
-            //     // 토큰 지급 로직
-            // }
         }
         else
         {
@@ -228,6 +230,57 @@ public class RequestPanel : BasePanel
 
         InitializeRequestPanel();
         m_mainUIManager.UpdateAllMainText();
+    }
+
+    /// <summary>
+    /// 요청 조건이 달성되었는지 확인
+    /// </summary>
+    /// <param name="argState">확인할 요청 상태</param>
+    /// <returns>조건 달성 여부</returns>
+    private bool IsRequestConditionMet(RequestState argState)
+    {
+        if (argState.m_requestCompleteCondition == null)
+        {
+            Debug.LogError("RequestCompleteCondition is null");
+            return false;
+        }
+
+        var condition = argState.m_requestCompleteCondition;
+        
+        switch (argState.m_requestType)
+        {
+            case RequestType.TYPE.Battle:
+                // 전투 승리 조건 - 현재는 단순히 목표값 확인
+                return condition.m_nowCompleteValue >= condition.m_completeValue;
+                
+            case RequestType.TYPE.Conquest:
+                // 영토 정복 조건 - 현재는 단순히 목표값 확인
+                return condition.m_nowCompleteValue >= condition.m_completeValue;
+                
+            case RequestType.TYPE.Production:
+                // 특정 자원 생산 조건 - 현재 보유량 확인
+                if (GameManager.Instance != null)
+                {
+                    ResourceType.TYPE resourceType = (ResourceType.TYPE)condition.m_completeTargetInfo;
+                    long currentAmount = GameManager.Instance.GetResource(resourceType);
+                    return currentAmount >= condition.m_completeValue;
+                }
+                return false;
+                
+            case RequestType.TYPE.Stockpile:
+                // 특정 자원 보유 조건 - 현재 보유량 확인
+                if (GameManager.Instance != null)
+                {
+                    ResourceType.TYPE resourceType = (ResourceType.TYPE)condition.m_completeTargetInfo;
+                    long currentAmount = GameManager.Instance.GetResource(resourceType);
+                    return currentAmount >= condition.m_completeValue;
+                }
+                return false;
+                
+            default:
+                Debug.LogError($"Unknown request type: {argState.m_requestType}");
+                return false;
+        }
     }
 
     public void CancelRequest(RequestState argState)
