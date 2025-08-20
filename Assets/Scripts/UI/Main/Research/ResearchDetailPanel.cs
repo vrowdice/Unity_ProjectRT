@@ -108,26 +108,12 @@ public class ResearchDetailPanel : MonoBehaviour
             // 연구 중 상태: 연구 중단 버튼
             m_researchPanelBtn.gameObject.SetActive(true);
             m_researchPanelBtnText.text = "Cancel Research";
-            
-            // 버튼 색상 변경 (빨간색으로)
-            var colors = m_researchPanelBtn.colors;
-            colors.normalColor = Color.red;
-            colors.selectedColor = Color.red;
-            colors.pressedColor = new Color(0.8f, 0.2f, 0.2f);
-            m_researchPanelBtn.colors = colors;
         }
         else
         {
             // 연구 가능 상태: 연구 시작 버튼
             m_researchPanelBtn.gameObject.SetActive(true);
             m_researchPanelBtnText.text = "Start Research";
-            
-            // 버튼 색상 변경 (녹색으로)
-            var colors = m_researchPanelBtn.colors;
-            colors.normalColor = Color.green;
-            colors.selectedColor = Color.green;
-            colors.pressedColor = new Color(0.2f, 0.8f, 0.2f);
-            m_researchPanelBtn.colors = colors;
         }
     }
 
