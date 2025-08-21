@@ -142,8 +142,7 @@ public class ResearchDetailPanel : MonoBehaviour
             StartResearch();
         }
 
-        // 버튼 클릭 후 창 닫기
-        gameObject.SetActive(false);
+        // 버튼 클릭 후 창 닫기는 각 동작 성공 시점에서 처리
     }
 
     /// <summary>
@@ -172,6 +171,9 @@ public class ResearchDetailPanel : MonoBehaviour
                 
                 // 버튼 상태 업데이트
                 UpdateButtonByResearchState();
+
+                // 상세 패널 닫기
+                gameObject.SetActive(false);
                 
                 Debug.Log($"Research started: {m_currentResearchEntry.m_data.m_name}");
             }
@@ -184,28 +186,52 @@ public class ResearchDetailPanel : MonoBehaviour
     }
 
     /// <summary>
-    /// 연구 중단
+    /// 연구 중단 (80% 환불 확인 다이얼로그)
     /// </summary>
     private void CancelResearch()
     {
         if (m_currentResearchEntry == null) return;
 
-        // 연구 중단 확인 다이얼로그 표시 (선택사항)
-        // 여기서는 바로 중단하도록 구현
-        
-        // 연구 진행도 초기화 (미시작 상태로)
-        m_currentResearchEntry.m_state.m_progress = -1;
-        
-        // 연구 중인 항목 목록에서 제거
-        m_researchPanel.UpdateInprogressResearch();
-        
-        // 연구 가능 탭 재구성 (현재 선택된 탭이 연구 가능 탭인 경우)
-        m_researchPanel.SelectResearchContent(0);
-        
-        // 버튼 상태 업데이트
-        UpdateButtonByResearchState();
-        
-        Debug.Log($"Research cancelled: {m_currentResearchEntry.m_data.m_name}");
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("GameManager instance is null!");
+            return;
+        }
+
+        ResearchState state = m_currentResearchEntry.m_state;
+        if (state == null || !state.IsInProgress)
+        {
+            return;
+        }
+
+        int cost = m_currentResearchEntry.m_data.m_cost;
+        long refundAmount = Mathf.FloorToInt(cost * 0.8f);
+        string message = $"Cancelling research will only refund 80%({refundAmount}) of the research cost.\nDo you want to proceed?";
+
+        GameManager.Instance.ShowConfirmDialog(message, () =>
+        {
+            // 80% 환불
+            GameManager.Instance.TryChangeResource(ResourceType.TYPE.Tech, refundAmount);
+
+            // 연구 진행도 초기화 (미시작 상태로)
+            state.m_progress = -1;
+            state.m_isResearched = false;
+
+            // 연구 중인 항목 목록에서 제거 및 UI 갱신
+            if (m_researchPanel != null)
+            {
+                m_researchPanel.UpdateInprogressResearch();
+                m_researchPanel.SelectResearchContent(0);
+            }
+
+                        // 버튼 상태 업데이트
+            UpdateButtonByResearchState();
+
+            // 상세 패널 닫기
+            gameObject.SetActive(false);
+            
+            Debug.Log($"Research cancelled with 80% refund: {m_currentResearchEntry.m_data.m_name}");
+        });
     }
 
     /// <summary>
