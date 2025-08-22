@@ -14,6 +14,11 @@ public class BuildingData : ScriptableObject
 
     public Sprite m_icon;
 
+    [Header("Initial Settings")]
+    [Range(0, 999)]
+    public int m_initialAmount = 0;
+    public bool m_isUnlocked = true; // 건물 언락 상태
+
     public List<ResourceAmount> m_requireResourceList = new List<ResourceAmount>();
     public List<ResourceAmount> m_productionList = new List<ResourceAmount>();
 

@@ -9,6 +9,7 @@ public class BuildingEntry
     {
         this.m_data = argData;
         this.m_state = new BuildingState();
+        this.m_state.m_isUnlocked = argData.m_isUnlocked;
     }
 
     public List<ResourceAmount> CalculateProduction(long argBuildingAmount)
@@ -24,8 +25,8 @@ public class BuildingEntry
     }
 
     /// <summary>
-    /// m_stateÀÇ °ªÀ» º¯°æÇÑ ÈÄ ¹Ýµå½Ã ÀÌ ÇÔ¼ö¸¦ È£Ãâ
-    /// È¤Àº °è»ê ÈÄ °ª º¯°æ ÇÊ¿ä
+    /// m_stateï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ýµï¿½ï¿½ ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ È£ï¿½ï¿½
+    /// È¤ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
     /// </summary>
     public List<ResourceAmount> ApplyProduction()
     {

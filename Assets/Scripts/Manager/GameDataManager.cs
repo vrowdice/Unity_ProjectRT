@@ -5,23 +5,36 @@ using UnityEngine;
 
 /// <summary>
 /// 게임의 모든 데이터를 관리하는 매니저 클래스
-/// 팩션, 연구, 건물, 이벤트, 요청 등의 데이터를 중앙에서 관리
+/// 팩션, 연구, 건물, 요청 등의 데이터를 중앙에서 관리
+/// 이벤트, 이펙트, 타일맵은 별도 매니저에서 관리
 /// </summary>
 public class GameDataManager : MonoBehaviour
 {
-    [Header("Game Data")]
-    [SerializeField] private List<EventGroupData> m_eventGroupDataList = new();
-    [SerializeField] private List<FactionData> m_factionDataList = new();
-    [SerializeField] private List<ResearchData> m_commonResearchDataList = new();
-    [SerializeField] private List<BuildingData> m_buildingDataList = new();
-    [SerializeField] private List<RequestLineTemplate> m_requestLineTemplateList = new();
-    [SerializeField] private RequestLineTemplate m_contactLineTemplate;
-
-    [Header("Common Data")]
+    private EventManager m_eventManager;
+    private EffectManager m_effectManager;
+    private TileMapManager m_tileMapManager;
+    
+    [Header("Data Paths")]
+    [SerializeField] private string m_factionDataPath = "Assets/Datas/Faction";
+    [SerializeField] private string m_buildingDataPath = "Assets/Datas/Building";
+    [SerializeField] private string m_requestLineTemplatePath = "Assets/Datas/RequestLineTemplate";
+    [SerializeField] private string m_eventGroupDataPath = "Assets/Datas/Event/EventGroup";
+    [SerializeField] private string m_tileMapDataPath = "Assets/Datas/TileMap";
+    
+    [Header("Common Data (Manual Setup)")]
     [SerializeField] private List<ResourceIcon> m_resourceIconList = new();
     [SerializeField] private List<TokenIcon> m_tokenIconList = new();
     [SerializeField] private List<RequestIcon> m_requestIconList = new();
     [SerializeField] private GameBalanceData m_gameBalanceData;
+    [SerializeField] private RequestLineTemplate m_contactLineTemplate;
+    
+    // 자동 로딩되는 데이터들 (인스펙터에서 숨김)
+    private List<FactionData> m_factionDataList = new();
+    private List<ResearchData> m_commonResearchDataList = new();
+    private List<BuildingData> m_buildingDataList = new();
+    private List<RequestLineTemplate> m_requestLineTemplateList = new();
+    private List<EventGroupData> m_eventGroupDataList = new();
+    private List<TileMapData> m_tileMapDataList = new();
 
     // 데이터 딕셔너리들
     private readonly Dictionary<FactionType.TYPE, FactionEntry> m_factionEntryDic = new();
@@ -38,7 +51,6 @@ public class GameDataManager : MonoBehaviour
 
     // 게임 시스템 엔트리
     private GameBalanceEntry m_gameBalanceEntry;
-    private EventEntry m_eventEntry;
 
     // 프로퍼티들
     public Dictionary<FactionType.TYPE, FactionEntry> FactionEntryDict => m_factionEntryDic;
@@ -47,18 +59,15 @@ public class GameDataManager : MonoBehaviour
     public List<RequestState> AcceptableRequestList => m_acceptableRequestList;
     public List<RequestState> AcceptedRequestList => m_acceptedRequestList;
     public GameBalanceEntry GameBalanceEntry => m_gameBalanceEntry;
-    public EventEntry EventEntry => m_eventEntry;
+    public EventManager EventManager => m_eventManager;
+    public EffectManager EffectManager => m_effectManager;
+    public TileMapManager TileMapManager => m_tileMapManager;
 
     #region Unity Lifecycle
     void Awake()
     {
-        #if UNITY_EDITOR
-        if (m_factionDataList.Count == 0 || m_buildingDataList.Count == 0)
-        {
-            AutoLoadData();
-        }
-        #endif
-
+        // 게임 시작 시 자동으로 데이터 로딩
+        AutoLoadData();
         InitializeGameData();
     }
     #endregion
@@ -69,7 +78,7 @@ public class GameDataManager : MonoBehaviour
         InitDict();
         InitIconDict();
         InitBalanceEntry();
-        InitEventEntry();
+        InitializeManagers();
     }
 
     private void InitDict()
@@ -78,6 +87,36 @@ public class GameDataManager : MonoBehaviour
         InitResearchDict();
         InitBuildingDict();
         InitRequestTemplateDict();
+    }
+
+    private void InitializeManagers()
+    {
+        // 필수 매니저들 자동 생성 및 초기화
+        m_eventManager = gameObject.AddComponent<EventManager>();
+        m_effectManager = gameObject.AddComponent<EffectManager>();
+        m_tileMapManager = gameObject.AddComponent<TileMapManager>();
+
+        // 각 매니저에게 필요한 데이터 할당
+        AssignDataToManagers();
+
+        m_eventManager.Initialize(this);
+        m_effectManager.Initialize(this);
+        m_tileMapManager.Initialize(this);
+    }
+
+    private void AssignDataToManagers()
+    {
+        // EventManager에 이벤트 데이터 할당
+        if (m_eventManager != null)
+        {
+            m_eventManager.SetEventGroupDataList(m_eventGroupDataList);
+        }
+
+        // TileMapManager에 타일맵 데이터 할당
+        if (m_tileMapManager != null)
+        {
+            m_tileMapManager.SetTileMapDataList(m_tileMapDataList);
+        }
     }
 
     private void InitFactionDict()
@@ -112,7 +151,10 @@ public class GameDataManager : MonoBehaviour
         {
             if (!m_buildingEntryDic.ContainsKey(building.m_code))
             {
-                m_buildingEntryDic.Add(building.m_code, new BuildingEntry(building));
+                var buildingEntry = new BuildingEntry(building);
+                // Set initial amount from BuildingData
+                buildingEntry.m_state.m_amount = building.m_initialAmount;
+                m_buildingEntryDic.Add(building.m_code, buildingEntry);
             }
         }
     }
@@ -160,11 +202,6 @@ public class GameDataManager : MonoBehaviour
         GameBalanceEntry.m_state.m_dateMul = 1.0f;
     }
 
-    private void InitEventEntry()
-    {
-        m_eventEntry = new EventEntry(m_eventGroupDataList, this);
-    }
-
     private void LockResearch()
     {
         // 먼저 모든 연구를 잠금 해제
@@ -201,42 +238,166 @@ public class GameDataManager : MonoBehaviour
     #endregion
 
     #region Data Loading
-    [ContextMenu("Auto Data Loading")]
     public void AutoLoadData()
     {
         #if UNITY_EDITOR
-        LoadAllDataFromAssets();
+        LoadAllDataFromPaths();
         #else
-        Debug.LogWarning("Auto data loading is only available in editor.");
+        // 빌드에서는 Resources에서 로딩
+        LoadDataFromResources();
         #endif
     }
 
-    [ContextMenu("Load Data from Resources")]
     public void LoadDataFromResources()
     {
         DataLoader.LoadAllDataFromResources(
-            m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
             m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
-            m_tokenIconList, m_requestIconList, ref m_gameBalanceData);
+            m_tokenIconList, m_requestIconList, ref m_gameBalanceData,
+            GetResourcesPath(m_factionDataPath), "Research/Common",
+            GetResourcesPath(m_buildingDataPath), GetResourcesPath(m_requestLineTemplatePath),
+            GetResourcesPath(m_eventGroupDataPath), GetResourcesPath(m_tileMapDataPath));
+    }
+
+    private string GetResourcesPath(string assetPath)
+    {
+        // Assets/Resources/ 경로를 Resources/ 경로로 변환
+        if (assetPath.StartsWith("Assets/Resources/"))
+        {
+            return assetPath.Substring("Assets/Resources/".Length);
+        }
+        else if (assetPath.StartsWith("Assets/"))
+        {
+            return assetPath.Substring("Assets/".Length);
+        }
+        return assetPath;
     }
 
     #if UNITY_EDITOR
     private void LoadAllDataFromAssets()
     {
         DataLoader.LoadAllDataFromAssets(
-            m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
             m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
             m_tokenIconList, m_requestIconList, ref m_gameBalanceData);
+    }
+
+    private void LoadAllDataFromPaths()
+    {
+        DataLoader.LoadAllDataFromPaths(
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
+            m_tokenIconList, m_requestIconList, ref m_gameBalanceData,
+            m_factionDataPath, "Assets/Datas/Research/Common", m_buildingDataPath, m_requestLineTemplatePath,
+            m_eventGroupDataPath, m_tileMapDataPath);
     }
     #endif
     #endregion
 
     #region Game Actions
-    public void RandomBuilding(int buildingCount)
+    public List<string> RandomBuilding(int buildingCount)
     {
+        List<string> addedBuildings = new List<string>();
+        
         for (int i = 0; i < buildingCount; i++)
         {
-            ProbabilityUtils.GetRandomElement(BuildingEntryDict).Value.m_state.m_amount++;
+            var randomBuilding = ProbabilityUtils.GetRandomElement(BuildingEntryDict);
+            if (randomBuilding.Value != null)
+            {
+                randomBuilding.Value.m_state.m_amount++;
+                addedBuildings.Add(randomBuilding.Key);
+            }
+        }
+        
+        return addedBuildings;
+    }
+
+    public List<string> RandomUnlockedBuilding(int buildingCount)
+    {
+        List<string> addedBuildings = new List<string>();
+        
+        var unlockedBuildings = BuildingEntryDict.Where(kvp => kvp.Value.m_state.m_isUnlocked).ToList();
+        
+        for (int i = 0; i < buildingCount && unlockedBuildings.Count > 0; i++)
+        {
+            var randomBuilding = ProbabilityUtils.GetRandomElement(unlockedBuildings);
+            if (randomBuilding.Value != null)
+            {
+                randomBuilding.Value.m_state.m_amount++;
+                addedBuildings.Add(randomBuilding.Key);
+            }
+        }
+        
+        return addedBuildings;
+    }
+
+    public bool AddSpecificBuilding(string buildingCode, int count = 1)
+    {
+        if (string.IsNullOrEmpty(buildingCode))
+        {
+            Debug.LogWarning("Building code is empty.");
+            return false;
+        }
+
+        if (m_buildingEntryDic.TryGetValue(buildingCode, out var buildingEntry))
+        {
+            buildingEntry.m_state.m_amount += count;
+            Debug.Log($"Building '{buildingCode}' {count} added. Total count: {buildingEntry.m_state.m_amount}");
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning($"Building code '{buildingCode}' not found.");
+            return false;
+        }
+    }
+
+    public List<string> UnlockRandomBuilding(int unlockCount)
+    {
+        List<string> unlockedBuildings = new List<string>();
+        
+        var lockedBuildings = BuildingEntryDict.Where(kvp => !kvp.Value.m_state.m_isUnlocked).ToList();
+        
+        for (int i = 0; i < unlockCount && lockedBuildings.Count > 0; i++)
+        {
+            var randomBuilding = ProbabilityUtils.GetRandomElement(lockedBuildings);
+            if (randomBuilding.Value != null)
+            {
+                randomBuilding.Value.m_state.m_isUnlocked = true;
+                unlockedBuildings.Add(randomBuilding.Key);
+                lockedBuildings.Remove(randomBuilding);
+            }
+        }
+        
+        return unlockedBuildings;
+    }
+
+    public bool UnlockSpecificBuilding(string buildingCode, int unlockCount = 1)
+    {
+        if (string.IsNullOrEmpty(buildingCode))
+        {
+            Debug.LogWarning("Building code is empty.");
+            return false;
+        }
+
+        if (m_buildingEntryDic.TryGetValue(buildingCode, out var buildingEntry))
+        {
+            if (!buildingEntry.m_state.m_isUnlocked)
+            {
+                buildingEntry.m_state.m_isUnlocked = true;
+                Debug.Log($"Building '{buildingCode}' unlocked.");
+                return true;
+            }
+            else
+            {
+                Debug.LogWarning($"Building '{buildingCode}' is already unlocked.");
+                return false;
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Building code '{buildingCode}' not found.");
+            return false;
         }
     }
 

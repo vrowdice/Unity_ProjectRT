@@ -4,51 +4,103 @@ using UnityEngine;
 public abstract class BaseAttack : MonoBehaviour
 {
     [Header("공격 데이터")]
-    public float attackRange;
+    public float attackRange; // 0이면 owner.AttackRange 사용
 
-    // 공격 상태
-    public bool IsAttacking { get; protected set; } = false;
+    public bool IsAttacking { get; protected set; } // 활성 중
+    public bool IsBusy { get; protected set; } // 활성+후딜 전체 사이클
 
     protected UnitBase owner;
     protected GameObject target;
     private Coroutine attackCoroutine;
 
-    // 공격 로직을 코루틴으로 실행하기 위한 메서드
+    protected float ActiveSec { get; private set; } = 0.0f;
+    protected float RecoverySec { get; private set; } = 0.0f;
+
+    public void SetTempo(float activeSec, float recoverySec)
+    {
+        ActiveSec = Mathf.Max(0.0f, activeSec);
+        RecoverySec = Mathf.Max(0.0f, recoverySec);
+    }
+
+    public virtual bool TryStartSkill(UnitBase attacker, GameObject targetEnemy) => false;
+
     public void StartAttack(UnitBase attacker, GameObject targetEnemy)
     {
-        if (IsAttacking) return;
+        if (IsBusy) return;
+        if (attacker == null || targetEnemy == null || !targetEnemy.activeSelf) return;
 
         owner = attacker;
         target = targetEnemy;
-        attackCoroutine = StartCoroutine(PerformAttackRoutine(owner, target));
+        attackCoroutine = StartCoroutine(AttackCycle());
     }
 
     public void StopAttack()
     {
-        if (attackCoroutine != null)
-        {
-            StopCoroutine(attackCoroutine);
-        }
+        if (attackCoroutine != null) StopCoroutine(attackCoroutine);
+        attackCoroutine = null;
         IsAttacking = false;
+        IsBusy = false;
         owner = null;
         target = null;
     }
 
-    // 하위 클래스에서 반드시 구현해야 할 추상 코루틴 메서드
+    private IEnumerator AttackCycle()
+    {
+        IsBusy = true;
+        IsAttacking = true;
+
+        if (owner != null && target != null)
+        {
+            owner.NotifyAttackActiveBegin();
+            UnitImpactEmitter.Emit(owner.gameObject, ImpactEventType.BasicAttackStart, owner, target, 0.0f, null);
+            owner.NotifyBasicAttackStart(target);
+        }
+
+        yield return PerformAttackRoutine(owner, target);
+
+        IsAttacking = false;
+        owner?.NotifyAttackActiveEnd();
+
+        if (RecoverySec > 0.0f) yield return new WaitForSeconds(RecoverySec);
+
+        IsBusy = false;
+        attackCoroutine = null;
+    }
+
     protected abstract IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject target);
 
-    // ApplyDamage 메서드는 BaseAttack 클래스에 구현
     protected void ApplyDamage(UnitBase attacker, GameObject target, float rawDamage)
     {
-        if (target == null || !target.activeSelf) return;
+        if (!IsTargetAlive(target)) return;
+        var unit = target.GetComponent<UnitBase>();
+        if (unit == null) return;
 
-        UnitBase targetUnit = target.GetComponent<UnitBase>();
-        if (targetUnit != null)
-        {
-            targetUnit.TakeDamage(rawDamage);
-            Debug.Log($"{attacker.unitName}이(가) {targetUnit.unitName}에게 {rawDamage}의 피해를 입혔습니다.");
+        if (unit.Team == attacker.Team) return; // 아군 보호
 
-            attacker.currentMana += attacker.manaRecoveryOnBasicAttack;
-        }
+        unit.TakeDamage(rawDamage);
+        attacker.OnBasicAttackLanded();
+        attacker.NotifyBasicAttackHit(target, rawDamage);
+
+        UnitImpactEmitter.Emit(attacker.gameObject, ImpactEventType.BasicAttackHit, attacker, target, rawDamage, null);
+        UnitImpactEmitter.Emit(target, ImpactEventType.Damaged, attacker, target, rawDamage, null);
     }
+
+    protected float GetRange(UnitBase attacker)
+        => (attackRange > 0.0f) ? attackRange : attacker.AttackRange;
+
+    protected bool IsTargetAlive(GameObject go)
+    {
+        if (go == null || !go.activeSelf) return false;
+        var ub = go.GetComponent<UnitBase>();
+        return ub != null && !ub.IsDead;
+    }
+
+    protected bool InEffectiveRange(Transform self, Transform tgt, float mul = 1.0f)
+    {
+        if (self == null || tgt == null) return false;
+        float r = GetRange(owner) * mul;
+        return Vector3.Distance(self.position, tgt.position) <= r;
+    }
+
+    private void OnDisable() => StopAttack();
 }

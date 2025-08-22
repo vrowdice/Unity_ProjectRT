@@ -1,88 +1,67 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class EnemyBattleBeforeUI : MonoBehaviour
 {
     [Header("적 유닛 개수 텍스트")]
-    [SerializeField] private GameObject LongUnitCountText;
-    [SerializeField] private GameObject ShortUnitCountText;
-    [SerializeField] private GameObject DefenseUnitCountText;
+    [SerializeField] private TextMeshProUGUI rangeUnitCountText;
+    [SerializeField] private TextMeshProUGUI meleeUnitCountText;
+    [SerializeField] private TextMeshProUGUI defenseUnitCountText;
 
-    private TextMeshProUGUI LongUnitCountTextMesh;
-    private TextMeshProUGUI ShortUnitCountTextMesh;
-    private TextMeshProUGUI DefenseUnitCountTextMesh;
+    [Header("표시 옵션")]
+    [SerializeField] private bool padTo3Digits = true;
+    private const string PadFormat = "D1";
 
-    private string defaultNum = "0000";
-
-    public enum UnitTagType
+    private void OnEnable()
     {
-        Long,
-        Short,
-        Defense
+        if (BattleSystemManager.Instance != null)
+            BattleSystemManager.Instance.UnitsChanged += UpdateDeployedUnitCounters;
+
+        UpdateDeployedUnitCounters(); // 켜질 때 1회
     }
 
-    private Dictionary<UnitTagType, string> tagNames;
-    private Dictionary<UnitTagType, TextMeshProUGUI> tagTexts;
-
-    // Start is called before the first frame update
-    void Start()
+    private void OnDisable()
     {
-        FirstSettingCountText();
+        if (BattleSystemManager.Instance != null)
+            BattleSystemManager.Instance.UnitsChanged -= UpdateDeployedUnitCounters;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void OnImmediateRefresh() => UpdateDeployedUnitCounters();
+
+
+    private void OnToggleView()
     {
-        CountEnemyUnit();
+        BattleSystemManager.Instance?.ToggleView();
+        UpdateDeployedUnitCounters(); 
     }
 
-    private void FirstSettingCountText()
+    public void UpdateDeployedUnitCounters()
     {
-        LongUnitCountTextMesh = LongUnitCountText.GetComponent<TextMeshProUGUI>();
-        ShortUnitCountTextMesh = ShortUnitCountText.GetComponent<TextMeshProUGUI>();
-        DefenseUnitCountTextMesh = DefenseUnitCountText.GetComponent<TextMeshProUGUI>();
-
-        LongUnitCountTextMesh.text = defaultNum;
-        ShortUnitCountTextMesh.text = defaultNum;
-        DefenseUnitCountTextMesh.text = defaultNum;
-
-        tagNames = new Dictionary<UnitTagType, string>
-    {
-        { UnitTagType.Long, "LongUnit"},
-        { UnitTagType.Short, "ShortUnit" },
-        { UnitTagType.Defense, "DefenseUnit"}
-    };
-
-        tagTexts = new Dictionary<UnitTagType, TextMeshProUGUI>
-    {
-        { UnitTagType.Long, LongUnitCountTextMesh},
-        { UnitTagType.Short, ShortUnitCountTextMesh},
-        { UnitTagType.Defense, DefenseUnitCountTextMesh}
-    };
-    }
-
-    private void CountEnemyUnit()
-    {
-        foreach (UnitTagType tagType in System.Enum.GetValues(typeof(UnitTagType)))
+        var mgr = BattleSystemManager.Instance;
+        if (mgr == null)
         {
-            string tagName = tagNames[tagType];
-
-            int count = 0;
-            try
-            {
-                GameObject[] foundUnits = GameObject.FindGameObjectsWithTag(tagName);
-                count = foundUnits?.Length ?? 0;
-            }
-            catch (UnityException)
-            {
-                // 태그가 존재하지 않는 경우 (에디터에서 태그 설정이 안 되어 있을 때 등)
-                count = 0;
-            }
-
-            tagTexts[tagType].text = count.ToString();
+            WriteCount(rangeUnitCountText, 0);
+            WriteCount(meleeUnitCountText, 0);
+            WriteCount(defenseUnitCountText, 0);
+            return;
         }
+
+        var counts = mgr.GetEnemyCountsInSpawnAreas();
+        WriteCount(rangeUnitCountText, GetSafe(counts, UnitTagType.Range));
+        WriteCount(meleeUnitCountText, GetSafe(counts, UnitTagType.Melee));
+        WriteCount(defenseUnitCountText, GetSafe(counts, UnitTagType.Defense));
+    }
+
+    [ContextMenu("Force Update")]
+    private void ForceUpdateInEditor() => UpdateDeployedUnitCounters();
+
+    private static int GetSafe(Dictionary<UnitTagType, int> map, UnitTagType key)
+        => (map != null && map.TryGetValue(key, out int v)) ? v : 0;
+
+    private void WriteCount(TextMeshProUGUI label, int value)
+    {
+        if (!label) return;
+        label.text = padTo3Digits ? value.ToString(PadFormat) : value.ToString();
     }
 }

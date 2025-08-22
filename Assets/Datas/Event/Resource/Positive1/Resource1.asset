@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 895ca96f05c98c34d94c32946029dd9f, type: 3}
   m_Name: Resource1
   m_EditorClassIdentifier: 
-  m_type: 0
   m_isGood: 1
   m_minDuration: 2
   m_maxDuration: 4
-  m_title: "Ironwood Harvest"
-  m_description: "Ironwood itself brings out the ultimate in efficiency. - From 'Ruo's' material science lecture notes."
+  m_title: Ironwood Harvest
+  m_description: Ironwood itself brings out the ultimate in efficiency. - From 'Ruo's'
+    material science lecture notes.
   m_conditionList: []
   m_effectList:
-  - {fileID: 11400000, guid: eee540f1487ed7d448c04a0182d0c96a, type: 2}
-  - {fileID: 11400000, guid: 1a074d4190c6131468391bf9e593abc0, type: 2}
+  - {fileID: 11400000, guid: edbb330ad41c37540879a2122e134f52, type: 2}
+  - {fileID: 11400000, guid: d22070bcaa743004e889462b1b0e8fe0, type: 2}

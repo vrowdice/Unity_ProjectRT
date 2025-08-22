@@ -22,16 +22,26 @@ public class GameBalanceData : ScriptableObject
     public List<int> m_forcedContactRequestList = new();
     public int m_maxRequest = 5;
     public int m_makeRequestDate = 5;
-    //Ã¹ ¹øÂ° ÄÁÅØÀ» ÇÒ È®·ü
+    //Ã¹ ï¿½ï¿½Â° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ È®ï¿½ï¿½
     public float m_firstContactPer = 70.0f;
-    //ÇÑ ÀÇ·Ú »çÀÌÅ¬ÀÇ µÎ ¹øÂ° ÀÌ»ó ÄÁÅÃÀÌ »ý±æ È®·ü
+    //ï¿½ï¿½ ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½Å¬ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Â° ï¿½Ì»ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
     public float m_overSecondContactPer = 25.0f;
-    //µÎ¹ø ÀÌ»ó ÄÁÅØÀÌ ¾øÀ» °æ¿ì ¿À¸£´Â È®·ü
+    //ï¿½Î¹ï¿½ ï¿½Ì»ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
     public float m_noContactChangePer = 15.0f;
 
     [Header("Event")]
     public int m_firstEventSlot = 2;
     public int m_maxEventSlot = 2;
+
+    [Header("Map")]
+    public Vector2Int m_mapSize = new Vector2Int(10, 10);
+    public float m_settleMul = 2.2f;
+    public int m_friendlySettle = 7;
+    public int m_enemySettle = 22;
+    public int m_friendlySettleResourceBase = 20;
+    public int m_normalTileResourceBase = 5;
+    public int m_enemyTileResourceBase = 75;
+
 
     private Dictionary<BalanceType.TYPE, BalanceTypeBalance> m_balanceTypeDictionary;
     private Dictionary<RequestType.TYPE, RequestTypeBalance> m_requestTypeDictionary;

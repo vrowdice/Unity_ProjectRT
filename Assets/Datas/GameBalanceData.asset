@@ -66,3 +66,8 @@ MonoBehaviour:
   m_firstContactPer: 70
   m_overSecondContactPer: 25
   m_noContactChangePer: 15
+  m_firstEventSlot: 2
+  m_maxEventSlot: 2
+  m_mapSize: {x: 10, y: 10}
+  m_friendlySettle: 7
+  m_enemySettle: 22

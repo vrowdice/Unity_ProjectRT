@@ -15,9 +15,9 @@ public class EventData : ScriptableObject
     public List<EffectBase> m_effectList = new();
 
     /// <summary>
-    /// »ı¼º ÈÄ ¹İµå½Ã È£Ãâ
+    /// ì´ë²¤íŠ¸ ì´ˆê¸°í™”
     /// </summary>
-    /// <param name="argDataManager">µ¥ÀÌÅÍ ¸Ş´ÏÀú</param>
+    /// <param name="argDataManager">ê²Œì„ ë°ì´í„° ë§¤ë‹ˆì €</param>
     public void Init(GameDataManager argDataManager)
     {
         foreach (var condition in m_conditionList)
@@ -32,10 +32,17 @@ public class EventData : ScriptableObject
     public ActiveEvent Activate(GameDataManager dataManager)
     {
         int duration = Random.Range(m_minDuration, m_maxDuration + 1);
+        
+        // ìƒˆë¡œìš´ ì´í™íŠ¸ ì‹œìŠ¤í…œ ì‚¬ìš©
         foreach (var effect in m_effectList)
         {
-            effect.Activate(dataManager);
+            if (effect.ActivateEffect(dataManager, m_title))
+            {
+                // í™œì„±í™” ì„±ê³µ ì‹œ EffectManagerì— ì¶”ê°€
+                dataManager.EffectManager.AddActiveEventEffect(effect);
+            }
         }
+        
         return new ActiveEvent(this, duration);
     }
 
@@ -43,7 +50,10 @@ public class EventData : ScriptableObject
     {
         foreach(EffectBase item in m_effectList)
         {
-            item.Activate(dataManager);
+            if (item.ActivateEffect(dataManager, m_title))
+            {
+                dataManager.EffectManager.AddActiveEventEffect(item);
+            }
         }
     }
 
@@ -51,7 +61,10 @@ public class EventData : ScriptableObject
     {
         foreach (EffectBase item in m_effectList)
         {
-            item.Deactivate(dataManager);
+            if (item.DeactivateEffect(dataManager))
+            {
+                dataManager.EffectManager.RemoveActiveEventEffect(item);
+            }
         }
     }
 }

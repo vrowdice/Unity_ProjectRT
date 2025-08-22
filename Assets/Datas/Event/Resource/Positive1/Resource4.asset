@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 895ca96f05c98c34d94c32946029dd9f, type: 3}
   m_Name: Resource4
   m_EditorClassIdentifier: 
-  m_type: 0
   m_isGood: 1
   m_minDuration: 1
   m_maxDuration: 3
-  m_title: "Golden Wave"
-  m_description: "Ironwood itself brings out the ultimate in efficiency. - From 'Ruo's' material science lecture notes."
+  m_title: Golden Wave
+  m_description: Ironwood itself brings out the ultimate in efficiency. - From 'Ruo's'
+    material science lecture notes.
   m_conditionList: []
   m_effectList:
-  - {fileID: 11400000, guid: 6e57d3d5ccebabc43823d3e3ff62b8c6, type: 2}
+  - {fileID: 11400000, guid: 8270438a332c439499633727ecdec1d9, type: 2}

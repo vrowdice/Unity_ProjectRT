@@ -108,21 +108,15 @@ public class BuildingPanel : BasePanel
     {
         foreach (BuildingBtn buildingBtn in m_bulidingBtnList)
         {
-            BuildingData buildingData = buildingBtn.BuildingEntry.m_data;
-            bool shouldShow = ShouldShowBuilding(buildingData, filterIndex);
-            
+            bool shouldShow = ShouldShowBuilding(buildingBtn.BuildingEntry, filterIndex);
             buildingBtn.gameObject.SetActive(shouldShow);
         }
     }
 
-    /// <summary>
-    /// 건물이 필터 조건에 따라 표시되어야 하는지 확인
-    /// </summary>
-    /// <param name="buildingData">확인할 건물 데이터</param>
-    /// <param name="filterIndex">필터 인덱스</param>
-    /// <returns>표시되어야 하면 true, 아니면 false</returns>
-    private bool ShouldShowBuilding(BuildingData buildingData, int filterIndex)
+    private bool ShouldShowBuilding(BuildingEntry buildingEntry, int filterIndex)
     {
+        BuildingData buildingData = buildingEntry.m_data;
+
         // 기반 건물 필터 (0) - Production이 아닌 건물들
         if (filterIndex == 0)
         {
@@ -197,22 +191,32 @@ public class BuildingPanel : BasePanel
 
     public void OnBuildingBtnChanged(string argCode)
     {
-        foreach (ResourceType.TYPE type in System.Enum.GetValues(typeof(ResourceType.TYPE)))
-        {
-            m_producedResourcesDict[type] = 0;
-            m_requireResourcesDict[type] = 0;
-        }
+        // 리소스 딕셔너리 초기화
+        InitializeResourceDictionaries();
 
+        // 모든 건물의 리소스 계산 (언락된 건물만)
         foreach (BuildingBtn item in m_bulidingBtnList)
         {
-            foreach (ResourceAmount item2 in item.GetProducedResources())
+            // 언락된 건물만 리소스 계산에 포함
+            if (item.BuildingEntry.m_state.m_isUnlocked)
             {
-                m_producedResourcesDict[item2.m_type] += item2.m_amount;
-            }
+                // 생산되는 리소스 계산
+                foreach (ResourceAmount producedResource in item.GetProducedResources())
+                {
+                    if (m_producedResourcesDict.ContainsKey(producedResource.m_type))
+                    {
+                        m_producedResourcesDict[producedResource.m_type] += producedResource.m_amount;
+                    }
+                }
 
-            foreach (ResourceAmount item2 in item.GetRequiredResources())
-            {
-                m_requireResourcesDict[item2.m_type] -= item2.m_amount;
+                // 필요한 리소스 계산
+                foreach (ResourceAmount requiredResource in item.GetRequiredResources())
+                {
+                    if (m_requireResourcesDict.ContainsKey(requiredResource.m_type))
+                    {
+                        m_requireResourcesDict[requiredResource.m_type] -= requiredResource.m_amount;
+                    }
+                }
             }
         }
 
@@ -221,30 +225,41 @@ public class BuildingPanel : BasePanel
 
     void ResetState()
     {
+        // 모든 건물 버튼 초기화
         foreach (BuildingBtn item in m_bulidingBtnList)
         {
             item.Initialize();
         }
         
-        m_producedResourcesDict = new();
-        m_requireResourcesDict = new();
+        // 리소스 딕셔너리 초기화
+        InitializeResourceDictionaries();
 
         UpdateChangeInfoUI();
     }
 
     void ApplyState()
     {
+        // 필요한 리소스가 충분한지 확인
         if (!GameManager.Instance.TryChangeAllResources(m_requireResourcesDict))
         {
             GameManager.Instance.Warning(WarningMessages.WarningNotEnoughResource);
             return;
         }
 
+        // 모든 건물 개수 업데이트
         foreach (BuildingBtn item in m_bulidingBtnList)
         {
-            m_gameDataManager.BuildingEntryDict[item.Code].m_state.m_amount = item.GetTotalCount();
+            if (m_gameDataManager.BuildingEntryDict.ContainsKey(item.Code))
+            {
+                m_gameDataManager.BuildingEntryDict[item.Code].m_state.m_amount = item.TotalCount;
+            }
+            else
+            {
+                Debug.LogWarning($"Building entry not found for code: {item.Code}");
+            }
         }
 
+        // 상태 초기화 및 UI 업데이트
         ResetState();
         GameManager.Instance.GetBuildingDateResource();
         MainUIManager.UpdateAllMainText();
@@ -252,19 +267,36 @@ public class BuildingPanel : BasePanel
 
     private void UpdateChangeInfoUI()
     {
+        // 기존 UI 요소들 제거
         GameObjectUtils.ClearChildren(m_addResourceContentTrans);
         GameObjectUtils.ClearChildren(m_requiredResourceContentTrans);
 
+        // 생산되는 리소스 표시 (0이 아닌 것만)
         foreach (KeyValuePair<ResourceType.TYPE, long> item in m_producedResourcesDict)
         {
-            GameObject obj = Instantiate(MainUIManager.ResourceIconTextPrefeb, m_addResourceContentTrans);
-            obj.GetComponent<ResourceIconText>().InitializeMainText(item.Key, item.Value);
+            if (item.Value != 0)
+            {
+                GameObject obj = Instantiate(MainUIManager.ResourceIconTextPrefeb, m_addResourceContentTrans);
+                ResourceIconText resourceText = obj.GetComponent<ResourceIconText>();
+                if (resourceText != null)
+                {
+                    resourceText.InitializeMainText(item.Key, item.Value);
+                }
+            }
         }
 
+        // 필요한 리소스 표시 (0이 아닌 것만)
         foreach (KeyValuePair<ResourceType.TYPE, long> item in m_requireResourcesDict)
         {
-            GameObject obj = Instantiate(MainUIManager.ResourceIconTextPrefeb, m_requiredResourceContentTrans);
-            obj.GetComponent<ResourceIconText>().InitializeMainText(item.Key, item.Value);
+            if (item.Value != 0)
+            {
+                GameObject obj = Instantiate(MainUIManager.ResourceIconTextPrefeb, m_requiredResourceContentTrans);
+                ResourceIconText resourceText = obj.GetComponent<ResourceIconText>();
+                if (resourceText != null)
+                {
+                    resourceText.InitializeMainText(item.Key, item.Value);
+                }
+            }
         }
     }
 }
