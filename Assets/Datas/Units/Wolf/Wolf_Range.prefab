@@ -17,6 +17,9 @@ GameObject:
   - component: {fileID: 8396702382813981326}
   - component: {fileID: 6719226703890725400}
   - component: {fileID: -6282534339866478900}
+  - component: {fileID: 1435221288752981541}
+  - component: {fileID: 8345536273832122889}
+  - component: {fileID: -3364135678347132248}
   m_Layer: 6
   m_Name: Wolf_Range
   m_TagString: Range
@@ -69,6 +72,8 @@ MonoBehaviour:
     m_Bits: 256
   skin: 0.02
   stopEpsilon: 0.01
+  mapBounds: {fileID: 0}
+  clampToMapBounds: 1
 --- !u!212 &-7034959524798964637
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -110,7 +115,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: ad65963212e8e4a43a106f2bcacf3c0f, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 2ba5b1acaaa3f504fac0cd62df386e12, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -157,7 +162,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.15, y: 0.98}
+    oldSize: {x: 0.4, y: 0.4}
     newSize: {x: 1.15, y: 0.98}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -192,12 +197,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackLogic: {fileID: 6719226703890725400}
-  skillLogic: {fileID: 0}
+  skillLogic: {fileID: -3364135678347132248}
   stopAtRangePercent: 0.9
   retargetEvery: 0.2
   releaseRangeMultiplier: 1
   resetManaOnSkill: 1
   keepMarchingWhenNoTarget: 1
+  blockBasicWhileCasting: 1
 --- !u!114 &6719226703890725400
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -226,3 +232,90 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3dd16535e1b414e4eb750fa0fab857a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!50 &1435221288752981541
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 1
+  m_SleepingMode: 1
+  m_CollisionDetection: 1
+  m_Constraints: 4
+--- !u!70 &8345536273832122889
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 1.15, y: 0.98}
+  m_Direction: 0
+--- !u!114 &-3364135678347132248
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e843f746846a054e96841180b1adcd2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  skillName: 
+  manaCost: 1
+  SkillDamageCoefficient: 1
+  SkillAttackCount: 3
+  ManaCostOverride: -1
+  collectMode: 1
+  extraTargetSearchRadiusMultiplier: 1
+  sortBy: 1
+  hitFrameGap: 0
+  onHitApplyStatus: 0
+  onHitStatusDuration: 5
+  onKillTriggerEventName: 
+  onKillRequiredStatus: 1

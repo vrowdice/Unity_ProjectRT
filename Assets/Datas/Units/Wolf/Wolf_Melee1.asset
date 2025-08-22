@@ -13,24 +13,23 @@ MonoBehaviour:
   m_Name: Wolf_Melee1
   m_EditorClassIdentifier: 
   unitName: eded
-  unitIcon: {fileID: 0}
+  unitIcon: {fileID: 21300000, guid: ad65963212e8e4a43a106f2bcacf3c0f, type: 3}
   factionType: 1
   unitTagType: 1
-  attackPower: 5
+  attackPower: 20
   defensePower: 10
   maxHealth: 600
-  moveSpeed: 50
+  moveSpeed: 5
   attackRange: 75
+  enemySearchRange: 3
   attackSpeed: 10
   attackDelayRatio: 1
+  attackCount: 1
+  damageCoefficient: 1.2
   baseMana: 0
   maxMana: 30
   manaRecoveryOnAttack: 10
   manaRecoveryPerSecond: 2
-  attackCount: 1
-  damageCoefficient: 1.2
-  enemySearchRange: 3
-  baseAttackBonusEffect: 
   active:
     displayName: FangStrike
     skillLogic: 

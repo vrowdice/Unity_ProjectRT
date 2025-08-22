@@ -95,6 +95,10 @@ public class UnitBase : MonoBehaviour
         if (!newStat) { Debug.LogError($"[{name}] Initialize 실패: stat null"); return; }
         stat = newStat;
 
+        stat = ScriptableObject.Instantiate(newStat);
+        stat.name += " (Runtime)";
+        stat.hideFlags = HideFlags.DontSave;
+
         // SO 기본값
         float attackPower = Mathf.Max(0.0f, stat.attackPower);
         float defensePower = Mathf.Max(0.0f, stat.defensePower);

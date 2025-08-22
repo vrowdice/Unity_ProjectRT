@@ -35,6 +35,9 @@ public class OffensiveSkill : BaseSkill, IConfigurableSkill
 
             if (hitInterval > 0.0f) yield return new WaitForSeconds(hitInterval);
             else yield return null;
+
+            if (caster == null) yield break;
+            if (!ValidTarget(caster, target)) break;
         }
     }
 
