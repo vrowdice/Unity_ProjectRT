@@ -35,7 +35,7 @@ public class MainPanel : BasePanel
     {
         if (m_minimapPanel != null)
         {
-            m_minimapPanel.OpenMinimap(m_gameDataManager, m_mainUIManager);
+            m_minimapPanel.OpenMinimap(GameDataManager.Instance, m_mainUIManager);
         }
         else
         {

@@ -10,16 +10,25 @@ public class ResearchPanel : BasePanel
     [SerializeField]
     Transform m_researchInprogressScrollViewContentTrans = null;
     [SerializeField]
+    Transform m_researchFilterScrollViewContentTrans = null;
+    [SerializeField]
     GameObject m_commonResearchBtnPrefeb = null;
     [SerializeField]
     GameObject m_researchInprogressBtnPrefeb = null;
     [SerializeField]
+    GameObject m_researchFilterBtnPrefeb = null;  // 필터 버튼 프리팹 추가
+    [SerializeField]
     ResearchDetailPanel m_researchDetailPanel = null;
+
 
     private const int m_labBuildingCode = 10001;
 
     // 연구 중인 항목들을 추적하는 리스트
     private List<ResearchInprogressBtn> m_inprogressButtons = new List<ResearchInprogressBtn>();
+    
+    // 필터링 관련 변수들
+    private FactionType.TYPE m_currentFilter = FactionType.TYPE.None;  // 현재 선택된 필터 (None = 모든 연구)
+    private int m_currentPanelIndex = 0;  // 현재 선택된 패널 인덱스
 
     // Update is called once per frame
     void Update()
@@ -33,6 +42,9 @@ public class ResearchPanel : BasePanel
         SetPanelName("Lab");
         SetBuildingLevel(m_labBuildingCode);
 
+        // 필터 버튼들 생성
+        CreateFilterButtons();
+        
         SelectResearchContent(0);
         UpdateInprogressResearch();
     }
@@ -155,6 +167,79 @@ public class ResearchPanel : BasePanel
     }
 
     /// <summary>
+    /// 필터 버튼들 생성
+    /// </summary>
+    private void CreateFilterButtons()
+    {
+        if (m_researchFilterScrollViewContentTrans == null || m_researchFilterBtnPrefeb == null)
+        {
+            Debug.LogError("Filter components are not assigned!");
+            return;
+        }
+
+        ClearFilterButtons();
+
+        // "전체" 버튼 생성 (None 타입으로)
+        CreateFilterButton(FactionType.TYPE.None);
+
+        // 모든 팩션에 대해 필터 버튼 생성
+        foreach (var factionEntry in GameDataManager.Instance.FactionEntryDict)
+        {
+            // 해당 팩션에 고유 연구가 있는지 확인
+            if (factionEntry.Value?.m_data?.m_uniqueResearch != null && 
+                factionEntry.Value.m_data.m_uniqueResearch.Count > 0)
+            {
+                CreateFilterButton(factionEntry.Key);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 개별 필터 버튼 생성
+    /// </summary>
+    /// <param name="factionType">팩션 타입</param>
+    private void CreateFilterButton(FactionType.TYPE factionType)
+    {
+        GameObject btnObj = Instantiate(m_researchFilterBtnPrefeb, m_researchFilterScrollViewContentTrans);
+        ResearchFilterBtn filterBtn = btnObj.GetComponent<ResearchFilterBtn>();
+        
+        if (filterBtn != null)
+        {
+            filterBtn.Init(factionType, this);
+        }
+        else
+        {
+            Debug.LogError("ResearchFilterBtn component not found on prefab!");
+        }
+    }
+
+    /// <summary>
+    /// 필터 버튼들 제거
+    /// </summary>
+    private void ClearFilterButtons()
+    {
+        foreach (Transform item in m_researchFilterScrollViewContentTrans)
+        {
+            if (item != null)
+            {
+                Destroy(item.gameObject);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 팩션별 필터링
+    /// </summary>
+    /// <param name="factionType">필터할 팩션 타입 (None = 전체)</param>
+    public void FilterByFaction(FactionType.TYPE factionType)
+    {
+        m_currentFilter = factionType;
+        
+        // 현재 선택된 패널 인덱스로 다시 필터링하여 표시
+        SelectResearchContent(m_currentPanelIndex);
+    }
+
+    /// <summary>
     /// 연구 패널 선택
     /// </summary>
     /// <param name="argPanelIndex">연구 패널 인덱스</param>
@@ -175,6 +260,7 @@ public class ResearchPanel : BasePanel
             return;
         }
 
+        m_currentPanelIndex = argPanelIndex;
         ClearResearchButtons();
         CreateResearchButtons(argPanelIndex);
     }
@@ -199,43 +285,105 @@ public class ResearchPanel : BasePanel
     /// <param name="panelIndex">패널 인덱스</param>
     private void CreateResearchButtons(int panelIndex)
     {
-        foreach (KeyValuePair<string, ResearchEntry> item in m_gameDataManager.CommonResearchEntryDict)
+        if (m_currentFilter == FactionType.TYPE.None)
         {
-            if (item.Value == null) continue;
-
-            bool shouldCreate = false;
-
-            switch (panelIndex)
+            // "All" 필터: Common 연구와 모든 팩션의 고유 연구 표시
+            
+            // 1. Common 연구 표시
+            foreach (KeyValuePair<string, ResearchEntry> item in GameDataManager.Instance.CommonResearchEntryDict)
             {
-                case 0: // 연구 가능 (잠금 해제되었고, 시작되지 않은 경우)
-                    shouldCreate = !item.Value.m_state.m_isLocked && 
-                                 item.Value.m_state.IsNotStarted;
-                    break;
-                case 1: // 잠금
-                    shouldCreate = item.Value.m_state.m_isLocked;
-                    break;
-                case 2: // 완료됨
-                    shouldCreate = item.Value.m_state.IsCompleted;
-                    break;
-                default:
-                    Debug.LogError(ExceptionMessages.ErrorInvalidResearchInfo);
-                    return;
-            }
+                if (item.Value == null) continue;
 
-            if (shouldCreate)
-            {
-                GameObject btnObj = Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans);
-                CommonResearchBtn researchBtn = btnObj.GetComponent<CommonResearchBtn>();
-                
-                if (researchBtn != null)
+                bool shouldCreate = ShouldCreateResearchButton(item.Value, panelIndex);
+                if (shouldCreate)
                 {
-                    researchBtn.Initialize(this, item.Value);
-                }
-                else
-                {
-                    Debug.LogError("CommonResearchBtn component not found on prefab!");
+                    CreateResearchButton(item.Value);
                 }
             }
+
+            // 2. 모든 팩션의 고유 연구 표시
+            foreach (var factionEntry in GameDataManager.Instance.FactionEntryDict)
+            {
+                if (factionEntry.Value?.m_data?.m_uniqueResearch != null)
+                {
+                    foreach (var researchData in factionEntry.Value.m_data.m_uniqueResearch)
+                    {
+                        if (researchData == null) continue;
+
+                        // ResearchData를 ResearchEntry로 변환 (임시로 생성)
+                        var tempEntry = new ResearchEntry(researchData);
+                        bool shouldCreate = ShouldCreateResearchButton(tempEntry, panelIndex);
+
+                        if (shouldCreate)
+                        {
+                            CreateResearchButton(tempEntry);
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            // 특정 팩션 필터: 해당 팩션의 고유 연구만 표시
+            var factionEntry = GameDataManager.Instance.GetFactionEntry(m_currentFilter);
+            if (factionEntry?.m_data?.m_uniqueResearch != null)
+            {
+                foreach (var researchData in factionEntry.m_data.m_uniqueResearch)
+                {
+                    if (researchData == null) continue;
+
+                    // ResearchData를 ResearchEntry로 변환 (임시로 생성)
+                    var tempEntry = new ResearchEntry(researchData);
+                    bool shouldCreate = ShouldCreateResearchButton(tempEntry, panelIndex);
+
+                    if (shouldCreate)
+                    {
+                        CreateResearchButton(tempEntry);
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 연구 버튼 생성 여부 판단
+    /// </summary>
+    /// <param name="researchEntry">연구 항목</param>
+    /// <param name="panelIndex">패널 인덱스</param>
+    /// <returns>생성 여부</returns>
+    private bool ShouldCreateResearchButton(ResearchEntry researchEntry, int panelIndex)
+    {
+        switch (panelIndex)
+        {
+            case 0: // 연구 가능 (잠금 해제되었고, 시작되지 않은 경우)
+                return !researchEntry.m_state.m_isLocked && 
+                       researchEntry.m_state.IsNotStarted;
+            case 1: // 잠금
+                return researchEntry.m_state.m_isLocked;
+            case 2: // 완료됨
+                return researchEntry.m_state.IsCompleted;
+            default:
+                Debug.LogError(ExceptionMessages.ErrorInvalidResearchInfo);
+                return false;
+        }
+    }
+
+    /// <summary>
+    /// 개별 연구 버튼 생성
+    /// </summary>
+    /// <param name="researchEntry">연구 항목</param>
+    private void CreateResearchButton(ResearchEntry researchEntry)
+    {
+        GameObject btnObj = Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans);
+        ResearchBtn researchBtn = btnObj.GetComponent<ResearchBtn>();
+        
+        if (researchBtn != null)
+        {
+            researchBtn.Initialize(this, researchEntry);
+        }
+        else
+        {
+            Debug.LogError("ResearchBtn component not found on prefab!");
         }
     }
 }

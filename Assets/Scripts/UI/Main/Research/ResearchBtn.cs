@@ -4,7 +4,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-public class CommonResearchBtn : MonoBehaviour
+public class ResearchBtn : MonoBehaviour
 {
     [SerializeField]
     Image m_iconImage = null;

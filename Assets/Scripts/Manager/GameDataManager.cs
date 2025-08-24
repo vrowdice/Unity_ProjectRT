@@ -7,9 +7,13 @@ using UnityEngine;
 /// 게임의 모든 데이터를 관리하는 매니저 클래스
 /// 팩션, 연구, 건물, 요청 등의 데이터를 중앙에서 관리
 /// 이벤트, 이펙트, 타일맵은 별도 매니저에서 관리
+/// 싱글톤 패턴으로 구현되어 전역에서 접근 가능
 /// </summary>
 public class GameDataManager : MonoBehaviour
 {
+    // 싱글톤 인스턴스
+    public static GameDataManager Instance { get; private set; }
+    
     private EventManager m_eventManager;
     private EffectManager m_effectManager;
     private TileMapManager m_tileMapManager;
@@ -66,6 +70,18 @@ public class GameDataManager : MonoBehaviour
     #region Unity Lifecycle
     void Awake()
     {
+        // 싱글톤 패턴 적용
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         // 게임 시작 시 자동으로 데이터 로딩
         AutoLoadData();
         InitializeGameData();

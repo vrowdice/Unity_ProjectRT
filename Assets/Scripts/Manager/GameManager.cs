@@ -12,11 +12,7 @@ using UnityEngine.UI;
 /// </summary>
 public class GameManager : MonoBehaviour
 {
-    [Header("Manager References")]
-    [SerializeField]
-    private SceneLoadManager m_scenLoadManager = null;
-    [SerializeField]
-    private GameDataManager m_gameDataManager = null;
+
     
     [Header("UI Prefabs")]
     [SerializeField]
@@ -32,8 +28,10 @@ public class GameManager : MonoBehaviour
 
     // 싱글톤 인스턴스
     public static GameManager Instance { get; private set; }
-    public GameDataManager GameDataManager => m_gameDataManager;
     public IUIManager MainUiManager => m_nowUIManager;
+
+    // 관리자 컴포넌트들
+    private SceneLoadManager m_sceneLoadManager = null;
 
     // 게임 상태 데이터
     public int Date { get; private set; }
@@ -58,11 +56,23 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            
+            // 필요한 매니저 컴포넌트들 자동 추가
+            InitializeManagerComponents();
         }
         else
         {
             Destroy(gameObject);
         }
+    }
+
+    /// <summary>
+    /// 매니저 컴포넌트들을 자동으로 추가
+    /// </summary>
+    private void InitializeManagerComponents()
+    {
+        // SceneLoadManager 컴포넌트 추가
+        m_sceneLoadManager = gameObject.AddComponent<SceneLoadManager>();
     }
 
     /// <summary>
@@ -118,7 +128,7 @@ public class GameManager : MonoBehaviour
 
         if (m_nowUIManager != null)
         {
-            m_nowUIManager.Initialize(this, m_gameDataManager);
+            m_nowUIManager.Initialize(this, GameDataManager.Instance);
         }
         else
         {
@@ -140,9 +150,9 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        if (GameDataManager.GameBalanceEntry.m_data.m_maxDate <= Date)
+        if (GameDataManager.Instance.GameBalanceEntry.m_data.m_maxDate <= Date)
         {
-            Date = GameDataManager.GameBalanceEntry.m_data.m_maxDate;
+            Date = GameDataManager.Instance.GameBalanceEntry.m_data.m_maxDate;
         }
 
         GetBuildingDateResource();
@@ -155,7 +165,7 @@ public class GameManager : MonoBehaviour
         CheckAndProcessRequests();
         CheckAndProcessEvents();
 
-        m_gameDataManager.EffectManager.GetAllActiveEffectInfo();
+        GameDataManager.Instance.EffectManager.GetAllActiveEffectInfo();
     }
 
     /// <summary>
@@ -163,7 +173,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void UpdateGameBalance()
     {
-        GameBalanceEntry balanceEntry = m_gameDataManager.GameBalanceEntry;
+        GameBalanceEntry balanceEntry = GameDataManager.Instance.GameBalanceEntry;
         balanceEntry.m_state.m_dateMul = 1.0f + Mathf.Pow(balanceEntry.m_data.m_dateBalanceMul, Date);
     }
 
@@ -172,18 +182,18 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void CheckAndProcessRequests()
     {
-        GameBalanceEntry balanceEntry = m_gameDataManager.GameBalanceEntry;
+        GameBalanceEntry balanceEntry = GameDataManager.Instance.GameBalanceEntry;
         
         // 요청 생성 조건 체크
         if (Date % balanceEntry.m_data.m_makeRequestDate == 0)
         {
-            m_gameDataManager.MakeRandomRequest();
+            GameDataManager.Instance.MakeRandomRequest();
         }
 
         // 강제 연락 요청 체크
         if (balanceEntry.m_data.m_forcedContactRequestList.Contains(Date))
         {
-            m_gameDataManager.ForceContactRequest();
+            GameDataManager.Instance.ForceContactRequest();
         }
     }
 
@@ -192,7 +202,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void CheckAndProcessEvents()
     {
-        if (m_gameDataManager.EventManager.ProcessEventDate())
+        if (GameDataManager.Instance.EventManager.ProcessEventDate())
         {
             Warning(InfoMessages.EventOccurs);
         }
@@ -204,9 +214,9 @@ public class GameManager : MonoBehaviour
     /// <param name="daysPassed">경과한 일수</param>
     private void UpdateResearchProgress(int daysPassed)
     {
-        if (m_gameDataManager?.CommonResearchEntryDict == null) return;
+        if (GameDataManager.Instance.CommonResearchEntryDict == null) return;
 
-        foreach (var researchEntry in m_gameDataManager.CommonResearchEntryDict.Values)
+        foreach (var researchEntry in GameDataManager.Instance.CommonResearchEntryDict.Values)
         {
             if (researchEntry == null || researchEntry.m_data == null) continue;
 
@@ -224,7 +234,7 @@ public class GameManager : MonoBehaviour
                     researchEntry.m_state.m_isResearched = true;
                     
                     // 연구 완료 시 이펙트 활성화
-                    researchEntry.CompleteResearch(m_gameDataManager);
+                    researchEntry.CompleteResearch(GameDataManager.Instance);
                     
                     Debug.Log($"Research completed: {researchEntry.m_data.m_name}");
                 }
@@ -367,7 +377,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void CalculateBuildingProduction()
     {
-        foreach (KeyValuePair<string, BuildingEntry> buildingPair in GameDataManager.BuildingEntryDict)
+        foreach (KeyValuePair<string, BuildingEntry> buildingPair in GameDataManager.Instance.BuildingEntryDict)
         {
             BuildingEntry building = buildingPair.Value;
             building.ApplyProduction();
@@ -412,7 +422,7 @@ public class GameManager : MonoBehaviour
     /// <returns>곱연산 값</returns>
     private float GetResourceMultiplier(ResourceType.TYPE resourceType)
     {
-        if (m_gameDataManager.EventManager.EventState.m_buildingResourceModDic.TryGetValue(resourceType, out float modValue))
+        if (GameDataManager.Instance.EventManager.EventState.m_buildingResourceModDic.TryGetValue(resourceType, out float modValue))
         {
             return (modValue == 0f) ? DEFAULT_MULTIPLIER : modValue;
         }
@@ -426,7 +436,7 @@ public class GameManager : MonoBehaviour
     /// <returns>합연산 값</returns>
     private float GetResourceAddition(ResourceType.TYPE resourceType)
     {
-        if (m_gameDataManager.EventManager.EventState.m_buildingResourceAddDic.TryGetValue(resourceType, out float addValue))
+        if (GameDataManager.Instance.EventManager.EventState.m_buildingResourceAddDic.TryGetValue(resourceType, out float addValue))
         {
             return addValue;
         }
@@ -438,21 +448,21 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private void CalculateTerritoryProduction()
     {
-        if (m_gameDataManager.TileMapManager?.TileMap == null)
+        if (GameDataManager.Instance.TileMapManager?.TileMap == null)
         {
             return;
         }
 
-        Vector2Int mapSize = m_gameDataManager.TileMapManager.GetTileMapSize();
+        Vector2Int mapSize = GameDataManager.Instance.TileMapManager.GetTileMapSize();
         
         for (int x = 0; x < mapSize.x; x++)
         {
             for (int y = 0; y < mapSize.y; y++)
             {
-                TileMapState tileState = m_gameDataManager.TileMapManager.GetTileMapState(x, y);
+                TileMapState tileState = GameDataManager.Instance.TileMapManager.GetTileMapState(x, y);
                 if (tileState != null && tileState.m_isFriendlyArea)
                 {
-                    TileMapData tileData = m_gameDataManager.TileMapManager.GetTileMapData(tileState.m_terrainType);
+                    TileMapData tileData = GameDataManager.Instance.TileMapManager.GetTileMapData(tileState.m_terrainType);
                     if (tileData != null)
                     {
                         // 타일 상태의 기본 자원값 사용 (지형 배수는 MapDataGenerator에서 반영됨)
@@ -502,7 +512,7 @@ public class GameManager : MonoBehaviour
     /// <returns>곱연산 값</returns>
     private float GetTerritoryResourceMultiplier(ResourceType.TYPE resourceType)
     {
-        if (m_gameDataManager.EventManager.EventState.m_territoryResourceModDic.TryGetValue(resourceType, out float modValue))
+        if (GameDataManager.Instance.EventManager.EventState.m_territoryResourceModDic.TryGetValue(resourceType, out float modValue))
         {
             return (modValue == 0f) ? DEFAULT_MULTIPLIER : modValue;
         }
@@ -516,7 +526,7 @@ public class GameManager : MonoBehaviour
     /// <returns>합연산 값</returns>
     private float GetTerritoryResourceAddition(ResourceType.TYPE resourceType)
     {
-        if (m_gameDataManager.EventManager.EventState.m_territoryResourceAddDic.TryGetValue(resourceType, out float addValue))
+        if (GameDataManager.Instance.EventManager.EventState.m_territoryResourceAddDic.TryGetValue(resourceType, out float addValue))
         {
             return addValue;
         }
@@ -529,9 +539,9 @@ public class GameManager : MonoBehaviour
     /// <param name="argSceneName">로드할 씬 이름</param>
     public void LoadScene(string argSceneName)
     {
-        if (m_scenLoadManager != null)
+        if (m_sceneLoadManager != null)
         {
-            m_scenLoadManager.LoadScene(argSceneName);
+            m_sceneLoadManager.LoadScene(argSceneName);
         }
         else
         {

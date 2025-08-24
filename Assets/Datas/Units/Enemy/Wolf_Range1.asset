@@ -21,16 +21,15 @@ MonoBehaviour:
   maxHealth: 350
   moveSpeed: 50
   attackRange: 300
+  enemySearchRange: 6
   attackSpeed: 15
   attackDelayRatio: 1
+  attackCount: 2
+  damageCoefficient: 0.75
   baseMana: 0
   maxMana: 50
   manaRecoveryOnAttack: 10
   manaRecoveryPerSecond: 2
-  attackCount: 2
-  damageCoefficient: 0.75
-  enemySearchRange: 6
-  baseAttackBonusEffect: 
   active:
     displayName: DoubleShot
     skillLogic: 

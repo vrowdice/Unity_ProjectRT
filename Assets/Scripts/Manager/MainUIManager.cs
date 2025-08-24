@@ -51,7 +51,6 @@ public class MainUIManager : MonoBehaviour, IUIManager
 
     // 참조 변수들
     private GameManager m_gameManager = null;
-    private GameDataManager m_gameDataManager = null;
     private List<IUIPanel> m_iPanelList = new List<IUIPanel>();
     private Transform m_canvasTrans = null;
     private int m_nowPanelIndex = 0;
@@ -133,7 +132,6 @@ public class MainUIManager : MonoBehaviour, IUIManager
     public void Initialize(GameManager argGameManager, GameDataManager argGameDataManager)
     {
         m_gameManager = argGameManager;
-        m_gameDataManager = argGameDataManager;
         m_canvasTrans = transform;
 
         //패널 초기화
@@ -207,7 +205,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
         }
         
         // 활성화된 모든 이펙트 가져오기
-        List<EffectBase> activeEffects = m_gameDataManager.EffectManager.GetAllActiveEffects();
+        List<EffectBase> activeEffects = GameDataManager.Instance.EffectManager.GetAllActiveEffects();
         
         // 패널 초기화
         m_currentInfoPanel.Init(activeEffects, resourceType);
@@ -441,7 +439,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
     {
         if (m_iPanelList[m_nowPanelIndex] != null)
         {
-            m_iPanelList[m_nowPanelIndex].OnOpen(GameManager.Instance.GameDataManager, this);
+            m_iPanelList[m_nowPanelIndex].OnOpen(GameDataManager.Instance, this);
         }
         else
         {
@@ -455,7 +453,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
     /// </summary>
     public void UpdateRequestText()
     {
-        m_requestText.text = m_gameManager.GameDataManager.AcceptableRequestList.Count + " / " + m_gameManager.GameDataManager.AcceptedRequestList.Count;
+        m_requestText.text = GameDataManager.Instance.AcceptableRequestList.Count + " / " + GameDataManager.Instance.AcceptedRequestList.Count;
     }
 
     /// <summary>
