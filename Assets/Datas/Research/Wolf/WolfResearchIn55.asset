@@ -14,12 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_code: 10011
   m_name: Hunting Bond 1
-  m_description: Pack hunting debuff damage increase +30% → +50% enhancement
+  m_description: "Pack hunting debuff damage increase +30% \u2192 +50% enhancement"
   m_cost: 250
   m_duration: 4
   m_prerequisites: []
   m_unlocks: []
   m_effects: []
   m_icon: {fileID: 0}
-  m_isFirstLocked: 0
-  m_factionType: 1 
+  m_isFirstLocked: 1
+  m_factionType: 1
+  m_requiredFactionLike: 55

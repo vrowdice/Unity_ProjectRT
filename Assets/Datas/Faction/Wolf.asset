@@ -19,7 +19,7 @@ MonoBehaviour:
   m_icon: {fileID: 0}
   m_factionColor: {r: 0, g: 0, b: 0, a: 0}
   m_traitDescription: 
-  m_uniqueResearch:
+  m_research:
   - {fileID: 11400000, guid: 0bac6e7466474df4d9429c137301f152, type: 2}
   - {fileID: 11400000, guid: 888cc62062e7c3a40b5e1f778892229f, type: 2}
   - {fileID: 11400000, guid: 3d8c4694c2a878e4ca91840f8c67e1a7, type: 2}

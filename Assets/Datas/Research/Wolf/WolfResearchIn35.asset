@@ -14,12 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_code: 10007
   m_name: United We Survive 3
-  m_description: Wolf army attack, defense, health 1.2x in defensive battles * -0.1x per active ally faction other than Wolf, minimum 1x
+  m_description: Wolf army attack, defense, health 1.2x in defensive battles * -0.1x
+    per active ally faction other than Wolf, minimum 1x
   m_cost: 200
   m_duration: 3
   m_prerequisites: []
   m_unlocks: []
   m_effects: []
   m_icon: {fileID: 0}
-  m_isFirstLocked: 0
-  m_factionType: 1 
+  m_isFirstLocked: 1
+  m_factionType: 1
+  m_requiredFactionLike: 35

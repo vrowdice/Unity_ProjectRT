@@ -14,12 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_code: 10017
   m_name: Hunting Bond 3
-  m_description: Pack hunting debuff damage increase +50% → +100% enhancement * Deactivated if active ally faction other than Wolf exists
+  m_description: "Pack hunting debuff damage increase +50% \u2192 +100% enhancement
+    * Deactivated if active ally faction other than Wolf exists"
   m_cost: 700
   m_duration: 9
   m_prerequisites: []
   m_unlocks: []
   m_effects: []
   m_icon: {fileID: 0}
-  m_isFirstLocked: 0
-  m_factionType: 1 
+  m_isFirstLocked: 1
+  m_factionType: 1
+  m_requiredFactionLike: 100

@@ -14,12 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_code: 10006
   m_name: United We Survive 2
-  m_description: Wolf army basic attack mana recovery +3, Wolf army mana recovery per second +2
+  m_description: Wolf army basic attack mana recovery +3, Wolf army mana recovery
+    per second +2
   m_cost: 200
   m_duration: 4
   m_prerequisites: []
   m_unlocks: []
   m_effects: []
   m_icon: {fileID: 0}
-  m_isFirstLocked: 0
-  m_factionType: 1 
+  m_isFirstLocked: 1
+  m_factionType: 1
+  m_requiredFactionLike: 30

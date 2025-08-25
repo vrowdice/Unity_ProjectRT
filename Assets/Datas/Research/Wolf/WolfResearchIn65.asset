@@ -14,12 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_code: 10013
   m_name: United We Survive 5
-  m_description: Territory/Building food production -20%, but Wolf army attack 1.5x * +10% each effect per active ally faction other than Wolf, attack -0.25x, minimum 0%, 1x
+  m_description: Territory/Building food production -20%, but Wolf army attack 1.5x
+    * +10% each effect per active ally faction other than Wolf, attack -0.25x, minimum
+    0%, 1x
   m_cost: 400
   m_duration: 7
   m_prerequisites: []
   m_unlocks: []
   m_effects: []
   m_icon: {fileID: 0}
-  m_isFirstLocked: 0
-  m_factionType: 1 
+  m_isFirstLocked: 1
+  m_factionType: 1
+  m_requiredFactionLike: 65

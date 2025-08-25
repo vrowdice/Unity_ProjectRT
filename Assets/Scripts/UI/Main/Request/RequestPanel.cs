@@ -158,8 +158,6 @@ public class RequestPanel : BasePanel
     /// 1 = 요청중
     public void SelectRequestContent(int argPanelIndex)
     {
-        GameObjectUtils.ClearChildren(m_factionLikeScrollViewContentTrans);
-
         switch (argPanelIndex)
         {
             case 0:
@@ -177,6 +175,14 @@ public class RequestPanel : BasePanel
     public void AcceptRequest(RequestState argState)
     {
         m_gameDataManager.AcceptRequest(argState);
+        UpdateRequestBtns();
+
+        m_mainUIManager.UpdateAllMainText();
+    }
+
+    public void RefuseRequest(RequestState argState)
+    {
+        m_gameDataManager.RefuseRequest(argState);
         UpdateRequestBtns();
 
         m_mainUIManager.UpdateAllMainText();

@@ -15,16 +15,20 @@ public class ResearchBtn : MonoBehaviour
 
     private string m_researchCode;
     private ResearchPanel m_researchPanel = null;
-    private ResearchEntry m_researchEntry = null;
+    private ResearchData m_researchData = null;
+    private ResearchState m_researchState = null;
+    private FactionEntry m_factionEntry = null;
 
-    public void Initialize(ResearchPanel argResearchPanel, ResearchEntry argEntry)
+    public void Initialize(ResearchPanel argResearchPanel, ResearchData argResearchData, ResearchState argResearchState, FactionEntry argFactionEntry)
     {
         m_researchPanel = argResearchPanel;
-        m_researchEntry = argEntry;
-        m_researchCode = argEntry.m_data.m_code;
-        m_iconImage.sprite = argEntry.m_data.m_icon;
-        m_nameText.text = argEntry.m_data.m_name;
-        m_expText.text = argEntry.m_data.m_description;
+        m_researchData = argResearchData;
+        m_researchState = argResearchState;
+        m_factionEntry = argFactionEntry;
+        m_researchCode = argResearchData.m_code;
+        m_iconImage.sprite = argResearchData.m_icon;
+        m_nameText.text = argResearchData.m_name;
+        m_expText.text = argResearchData.m_description;
     }
 
     /// <summary>
@@ -32,9 +36,12 @@ public class ResearchBtn : MonoBehaviour
     /// </summary>
     public void OnButtonClick()
     {
-        if (m_researchPanel != null && m_researchEntry != null)
+        if (m_researchPanel != null && m_researchData != null && m_researchState != null && m_factionEntry != null)
         {
-            m_researchPanel.OpenResearchDetailPanel(m_researchEntry);
+            // 임시로 ResearchEntry를 생성해서 전달 (OpenResearchDetailPanel이 수정되기 전까지)
+            var tempEntry = new ResearchEntry(m_researchData);
+            tempEntry.m_state = m_researchState;
+            m_researchPanel.OpenResearchDetailPanel(tempEntry);
         }
     }
 }

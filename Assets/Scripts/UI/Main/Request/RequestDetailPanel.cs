@@ -15,6 +15,8 @@ public class RequestDetailPanel : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_titleText = null;
     [SerializeField]
+    TextMeshProUGUI m_factionLikeText = null;
+    [SerializeField]
     Button m_acceptBtn = null;
     [SerializeField]
     Button m_refuseBtn = null;
@@ -80,7 +82,7 @@ public class RequestDetailPanel : MonoBehaviour
         }
 
         m_titleText.text = argState.m_title;
-        // m_descriptionText.text = argState.m_description;
+        m_factionLikeText.text = "Faction Like : " + argState.m_factionType + " " + argState.m_factionAddLike.ToString();
 
         gameObject.SetActive(true);
     }
@@ -104,8 +106,8 @@ public class RequestDetailPanel : MonoBehaviour
     {
         if (m_isAcceptable)
         {
-            // 거절 버튼 클릭 시 처리 (아직 구현되지 않음)
-            Debug.Log("Refuse button clicked - functionality not implemented yet");
+            // 거절 버튼 클릭 시 처리
+            m_requestPanel.RefuseRequest(m_nowRequestState);
         }
         else
         {

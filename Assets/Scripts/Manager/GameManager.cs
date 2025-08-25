@@ -214,29 +214,45 @@ public class GameManager : MonoBehaviour
     /// <param name="daysPassed">경과한 일수</param>
     private void UpdateResearchProgress(int daysPassed)
     {
-        if (GameDataManager.Instance.CommonResearchEntryDict == null) return;
+        if (GameDataManager.Instance.FactionEntryDict == null) return;
 
-        foreach (var researchEntry in GameDataManager.Instance.CommonResearchEntryDict.Values)
+        // 모든 팩션의 연구 진행도 업데이트
+        foreach (var factionKvp in GameDataManager.Instance.FactionEntryDict)
         {
-            if (researchEntry == null || researchEntry.m_data == null) continue;
+            var factionEntry = factionKvp.Value;
+            if (factionEntry?.m_data?.m_research == null) continue;
 
-            // 연구가 진행 중인 경우에만 진행도 증가
-            if (researchEntry.m_state.IsInProgress)
+            foreach (var researchData in factionEntry.m_data.m_research)
             {
-                // 진행도 증가
-                researchEntry.m_state.m_progress += daysPassed;
+                if (researchData == null) continue;
 
-                // 연구 완료 체크
-                if (researchEntry.m_state.m_progress >= researchEntry.m_data.m_duration)
+                var researchState = factionEntry.GetResearchState(researchData.m_code);
+                if (researchState == null) continue;
+
+                // 연구가 진행 중인 경우에만 진행도 증가
+                if (researchState.IsInProgress)
                 {
-                    // 연구 완료
-                    researchEntry.m_state.m_progress = (int)researchEntry.m_data.m_duration;
-                    researchEntry.m_state.m_isResearched = true;
-                    
-                    // 연구 완료 시 이펙트 활성화
-                    researchEntry.CompleteResearch(GameDataManager.Instance);
-                    
-                    Debug.Log($"Research completed: {researchEntry.m_data.m_name}");
+                    // 진행도 증가
+                    researchState.m_progress += daysPassed;
+
+                    // 연구 완료 체크
+                    if (researchState.m_progress >= researchData.m_duration)
+                    {
+                        // 연구 완료
+                        researchState.m_progress = (int)researchData.m_duration;
+                        researchState.m_isResearched = true;
+                        
+                        // 연구 완료 시 이펙트 활성화
+                        if (researchData.m_effects != null)
+                        {
+                            foreach (var effect in researchData.m_effects)
+                            {
+                                effect.ActivateEffect(GameDataManager.Instance, "ResearchCompleted");
+                            }
+                        }
+                        
+                        Debug.Log($"Research completed: {researchData.m_name} (Faction: {factionEntry.m_data.m_factionType})");
+                    }
                 }
             }
         }

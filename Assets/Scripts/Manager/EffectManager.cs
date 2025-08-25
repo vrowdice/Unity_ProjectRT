@@ -158,9 +158,25 @@ public class EffectManager : MonoBehaviour
     {
         List<EffectBase> allEffects = new List<EffectBase>();
         
-        foreach (var researchEntry in m_gameDataManager.CommonResearchEntryDict.Values)
+        // 모든 팩션의 연구에서 활성화된 이펙트 수집
+        foreach (var factionKvp in m_gameDataManager.FactionEntryDict)
         {
-            allEffects.AddRange(researchEntry.GetActiveEffects());
+            var factionEntry = factionKvp.Value;
+            if (factionEntry?.m_data?.m_research != null)
+            {
+                foreach (var researchData in factionEntry.m_data.m_research)
+                {
+                    var researchState = factionEntry.GetResearchState(researchData.m_code);
+                    if (researchState != null && researchState.m_isResearched)
+                    {
+                        // 연구가 완료된 경우 해당 연구의 이펙트들을 추가
+                        if (researchData.m_effects != null)
+                        {
+                            allEffects.AddRange(researchData.m_effects);
+                        }
+                    }
+                }
+            }
         }
         
         return allEffects;
@@ -173,9 +189,10 @@ public class EffectManager : MonoBehaviour
     /// <returns>해당 연구의 활성 이펙트 리스트</returns>
     public List<EffectBase> GetResearchEffects(string researchCode)
     {
-        if (m_gameDataManager.CommonResearchEntryDict.TryGetValue(researchCode, out var researchEntry))
+        var researchInfo = m_gameDataManager.GetResearchInfo(researchCode);
+        if (researchInfo.HasValue && researchInfo.Value.state.m_isResearched)
         {
-            return researchEntry.GetActiveEffects();
+            return researchInfo.Value.data.m_effects ?? new List<EffectBase>();
         }
         
         return new List<EffectBase>();
@@ -187,11 +204,30 @@ public class EffectManager : MonoBehaviour
     /// <returns>모든 연구 이펙트 정보 문자열</returns>
     public string GetAllResearchEffectInfo()
     {
-        var researchInfos = m_gameDataManager.CommonResearchEntryDict.Values
-            .Where(r => r.m_state.m_isResearched)
-            .Select(r => r.GetResearchEffectInfo());
+        List<string> researchInfos = new List<string>();
         
-        if (!researchInfos.Any())
+        // 모든 팩션의 완료된 연구 정보 수집
+        foreach (var factionKvp in m_gameDataManager.FactionEntryDict)
+        {
+            var factionEntry = factionKvp.Value;
+            if (factionEntry?.m_data?.m_research != null)
+            {
+                foreach (var researchData in factionEntry.m_data.m_research)
+                {
+                    var researchState = factionEntry.GetResearchState(researchData.m_code);
+                    if (researchState != null && researchState.m_isResearched)
+                    {
+                        string effectInfo = GetResearchEffectInfo(researchData, researchState);
+                        if (!string.IsNullOrEmpty(effectInfo))
+                        {
+                            researchInfos.Add(effectInfo);
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (researchInfos.Count == 0)
         {
             return "완료된 연구가 없습니다.";
         }
@@ -206,12 +242,35 @@ public class EffectManager : MonoBehaviour
     /// <returns>연구 이펙트 정보 문자열</returns>
     public string GetResearchEffectInfo(string researchCode)
     {
-        if (m_gameDataManager.CommonResearchEntryDict.TryGetValue(researchCode, out var researchEntry))
+        var researchInfo = m_gameDataManager.GetResearchInfo(researchCode);
+        if (researchInfo.HasValue)
         {
-            return researchEntry.GetResearchEffectInfo();
+            return GetResearchEffectInfo(researchInfo.Value.data, researchInfo.Value.state);
         }
         
         return $"연구 코드 '{researchCode}'를 찾을 수 없습니다.";
+    }
+
+    /// <summary>
+    /// 연구 데이터와 상태를 기반으로 이펙트 정보 문자열 생성
+    /// </summary>
+    /// <param name="researchData">연구 데이터</param>
+    /// <param name="researchState">연구 상태</param>
+    /// <returns>연구 이펙트 정보 문자열</returns>
+    private string GetResearchEffectInfo(ResearchData researchData, ResearchState researchState)
+    {
+        if (!researchState.m_isResearched)
+        {
+            return $"{researchData.m_name}: 연구되지 않음";
+        }
+
+        if (researchData.m_effects == null || researchData.m_effects.Count == 0)
+        {
+            return $"{researchData.m_name}: 연구 완료 (활성 이펙트 없음)";
+        }
+
+        var effectInfos = researchData.m_effects.Select(e => e.GetEffectInfo());
+        return $"{researchData.m_name}: 연구 완료\n" + string.Join("\n", effectInfos);
     }
 
     /// <summary>
@@ -222,12 +281,30 @@ public class EffectManager : MonoBehaviour
     {
         int deactivatedCount = 0;
         
-        foreach (var researchEntry in m_gameDataManager.CommonResearchEntryDict.Values)
+        // 모든 팩션의 완료된 연구에서 이펙트 비활성화
+        foreach (var factionKvp in m_gameDataManager.FactionEntryDict)
         {
-            if (researchEntry.m_state.m_isResearched)
+            var factionEntry = factionKvp.Value;
+            if (factionEntry?.m_data?.m_research != null)
             {
-                researchEntry.DeactivateResearchEffects(m_gameDataManager);
-                deactivatedCount += researchEntry.GetActiveEffects().Count;
+                foreach (var researchData in factionEntry.m_data.m_research)
+                {
+                    var researchState = factionEntry.GetResearchState(researchData.m_code);
+                    if (researchState != null && researchState.m_isResearched)
+                    {
+                        // 연구의 모든 이펙트 비활성화
+                        if (researchData.m_effects != null)
+                        {
+                            foreach (var effect in researchData.m_effects)
+                            {
+                                if (effect.DeactivateEffect(m_gameDataManager))
+                                {
+                                    deactivatedCount++;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         
@@ -310,13 +387,22 @@ public class EffectManager : MonoBehaviour
         ClearActiveEventEffects();
         
         // 연구 이펙트 강제 초기화
-        foreach (var researchEntry in m_gameDataManager.CommonResearchEntryDict.Values)
+        foreach (var factionKvp in m_gameDataManager.FactionEntryDict)
         {
-            foreach (var effect in researchEntry.GetActiveEffects())
+            var factionEntry = factionKvp.Value;
+            if (factionEntry?.m_data?.m_research != null)
             {
-                effect.ForceReset();
+                foreach (var researchData in factionEntry.m_data.m_research)
+                {
+                    if (researchData.m_effects != null)
+                    {
+                        foreach (var effect in researchData.m_effects)
+                        {
+                            effect.ForceReset();
+                        }
+                    }
+                }
             }
-            researchEntry.ClearActiveEffects();
         }
         
         Debug.Log("All effects (event + research) force reset.");

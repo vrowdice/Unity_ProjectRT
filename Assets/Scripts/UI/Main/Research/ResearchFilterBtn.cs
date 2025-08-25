@@ -19,7 +19,7 @@ public class ResearchFilterBtn : MonoBehaviour
         m_factionType = argType;
         m_researchPanel = argParentPanel;
 
-        // "전체" 버튼인 경우 (None 타입)
+        // 일반 연구 버튼인 경우 (None 타입)
         if (argType == FactionType.TYPE.None)
         {
             if (m_factionImage != null)
@@ -29,7 +29,7 @@ public class ResearchFilterBtn : MonoBehaviour
             
             if (m_text != null)
             {
-                m_text.text = "All";
+                m_text.text = "Normal";
             }
         }
         else
@@ -57,12 +57,38 @@ public class ResearchFilterBtn : MonoBehaviour
         }
     }
 
+    public void InitForAllResearch(ResearchPanel argParentPanel)
+    {
+        m_researchPanel = argParentPanel;
+        
+        if (m_factionImage != null)
+        {
+            m_factionImage.sprite = null; // 또는 전체 아이콘
+        }
+        
+        if (m_text != null)
+        {
+            m_text.text = "All";
+        }
+        
+        // 전체 연구용 특별 값 설정
+        m_factionType = FactionType.TYPE.None; // 임시로 None 사용
+    }
+
     public void OnClick()
     {
         // 클릭 시 해당 팩션으로 필터링
         if (m_researchPanel != null)
         {
-            m_researchPanel.FilterByFaction(m_factionType);
+            // "All" 버튼인지 확인 (텍스트로 구분)
+            if (m_text != null && m_text.text == "All")
+            {
+                m_researchPanel.FilterByAllResearch();
+            }
+            else
+            {
+                m_researchPanel.FilterByFaction(m_factionType);
+            }
         }
     }
 }

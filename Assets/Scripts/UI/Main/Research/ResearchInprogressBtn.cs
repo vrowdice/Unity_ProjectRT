@@ -16,7 +16,9 @@ public class ResearchInprogressBtn : MonoBehaviour
     Slider m_progressSlider = null;
 
     private ResearchPanel m_researchPanel = null;
-    private ResearchEntry m_researchEntry = null;
+    private ResearchData m_researchData = null;
+    private ResearchState m_researchState = null;
+    private FactionEntry m_factionEntry = null;
     private float m_researchTime = 0f;
     private float m_totalResearchTime = 0f;
 
@@ -36,29 +38,33 @@ public class ResearchInprogressBtn : MonoBehaviour
     /// 연구 중인 버튼 초기화
     /// </summary>
     /// <param name="researchPanel">연구 패널 참조</param>
-    /// <param name="researchEntry">연구 항목 데이터</param>
-    public void Initialize(ResearchPanel researchPanel, ResearchEntry researchEntry)
+    /// <param name="researchData">연구 데이터</param>
+    /// <param name="researchState">연구 상태</param>
+    /// <param name="factionEntry">팩션 엔트리</param>
+    public void Initialize(ResearchPanel researchPanel, ResearchData researchData, ResearchState researchState, FactionEntry factionEntry)
     {
         m_researchPanel = researchPanel;
-        m_researchEntry = researchEntry;
+        m_researchData = researchData;
+        m_researchState = researchState;
+        m_factionEntry = factionEntry;
 
-        if (m_researchEntry != null && m_researchEntry.m_data != null)
+        if (m_researchData != null)
         {
             // 연구 이름 설정
             if (m_nameText != null)
             {
-                m_nameText.text = m_researchEntry.m_data.m_name;
+                m_nameText.text = m_researchData.m_name;
             }
 
             // 연구 아이콘 설정 (있는 경우)
-            if (m_iconImage != null && m_researchEntry.m_data.m_icon != null)
+            if (m_iconImage != null && m_researchData.m_icon != null)
             {
-                m_iconImage.sprite = m_researchEntry.m_data.m_icon;
+                m_iconImage.sprite = m_researchData.m_icon;
             }
 
             // 연구 시간 설정
-            m_totalResearchTime = m_researchEntry.m_data.m_duration;
-            m_researchTime = m_totalResearchTime - m_researchEntry.m_state.m_progress;
+            m_totalResearchTime = m_researchData.m_duration;
+            m_researchTime = m_totalResearchTime - m_researchState.m_progress;
 
             // 진행도 슬라이더 초기화
             UpdateProgressDisplay();
@@ -66,12 +72,18 @@ public class ResearchInprogressBtn : MonoBehaviour
     }
 
     /// <summary>
-    /// 연구 항목 데이터 반환
+    /// 연구 항목 데이터 반환 (호환성을 위해 임시 ResearchEntry 생성)
     /// </summary>
     /// <returns>연구 항목 데이터</returns>
     public ResearchEntry GetResearchEntry()
     {
-        return m_researchEntry;
+        if (m_researchData != null && m_researchState != null)
+        {
+            var tempEntry = new ResearchEntry(m_researchData);
+            tempEntry.m_state = m_researchState;
+            return tempEntry;
+        }
+        return null;
     }
 
     /// <summary>
@@ -87,10 +99,10 @@ public class ResearchInprogressBtn : MonoBehaviour
     /// </summary>
     private void UpdateProgressDisplay()
     {
-        if (m_researchEntry == null) return;
+        if (m_researchState == null) return;
 
         // 진행도 계산 (m_progress가 -1이면 0으로 처리)
-        float actualProgress = Mathf.Max(0, m_researchEntry.m_state.m_progress);
+        float actualProgress = Mathf.Max(0, m_researchState.m_progress);
         float progress = actualProgress / m_totalResearchTime;
         progress = Mathf.Clamp01(progress);
 
@@ -123,11 +135,11 @@ public class ResearchInprogressBtn : MonoBehaviour
     /// </summary>
     private void UpdateResearchProgress()
     {
-        if (m_researchEntry == null || m_researchEntry.m_state.m_isResearched) return;
+        if (m_researchState == null || m_researchState.m_isResearched) return;
 
         // 연구가 진행 중인지 확인 (실제 게임 로직에 따라 조정 필요)
         // 여기서는 예시로 시간에 따른 진행도를 업데이트
-        if (m_researchEntry.m_state.m_progress < m_totalResearchTime)
+        if (m_researchState.m_progress < m_totalResearchTime)
         {
             // 실제 구현에서는 게임 매니저나 연구 매니저에서 진행도를 업데이트해야 함
             // 이 부분은 게임의 연구 시스템에 따라 조정이 필요합니다
@@ -141,9 +153,12 @@ public class ResearchInprogressBtn : MonoBehaviour
     /// </summary>
     public void OnButtonClick()
     {
-        if (m_researchPanel != null && m_researchEntry != null)
+        if (m_researchPanel != null && m_researchData != null && m_researchState != null)
         {
-            m_researchPanel.OpenResearchDetailPanel(m_researchEntry);
+            // 임시로 ResearchEntry를 생성해서 전달 (OpenResearchDetailPanel이 수정되기 전까지)
+            var tempEntry = new ResearchEntry(m_researchData);
+            tempEntry.m_state = m_researchState;
+            m_researchPanel.OpenResearchDetailPanel(tempEntry);
         }
     }
 }

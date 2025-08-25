@@ -13,6 +13,8 @@ public class MainUIManager : MonoBehaviour, IUIManager
     [SerializeField]
     List<GameObject> m_panelList = new List<GameObject>();
     [SerializeField]
+    GameObject m_quickMovePanel = null;
+    [SerializeField]
     GameObject m_BackMainBtn = null;
 
     [Header("Resource Panel Text")]
@@ -380,6 +382,11 @@ public class MainUIManager : MonoBehaviour, IUIManager
         ActivateCurrentPanel();
         UpdateBackButton();
         OpenCurrentPanel();
+
+        if (m_quickMovePanel != null)
+        {
+            m_quickMovePanel.SetActive(false);
+        }
     }
 
     /// <summary>

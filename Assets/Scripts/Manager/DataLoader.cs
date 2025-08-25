@@ -13,7 +13,6 @@ public static class DataLoader
         List<TileMapData> tileMapDataList,
         List<EventGroupData> eventGroupDataList,
         List<FactionData> factionDataList,
-        List<ResearchData> commonResearchDataList,
         List<BuildingData> buildingDataList,
         List<RequestLineTemplate> requestLineTemplateList,
         List<ResourceIcon> resourceIconList,
@@ -21,7 +20,6 @@ public static class DataLoader
         List<RequestIcon> requestIconList,
         ref GameBalanceData gameBalanceData,
         string factionDataPath = "Faction",
-        string commonResearchDataPath = "Research/Common",
         string buildingDataPath = "Building",
         string requestLineTemplatePath = "RequestLineTemplate",
         string eventGroupDataPath = "Event/EventGroup",
@@ -30,10 +28,9 @@ public static class DataLoader
         LoadTileMapDataFromResources(tileMapDataList, tileMapDataPath);
         LoadEventGroupDataFromResources(eventGroupDataList, eventGroupDataPath);
         LoadFactionDataFromResources(factionDataList, factionDataPath);
-        LoadCommonResearchDataFromResources(commonResearchDataList, commonResearchDataPath);
         LoadBuildingDataFromResources(buildingDataList, buildingDataPath);
         LoadRequestLineTemplateDataFromResources(requestLineTemplateList, requestLineTemplatePath);
-        // Common Data들(아이콘, GameBalanceData)은 수동으로 설정하므로 로딩하지 않음
+        // 아이콘 및 GameBalanceData는 GameDataManager에서 수동으로 설정
 
         Debug.Log("All game data loaded from Resources.");
     }
@@ -62,21 +59,7 @@ public static class DataLoader
         Debug.Log($"{factionDataList.Count} faction data loaded from Resources path: {path}");
     }
 
-    private static void LoadCommonResearchDataFromResources(List<ResearchData> commonResearchDataList, string path = "")
-    {
-        ResearchData[] dataArray = Resources.LoadAll<ResearchData>(path);
-        commonResearchDataList.Clear();
-        
-        foreach (ResearchData data in dataArray)
-        {
-            if (data.m_factionType == FactionType.TYPE.None)
-            {
-                commonResearchDataList.Add(data);
-            }
-        }
-        
-        Debug.Log($"{commonResearchDataList.Count} common research data loaded from Resources path: {path}");
-    }
+
 
     private static void LoadBuildingDataFromResources(List<BuildingData> buildingDataList, string path = "")
     {
@@ -94,112 +77,7 @@ public static class DataLoader
         Debug.Log($"{requestLineTemplateList.Count} request line templates loaded from Resources path: {path}");
     }
 
-    private static void LoadResourceIconsFromResources(List<ResourceIcon> resourceIconList, string path = "")
-    {
-        Sprite[] sprites = Resources.LoadAll<Sprite>(path);
-        resourceIconList.Clear();
-        
-        var resourceTypes = System.Enum.GetValues(typeof(ResourceType.TYPE));
-        
-        foreach (ResourceType.TYPE resourceType in resourceTypes)
-        {
-            string resourceName = resourceType.ToString().ToLower();
-            
-            foreach (Sprite sprite in sprites)
-            {
-                if (sprite.name.ToLower().Contains(resourceName) || 
-                    sprite.name.ToLower().Contains("resource") ||
-                    sprite.name.ToLower().Contains("icon"))
-                {
-                    ResourceIcon icon = new ResourceIcon
-                    {
-                        m_type = resourceType,
-                        m_icon = sprite
-                    };
-                    resourceIconList.Add(icon);
-                    break;
-                }
-            }
-        }
-        
-        Debug.Log($"{resourceIconList.Count} resource icons loaded from Resources path: {path}");
-    }
 
-    private static void LoadTokenIconsFromResources(List<TokenIcon> tokenIconList, string path = "")
-    {
-        Sprite[] sprites = Resources.LoadAll<Sprite>(path);
-        tokenIconList.Clear();
-        
-        var tokenTypes = System.Enum.GetValues(typeof(TokenType.TYPE));
-        
-        foreach (TokenType.TYPE tokenType in tokenTypes)
-        {
-            string tokenName = tokenType.ToString().ToLower();
-            
-            foreach (Sprite sprite in sprites)
-            {
-                if (sprite.name.ToLower().Contains(tokenName) || 
-                    sprite.name.ToLower().Contains("token") ||
-                    sprite.name.ToLower().Contains("icon"))
-                {
-                    TokenIcon icon = new TokenIcon
-                    {
-                        m_type = tokenType,
-                        m_icon = sprite
-                    };
-                    tokenIconList.Add(icon);
-                    break;
-                }
-            }
-        }
-        
-        Debug.Log($"{tokenIconList.Count} token icons loaded from Resources path: {path}");
-    }
-
-    private static void LoadRequestIconsFromResources(List<RequestIcon> requestIconList, string path = "")
-    {
-        Sprite[] sprites = Resources.LoadAll<Sprite>(path);
-        requestIconList.Clear();
-        
-        var requestTypes = System.Enum.GetValues(typeof(RequestType.TYPE));
-        
-        foreach (RequestType.TYPE requestType in requestTypes)
-        {
-            string requestName = requestType.ToString().ToLower();
-            
-            foreach (Sprite sprite in sprites)
-            {
-                if (sprite.name.ToLower().Contains(requestName) || 
-                    sprite.name.ToLower().Contains("request") ||
-                    sprite.name.ToLower().Contains("icon"))
-                {
-                    RequestIcon icon = new RequestIcon
-                    {
-                        m_type = requestType,
-                        m_icon = sprite
-                    };
-                    requestIconList.Add(icon);
-                    break;
-                }
-            }
-        }
-        
-        Debug.Log($"{requestIconList.Count} request icons loaded from Resources path: {path}");
-    }
-
-    private static void LoadGameBalanceDataFromResources(ref GameBalanceData gameBalanceData, string path = "")
-    {
-        GameBalanceData[] dataArray = Resources.LoadAll<GameBalanceData>(path);
-        if (dataArray.Length > 0)
-        {
-            gameBalanceData = dataArray[0];
-            Debug.Log($"Game balance data loaded from Resources path: {path}");
-        }
-        else
-        {
-            Debug.LogWarning($"Game balance data not found in Resources path: {path}");
-        }
-    }
 
     #if UNITY_EDITOR
     /// <summary>
@@ -209,7 +87,6 @@ public static class DataLoader
         List<TileMapData> tileMapDataList,
         List<EventGroupData> eventGroupDataList,
         List<FactionData> factionDataList,
-        List<ResearchData> commonResearchDataList,
         List<BuildingData> buildingDataList,
         List<RequestLineTemplate> requestLineTemplateList,
         List<ResourceIcon> resourceIconList,
@@ -220,7 +97,6 @@ public static class DataLoader
         LoadTileMapDataFromAssets(tileMapDataList);
         LoadEventGroupDataFromAssets(eventGroupDataList);
         LoadFactionDataFromAssets(factionDataList);
-        LoadCommonResearchDataFromAssets(commonResearchDataList);
         LoadBuildingDataFromAssets(buildingDataList);
         LoadRequestLineTemplateDataFromAssets(requestLineTemplateList);
         LoadResourceIconsFromAssets(resourceIconList);
@@ -238,7 +114,6 @@ public static class DataLoader
         List<TileMapData> tileMapDataList,
         List<EventGroupData> eventGroupDataList,
         List<FactionData> factionDataList,
-        List<ResearchData> commonResearchDataList,
         List<BuildingData> buildingDataList,
         List<RequestLineTemplate> requestLineTemplateList,
         List<ResourceIcon> resourceIconList,
@@ -246,7 +121,6 @@ public static class DataLoader
         List<RequestIcon> requestIconList,
         ref GameBalanceData gameBalanceData,
         string factionDataPath,
-        string commonResearchDataPath,
         string buildingDataPath,
         string requestLineTemplatePath,
         string eventGroupDataPath,
@@ -255,15 +129,14 @@ public static class DataLoader
         LoadTileMapDataFromPath(tileMapDataList, tileMapDataPath);
         LoadEventGroupDataFromPath(eventGroupDataList, eventGroupDataPath);
         LoadFactionDataFromPath(factionDataList, factionDataPath);
-        LoadCommonResearchDataFromPath(commonResearchDataList, commonResearchDataPath);
         LoadBuildingDataFromPath(buildingDataList, buildingDataPath);
         LoadRequestLineTemplateDataFromPath(requestLineTemplateList, requestLineTemplatePath);
-        // Common Data들(아이콘, GameBalanceData)은 수동으로 설정하므로 로딩하지 않음
+        // 아이콘 및 GameBalanceData는 GameDataManager에서 수동으로 설정
 
         Debug.Log("All game data has been loaded from specified paths.");
     }
 
-    public static void LoadTileMapDataFromAssets(List<TileMapData> tileMapDataList)
+    private static void LoadTileMapDataFromAssets(List<TileMapData> tileMapDataList)
     {
         string[] guids = UnityEditor.AssetDatabase.FindAssets("t:TileMapData");
         tileMapDataList.Clear();
@@ -317,23 +190,7 @@ public static class DataLoader
         Debug.Log($"{factionDataList.Count} faction data loaded.");
     }
 
-    private static void LoadCommonResearchDataFromAssets(List<ResearchData> commonResearchDataList)
-    {
-        string[] guids = UnityEditor.AssetDatabase.FindAssets("t:ResearchData");
-        commonResearchDataList.Clear();
-        
-        foreach (string guid in guids)
-        {
-            string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
-            ResearchData data = UnityEditor.AssetDatabase.LoadAssetAtPath<ResearchData>(path);
-            if (data != null && data.m_factionType == FactionType.TYPE.None)
-            {
-                commonResearchDataList.Add(data);
-            }
-        }
-        
-        Debug.Log($"{commonResearchDataList.Count} common research data loaded.");
-    }
+
 
     private static void LoadBuildingDataFromAssets(List<BuildingData> buildingDataList)
     {
@@ -550,23 +407,7 @@ public static class DataLoader
         Debug.Log($"{factionDataList.Count} faction data loaded from path: {path}");
     }
 
-    private static void LoadCommonResearchDataFromPath(List<ResearchData> commonResearchDataList, string path)
-    {
-        string[] guids = UnityEditor.AssetDatabase.FindAssets("t:ResearchData", new[] { path });
-        commonResearchDataList.Clear();
-        
-        foreach (string guid in guids)
-        {
-            string assetPath = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
-            ResearchData data = UnityEditor.AssetDatabase.LoadAssetAtPath<ResearchData>(assetPath);
-            if (data != null && data.m_factionType == FactionType.TYPE.None)
-            {
-                commonResearchDataList.Add(data);
-            }
-        }
-        
-        Debug.Log($"{commonResearchDataList.Count} common research data loaded from path: {path}");
-    }
+
 
     private static void LoadBuildingDataFromPath(List<BuildingData> buildingDataList, string path)
     {

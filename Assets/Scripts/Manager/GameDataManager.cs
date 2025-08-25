@@ -34,7 +34,6 @@ public class GameDataManager : MonoBehaviour
     
     // 자동 로딩되는 데이터들 (인스펙터에서 숨김)
     private List<FactionData> m_factionDataList = new();
-    private List<ResearchData> m_commonResearchDataList = new();
     private List<BuildingData> m_buildingDataList = new();
     private List<RequestLineTemplate> m_requestLineTemplateList = new();
     private List<EventGroupData> m_eventGroupDataList = new();
@@ -42,7 +41,6 @@ public class GameDataManager : MonoBehaviour
 
     // 데이터 딕셔너리들
     private readonly Dictionary<FactionType.TYPE, FactionEntry> m_factionEntryDic = new();
-    private readonly Dictionary<string, ResearchEntry> m_commonResearchEntryDic = new();
     private readonly Dictionary<string, BuildingEntry> m_buildingEntryDic = new();
     private readonly Dictionary<ResourceType.TYPE, Sprite> m_resourceIconDic = new();
     private readonly Dictionary<TokenType.TYPE, Sprite> m_tokenIconDic = new();
@@ -58,7 +56,6 @@ public class GameDataManager : MonoBehaviour
 
     // 프로퍼티들
     public Dictionary<FactionType.TYPE, FactionEntry> FactionEntryDict => m_factionEntryDic;
-    public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDic;
     public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDic;
     public List<RequestState> AcceptableRequestList => m_acceptableRequestList;
     public List<RequestState> AcceptedRequestList => m_acceptedRequestList;
@@ -100,7 +97,6 @@ public class GameDataManager : MonoBehaviour
     private void InitDict()
     {
         InitFactionDict();
-        InitResearchDict();
         InitBuildingDict();
         InitRequestTemplateDict();
     }
@@ -147,18 +143,7 @@ public class GameDataManager : MonoBehaviour
         }
     }
 
-    private void InitResearchDict()
-    {
-        m_commonResearchEntryDic.Clear();
-        foreach (ResearchData research in m_commonResearchDataList)
-        {
-            if (!m_commonResearchEntryDic.ContainsKey(research.m_code))
-            {
-                m_commonResearchEntryDic.Add(research.m_code, new ResearchEntry(research));
-            }
-        }
-        LockResearch();
-    }
+
 
     private void InitBuildingDict()
     {
@@ -218,39 +203,7 @@ public class GameDataManager : MonoBehaviour
         GameBalanceEntry.m_state.m_dateMul = 1.0f;
     }
 
-    private void LockResearch()
-    {
-        // 먼저 모든 연구를 잠금 해제
-        foreach (var research in m_commonResearchDataList)
-        {
-            if (research.m_unlocks != null)
-            {
-                foreach (var unlockResearch in research.m_unlocks)
-                {
-                    if (m_commonResearchEntryDic.TryGetValue(unlockResearch.m_code, out var unlockEntry))
-                    {
-                        unlockEntry.m_state.m_isLocked = false;
-                    }
-                }
-            }
-        }
 
-        // 선행 조건 확인하여 잠금 설정
-        foreach (var research in m_commonResearchDataList)
-        {
-            if (research.m_prerequisites != null && research.m_prerequisites.Count > 0)
-            {
-                bool allPrerequisitesMet = research.m_prerequisites.All(prereq => 
-                    m_commonResearchEntryDic.TryGetValue(prereq.m_code, out var prereqEntry) && 
-                    prereqEntry.m_state.m_isResearched);
-
-                if (!allPrerequisitesMet)
-                {
-                    m_commonResearchEntryDic[research.m_code].m_state.m_isLocked = true;
-                }
-            }
-        }
-    }
     #endregion
 
     #region Data Loading
@@ -267,10 +220,10 @@ public class GameDataManager : MonoBehaviour
     public void LoadDataFromResources()
     {
         DataLoader.LoadAllDataFromResources(
-            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList,
             m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
             m_tokenIconList, m_requestIconList, ref m_gameBalanceData,
-            GetResourcesPath(m_factionDataPath), "Research/Common",
+            GetResourcesPath(m_factionDataPath),
             GetResourcesPath(m_buildingDataPath), GetResourcesPath(m_requestLineTemplatePath),
             GetResourcesPath(m_eventGroupDataPath), GetResourcesPath(m_tileMapDataPath));
     }
@@ -293,7 +246,7 @@ public class GameDataManager : MonoBehaviour
     private void LoadAllDataFromAssets()
     {
         DataLoader.LoadAllDataFromAssets(
-            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList,
             m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
             m_tokenIconList, m_requestIconList, ref m_gameBalanceData);
     }
@@ -301,10 +254,10 @@ public class GameDataManager : MonoBehaviour
     private void LoadAllDataFromPaths()
     {
         DataLoader.LoadAllDataFromPaths(
-            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList,
             m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
             m_tokenIconList, m_requestIconList, ref m_gameBalanceData,
-            m_factionDataPath, "Assets/Datas/Research/Common", m_buildingDataPath, m_requestLineTemplatePath,
+            m_factionDataPath, m_buildingDataPath, m_requestLineTemplatePath,
             m_eventGroupDataPath, m_tileMapDataPath);
     }
     #endif
@@ -438,6 +391,56 @@ public class GameDataManager : MonoBehaviour
             m_acceptableRequestList.Remove(request);
         }
     }
+
+    public void RefuseRequest(RequestState request)
+    {
+        if (m_acceptableRequestList.Contains(request))
+        {
+            // 요청을 거절하면 팩션 호감도가 감소
+            if (request.m_factionType != FactionType.TYPE.None)
+            {
+                var factionEntry = GetFactionEntry(request.m_factionType);
+                if (factionEntry != null)
+                {
+                    // 요청 거절 시 호감도 절반만큼 감소 (또는 고정값)
+                    int likeDecrease = Mathf.Max(1, request.m_factionAddLike / 2);
+                    factionEntry.m_state.m_like = Mathf.Max(0, factionEntry.m_state.m_like - likeDecrease);
+                    Debug.Log($"Faction {request.m_factionType} like decreased by {likeDecrease}. Current like: {factionEntry.m_state.m_like}");
+                }
+            }
+            
+            // 수락 가능한 요청 목록에서 제거
+            m_acceptableRequestList.Remove(request);
+        }
+    }
+
+    /// <summary>
+    /// 팩션 우호도 변경 시 연구 잠금 상태 업데이트
+    /// </summary>
+    /// <param name="factionType">변경된 팩션 타입</param>
+    public void UpdateResearchByFactionLike(FactionType.TYPE factionType)
+    {
+        // 모든 팩션에서 해당 팩션 타입의 연구들 확인
+        foreach (var factionKvp in m_factionEntryDic)
+        {
+            var factionEntry = factionKvp.Value;
+            if (factionEntry.m_data.m_research != null)
+            {
+                foreach (var researchData in factionEntry.m_data.m_research)
+                {
+                    if (researchData.m_factionType == factionType)
+                    {
+                        var researchState = factionEntry.GetResearchState(researchData.m_code);
+                        if (researchState != null)
+                        {
+                            bool shouldUnlock = researchData.CheckFactionLikeRequirement(this);
+                            researchState.m_isLocked = !shouldUnlock;
+                        }
+                    }
+                }
+            }
+        }
+    }
     #endregion
 
     #region Data Access
@@ -446,9 +449,28 @@ public class GameDataManager : MonoBehaviour
         return m_factionEntryDic.TryGetValue(argType, out var entry) ? entry : null;
     }
 
-    public ResearchEntry GetCommonResearchEntry(string argKey)
+    /// <summary>
+    /// 모든 팩션에서 특정 연구 코드의 데이터와 상태 찾기
+    /// </summary>
+    /// <param name="researchCode">연구 코드</param>
+    /// <returns>연구 데이터와 상태를 담은 튜플 (없으면 null)</returns>
+    public (ResearchData data, ResearchState state, FactionEntry faction)? GetResearchInfo(string researchCode)
     {
-        return !string.IsNullOrEmpty(argKey) && m_commonResearchEntryDic.TryGetValue(argKey, out var entry) ? entry : null;
+        if (string.IsNullOrEmpty(researchCode)) return null;
+        
+        foreach (var factionKvp in m_factionEntryDic)
+        {
+            var factionEntry = factionKvp.Value;
+            var researchData = factionEntry.GetResearchData(researchCode);
+            var researchState = factionEntry.GetResearchState(researchCode);
+            
+            if (researchData != null && researchState != null)
+            {
+                return (researchData, researchState, factionEntry);
+            }
+        }
+        
+        return null;
     }
 
     public BuildingEntry GetBuildingEntry(string argKey)
