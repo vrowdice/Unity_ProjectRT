@@ -273,7 +273,7 @@ public class BattleSystemManager : MonoBehaviour
 
                 if (ub.UnitStat == null)
                 {
-                    Debug.LogError($"[BSM] 수동 배치 '{ub.name}'의 UnitStat이 null입니다. Initialize(stat) 필요.");
+                    Debug.LogError($"[BSM] 수동 배치 '{ub.name}'의 UnitData이 null입니다. Initialize(stat) 필요.");
                     continue;
                 }
 
@@ -323,7 +323,7 @@ public class BattleSystemManager : MonoBehaviour
         }
     }
 
-    public UnitBase RequestSpawnAlly(UnitStatBase stat)
+    public UnitBase RequestSpawnAlly(UnitData stat)  
     {
         if (!stat || !stat.prefab) return null;
         var area = GetAllySpawnArea();
@@ -334,17 +334,17 @@ public class BattleSystemManager : MonoBehaviour
         if (go.TryGetComponent<UnitBase>(out var ub))
         {
             ub.Initialize(stat);
-            
+
             var mover = ub.GetComponent<UnitMovementController>();
             if (mover) mover.SetMapBounds(mapBounds);
 
             ub.AssignTeam(TeamSide.Ally);
-            RegisterUnit(ub);              
-                                       
+            RegisterUnit(ub);
+
             return ub;
         }
-        Debug.Log($"[Spawn] {ub.name} team={ub.Team} stat={ub.UnitStat.name} id={ub.UnitStat.GetInstanceID()}");
 
+        Debug.Log($"[Spawn] 팀/스탯 로그는 TryGetComponent 성공 후에만 출력하세요.");
         Destroy(go);
         return null;
     }

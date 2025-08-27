@@ -8,7 +8,7 @@ public class OffensiveSkill : BaseSkill, IConfigurableSkill
     [Min(0)] public int skillAttackCount = 1;
     [Min(0)] public float hitInterval = 0.1f;
 
-    public void ApplyConfigFromStat(UnitStatBase stat)
+    public void ApplyConfigFromStat(UnitData stat)
     {
         if (stat == null || stat.active == null) return;
         if (stat.active.damageCoeff > 0f) skillDamageCoefficient = stat.active.damageCoeff;

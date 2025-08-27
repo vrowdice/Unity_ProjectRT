@@ -3,7 +3,7 @@ using UnityEngine;
 // 수치 미입력시 0으로
 
 [CreateAssetMenu(fileName = "NewUnitStat", menuName = "Battle/Unit Stat")]
-public class UnitStatBase : ScriptableObject
+public class UnitData : ScriptableObject
 {
     [Header("자기소개")]
     public string unitName;

@@ -29,12 +29,13 @@ public class UnitTargetingController : MonoBehaviour
 
     public void FindNewTarget()
     {
+        GameObject prev = TargetedEnemy;
         TargetedEnemy = null;
         if (owner == null) return;
 
         Collider2D[] hits = _opponentMask != 0
             ? Physics2D.OverlapCircleAll(owner.transform.position, owner.EnemySearchRange, _opponentMask)
-            : Physics2D.OverlapCircleAll(owner.transform.position, owner.EnemySearchRange); 
+            : Physics2D.OverlapCircleAll(owner.transform.position, owner.EnemySearchRange);
 
         float best = float.MaxValue;
         foreach (var h in hits)
@@ -52,7 +53,12 @@ public class UnitTargetingController : MonoBehaviour
                 TargetedEnemy = ub.gameObject;
             }
         }
+
+        if (prev == null && TargetedEnemy != null)
+            owner.GetComponent<UnitMovementController>()?.StopMove();
+
     }
+
 
     public int AcquireTargetsNonAlloc(List<UnitBase> outList, Vector3 center, float radius,
                                       int maxTargets = -1, bool preferCurrentFirst = true)

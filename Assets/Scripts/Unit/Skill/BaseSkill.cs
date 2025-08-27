@@ -3,7 +3,7 @@ using UnityEngine;
 
 public interface IConfigurableSkill
 {
-    void ApplyConfigFromStat(UnitStatBase stat);
+    void ApplyConfigFromStat(UnitData stat);
 }
 
 public abstract class BaseSkill : MonoBehaviour

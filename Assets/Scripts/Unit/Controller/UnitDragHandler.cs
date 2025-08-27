@@ -11,7 +11,7 @@ public class UnitDragHandler : MonoBehaviour,
 
     // 참조들
     private BoxCollider2D allowedArea;     // 배치 가능 영역
-    private UnitStatBase unitStatData;       
+    private UnitData unitStatData;       
     private BattleBeforeUI ui;               
     private Collider2D[] allColliders;
     private UnitBase unit;                   // 회수시 캐시는 매니저로 감
@@ -26,7 +26,7 @@ public class UnitDragHandler : MonoBehaviour,
         unit = GetComponent<UnitBase>();
     }
 
-    public void SetReferences(UnitStatBase stat, BoxCollider2D spawnArea, BattleBeforeUI uiRef)
+    public void SetReferences(UnitData stat, BoxCollider2D spawnArea, BattleBeforeUI uiRef)
     {
         unitStatData = stat;
         allowedArea = spawnArea;

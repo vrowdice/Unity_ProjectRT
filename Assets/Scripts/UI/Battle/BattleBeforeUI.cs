@@ -4,28 +4,40 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+[DisallowMultipleComponent]
 public class BattleBeforeUI : MonoBehaviour
 {
+    #region Inspector
+
     [Header("UI 참조")]
-    [SerializeField] private GameObject unitBoxPrefab;
-    [SerializeField] private Button battleStartButton;
-    [SerializeField] private Button modeChangeButton;
-    [SerializeField] private TextMeshProUGUI modeText;
-    [SerializeField] private Button toggleViewButton;
+    [SerializeField] private GameObject unitBoxPrefab;           // 각 유닛을 표시하는 UI 프리팹(=UnitBox)
+    [SerializeField] private Button battleStartButton;           // 전투 시작 버튼
+    [SerializeField] private Button modeChangeButton;            // 배치/회수 모드 전환 버튼
+    [SerializeField] private TextMeshProUGUI modeText;           // 현재 모드 표시 텍스트
+    [SerializeField] private Button toggleViewButton;            // 시점(아군/적) 토글 버튼
 
     [Header("목록 영역")]
-    [SerializeField] private RectTransform contentParent;
-    [SerializeField] private float spawnDelay = 0.05f;
+    [SerializeField] private RectTransform contentParent;        // UnitBox들이 놓일 부모
+    [SerializeField] private float spawnDelay = 0.05f;           // UnitBox 생성 간 텀
 
     [Header("Unit 카운터")]
     [SerializeField] private TextMeshProUGUI allyMeleeCountText;
     [SerializeField] private TextMeshProUGUI allyRangeCountText;
     [SerializeField] private TextMeshProUGUI allyDefenseCountText;
 
+    #endregion
+
+    #region State
+
+    // 유닛 박스 빠른 조회 맵
+    // key는 가급적 unitId 권장. 다만 이전 호환 고려해 unitName 사용.
+    // 필요시 UnitData에 unitId가 존재하면 unitId 사용으로 바꿔도 됨.
     private readonly Dictionary<string, UnitBox> unitBoxMap = new();
 
+    // 한 프레임 동안 UnitsChanged 반영 억제(배치-회수 동시 타이밍 깔끔하게)
     private int _suppressUnitsChangedUntilFrame = -1;
 
+    // 배치된 유닛 로컬 카운터(스폰 구역 내)
     private readonly Dictionary<UnitTagType, int> deployedLocal = new()
     {
         { UnitTagType.Melee,   0 },
@@ -33,10 +45,16 @@ public class BattleBeforeUI : MonoBehaviour
         { UnitTagType.Defense, 0 },
     };
 
+    // 모드 상태
     private bool isPlacementMode = true;
     public static bool IsInPlacementMode { get; private set; } = true;
 
     private CanvasGroup canvasGroup;
+    private WaitForSeconds _spawnDelayWait; // GC 감소를 위한 캐시
+
+    #endregion
+
+    #region Unity Lifetime
 
     private void Awake()
     {
@@ -46,6 +64,9 @@ public class BattleBeforeUI : MonoBehaviour
         if (battleStartButton) battleStartButton.onClick.AddListener(OnBattleStart);
         if (modeChangeButton) modeChangeButton.onClick.AddListener(OnModeChange);
         if (toggleViewButton) toggleViewButton.onClick.AddListener(OnToggleView);
+
+        // 코루틴 딜레이 캐시
+        _spawnDelayWait = new WaitForSeconds(Mathf.Max(0f, spawnDelay));
     }
 
     private void OnEnable()
@@ -63,11 +84,17 @@ public class BattleBeforeUI : MonoBehaviour
         if (mgr != null) mgr.UnitsChanged -= HandleUnitsChanged;
     }
 
-    public void InitDeploymentUI(List<UnitStatBase> unitStats)
+    #endregion
+
+    #region Public API (외부에서 초기화 호출)
+
+    public void InitDeploymentUI(List<UnitData> unitStats)
     {
+        // 기존 박스 정리
         if (contentParent)
         {
-            foreach (Transform c in contentParent) Destroy(c.gameObject);
+            foreach (Transform c in contentParent)
+                Destroy(c.gameObject);
         }
         unitBoxMap.Clear();
 
@@ -76,6 +103,7 @@ public class BattleBeforeUI : MonoBehaviour
         deployedLocal[UnitTagType.Range] = 0;
         deployedLocal[UnitTagType.Defense] = 0;
 
+        // 목록 렌더
         if (unitStats != null)
             StartCoroutine(SpawnUnitBoxes(unitStats));
 
@@ -86,6 +114,7 @@ public class BattleBeforeUI : MonoBehaviour
         RecomputeStartButton();
     }
 
+    /// 아군 배치 구역 내 실제 배치 수를 다시 읽어 카운터 갱신
     public void UpdateDeployedUnitCounters()
     {
         var mgr = BattleSystemManager.Instance;
@@ -101,28 +130,36 @@ public class BattleBeforeUI : MonoBehaviour
         RecomputeStartButton();
     }
 
-    private IEnumerator SpawnUnitBoxes(List<UnitStatBase> list)
+    #endregion
+
+    #region Unit List Rendering
+
+    private IEnumerator SpawnUnitBoxes(List<UnitData> list)
     {
-        var map = new Dictionary<string, (UnitStatBase stat, int count)>();
+        // 같은 이름의 유닛을 묶어 한 박스에 수량 집계
+        var map = new Dictionary<string, (UnitData stat, int count)>();
         foreach (var s in list)
         {
             if (!s) continue;
-            if (map.ContainsKey(s.unitName)) map[s.unitName] = (s, map[s.unitName].count + 1);
-            else map[s.unitName] = (s, 1);
+            string key = !string.IsNullOrEmpty(s.unitName) ? s.unitName : s.name; // unitId 있으면 여기로 교체 가능
+            if (map.ContainsKey(key)) map[key] = (s, map[key].count + 1);
+            else map[key] = (s, 1);
         }
 
         foreach (var kv in map.Values)
         {
             AddUnitToUIList(kv.stat, kv.count);
-            yield return new WaitForSeconds(spawnDelay);
+            yield return _spawnDelayWait;
         }
     }
 
-    private void AddUnitToUIList(UnitStatBase stat, int count)
+    private void AddUnitToUIList(UnitData stat, int count)
     {
         if (!stat || !unitBoxPrefab || !contentParent) return;
 
-        if (unitBoxMap.TryGetValue(stat.unitName, out var box))
+        string key = !string.IsNullOrEmpty(stat.unitName) ? stat.unitName : stat.name;
+
+        if (unitBoxMap.TryGetValue(key, out var box))
         {
             box.IncreaseUnitCount(count);
             return;
@@ -135,9 +172,18 @@ public class BattleBeforeUI : MonoBehaviour
         if (ub)
         {
             ub.Init(stat, count, this);
-            unitBoxMap[stat.unitName] = ub;
+            unitBoxMap[key] = ub;
+        }
+        else
+        {
+            Debug.LogError("[BattleBeforeUI] unitBoxPrefab에 UnitBox 컴포넌트가 없습니다.");
+            Destroy(go);
         }
     }
+
+    #endregion
+
+    #region Mode & View Toggle
 
     private void OnModeChange()
     {
@@ -167,40 +213,50 @@ public class BattleBeforeUI : MonoBehaviour
         RecomputeStartButton();
     }
 
-    // 배치 / 회수
-    public UnitBase RequestPlaceUnit(UnitStatBase stat)
+    #endregion
+
+    #region Place / Recall
+
+    /// 유닛 배치 요청(버튼/드래그에서 호출)
+    public UnitBase RequestPlaceUnit(UnitData stat)
     {
         if (BattleSystemManager.Instance == null || stat == null) return null;
 
-        if (!unitBoxMap.TryGetValue(stat.unitName, out var box) || box.CurrentCount <= 0)
+        string key = !string.IsNullOrEmpty(stat.unitName) ? stat.unitName : stat.name;
+
+        if (!unitBoxMap.TryGetValue(key, out var box) || box.CurrentCount <= 0)
         {
-            Debug.LogWarning("남은 유닛이 없거나 유닛 박스를 찾을 수 없습니다.");
+            Debug.LogWarning("[BattleBeforeUI] 남은 유닛이 없거나 유닛 박스를 찾을 수 없습니다.");
             return null;
         }
 
+        // UI 선반영
         box.IncreaseUnitCount(-1);
-
         SuppressUnitsChangedForOneFrame();
 
+        // 실제 스폰
         var spawned = BattleSystemManager.Instance.RequestSpawnAlly(stat);
 
         if (spawned != null)
         {
+            // 드래그 핸들러 초기 설정
             StartCoroutine(InitializeDragHandler(spawned, stat));
 
+            // 카운터(+1)
             BumpDeployed(stat.unitTagType, +1);
         }
         else
         {
-            Debug.LogWarning("유닛 소환 실패, 카운트를 복구합니다.");
+            Debug.LogWarning("[BattleBeforeUI] 유닛 소환 실패, 카운트를 복구합니다.");
             box.IncreaseUnitCount(1);
-            _suppressUnitsChangedUntilFrame = -1; 
+            _suppressUnitsChangedUntilFrame = -1;
         }
         return spawned;
     }
 
-    private IEnumerator InitializeDragHandler(UnitBase spawned, UnitStatBase stat)
+    private IEnumerator InitializeDragHandler(UnitBase spawned, UnitData stat)
     {
+        // 스폰 직후 프레임 끝에서 참조 연결
         yield return new WaitForEndOfFrame();
 
         var dragHandler = spawned.GetComponent<UnitDragHandler>();
@@ -211,10 +267,11 @@ public class BattleBeforeUI : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"[DragHandler] {spawned.name} 유닛에서 UnitDragHandler를 찾을 수 없습니다.");
+            Debug.LogError($"[BattleBeforeUI] {spawned.name}에서 UnitDragHandler를 찾지 못했습니다.");
         }
     }
 
+    /// 유닛 회수 요청(드래그/버튼)
     public bool RequestRecallUnit(UnitBase unit)
     {
         if (!unit || !BattleSystemManager.Instance) return false;
@@ -224,23 +281,26 @@ public class BattleBeforeUI : MonoBehaviour
         bool ok = BattleSystemManager.Instance.RecallAlly(unit);
         if (ok)
         {
-            OnUnitRecalled(unit.UnitStat);
+            OnUnitRecalled(unit.UnitStat); 
         }
         return ok;
     }
 
-    /// 드래그핸들러/버튼 등에서 회수 시 ui를 먼저 즉시 갱신하기 위해 호출.
-    public void OnUnitRecalled(UnitStatBase stat)
+    public void OnUnitRecalled(UnitData stat)
     {
         if (!stat) return;
 
-        if (unitBoxMap.TryGetValue(stat.unitName, out var box))
-            box.IncreaseUnitCount(1); 
+        string key = !string.IsNullOrEmpty(stat.unitName) ? stat.unitName : stat.name;
 
-        BumpDeployed(stat.unitTagType, -1);   
+        if (unitBoxMap.TryGetValue(key, out var box))
+            box.IncreaseUnitCount(1);
+
+        BumpDeployed(stat.unitTagType, -1);
     }
 
-    // 전투 시작
+    #endregion
+
+    #region Battle Start
 
     private void OnBattleStart()
     {
@@ -251,7 +311,9 @@ public class BattleBeforeUI : MonoBehaviour
     public void ShowUI() => gameObject.SetActive(true);
     public void HideUI() => gameObject.SetActive(false);
 
-    // 내부 유틸
+    #endregion
+
+    #region Internals (Counters, Buttons, Events)
 
     public void SuppressUnitsChangedForOneFrame()
     {
@@ -264,7 +326,7 @@ public class BattleBeforeUI : MonoBehaviour
 
         deployedLocal[tag] = Mathf.Max(0, deployedLocal[tag] + delta);
 
-        SetCounterTexts();    
+        SetCounterTexts();
         RecomputeStartButton();
     }
 
@@ -279,7 +341,8 @@ public class BattleBeforeUI : MonoBehaviour
     {
         if (!t) return;
         t.SetText("{0}", v);
-        t.ForceMeshUpdate();        
+        t.ForceMeshUpdate();
+
         Canvas.ForceUpdateCanvases();
     }
 
@@ -295,7 +358,8 @@ public class BattleBeforeUI : MonoBehaviour
             totalRemain += Mathf.Max(0, box.CurrentCount);
         }
 
-        battleStartButton.interactable = (totalRemain == 0);
+        // 보유 병력을 모두 배치해야만 전투 시작 가능하게 만들고 싶다면 아래 주석을 해제
+        // battleStartButton.interactable = (totalRemain == 0);
     }
 
     private void HandleUnitsChanged()
@@ -304,4 +368,6 @@ public class BattleBeforeUI : MonoBehaviour
 
         UpdateDeployedUnitCounters();
     }
+
+    #endregion
 }
