@@ -78,7 +78,7 @@ public class RequestPanel : BasePanel
         {
             FactionEntry _tmpEntry = item.Value;
 
-            if (_tmpEntry.m_data.m_factionType == FactionType.TYPE.None || !_tmpEntry.m_state.m_have)
+            if (_tmpEntry.m_data.m_factionType == FactionType.TYPE.None || _tmpEntry.m_state.m_like <= 0)
             {
                 continue;
             }
@@ -137,7 +137,7 @@ public class RequestPanel : BasePanel
             GameObject _btnObj = Instantiate(m_requestBtnPrefeb, m_requestBtnScrollViewContentTrans);
             RequestBtn _requestBtn = _btnObj.GetComponent<RequestBtn>();
             _requestBtn.Initialize(
-                true,
+                argIsAcceptable,  // 올바른 값 전달
                 this,
                 m_gameDataManager.GetFactionEntry(_state.m_factionType).m_data.m_icon,
                 m_gameDataManager.GetRequestIcon(_state.m_requestType),
@@ -158,8 +158,6 @@ public class RequestPanel : BasePanel
     /// 1 = 요청중
     public void SelectRequestContent(int argPanelIndex)
     {
-        GameObjectUtils.ClearChildren(m_factionLikeScrollViewContentTrans);
-
         switch (argPanelIndex)
         {
             case 0:
@@ -182,8 +180,126 @@ public class RequestPanel : BasePanel
         m_mainUIManager.UpdateAllMainText();
     }
 
+    public void RefuseRequest(RequestState argState)
+    {
+        m_gameDataManager.RefuseRequest(argState);
+        UpdateRequestBtns();
+
+        m_mainUIManager.UpdateAllMainText();
+    }
+
+    public void CompleteRequest(RequestState argState)
+    {
+        Debug.Log($"Completing request: {argState.m_title}");
+        
+        // 조건 확인
+        if (!IsRequestConditionMet(argState))
+        {
+            Debug.Log("Request conditions not met. Cannot complete.");
+            GameManager.Instance.Warning("Request conditions not met. Cannot complete.");
+            return;
+        }
+        
+        // 요청 완료 처리
+        // 보상 지급
+        if (GameManager.Instance != null)
+        {
+            // 리소스 보상 지급
+            foreach (ResourceAmount resourceReward in argState.m_resourceRewardList)
+            {
+                bool success = GameManager.Instance.TryChangeResource(resourceReward.m_type, resourceReward.m_amount);
+            }
+        }
+        else
+        {
+            Debug.LogError("GameManager.Instance is null!");
+        }
+
+        // 팩션 호감도 증가
+        if (argState.m_factionType != FactionType.TYPE.None)
+        {
+            var factionEntry = m_gameDataManager.GetFactionEntry(argState.m_factionType);
+            if (factionEntry != null)
+            {
+                int oldLike = factionEntry.m_state.m_like;
+                factionEntry.m_state.m_like += argState.m_factionAddLike;
+                Debug.Log($"Faction {argState.m_factionType} like increased: {oldLike} -> {factionEntry.m_state.m_like} (+{argState.m_factionAddLike})");
+            }
+            else
+            {
+                Debug.LogError($"Faction entry not found for {argState.m_factionType}");
+            }
+        }
+
+        // 요청 목록에서 제거
+        bool removed = m_gameDataManager.AcceptedRequestList.Remove(argState);
+
+        InitializeRequestPanel();
+        m_mainUIManager.UpdateAllMainText();
+    }
+
+    /// <summary>
+    /// 요청 조건이 달성되었는지 확인
+    /// </summary>
+    /// <param name="argState">확인할 요청 상태</param>
+    /// <returns>조건 달성 여부</returns>
+    private bool IsRequestConditionMet(RequestState argState)
+    {
+        if (argState.m_requestCompleteCondition == null)
+        {
+            Debug.LogError("RequestCompleteCondition is null");
+            return false;
+        }
+
+        var condition = argState.m_requestCompleteCondition;
+        
+        switch (argState.m_requestType)
+        {
+            case RequestType.TYPE.Battle:
+                // 전투 승리 조건 - 현재는 단순히 목표값 확인
+                return condition.m_nowCompleteValue >= condition.m_completeValue;
+                
+            case RequestType.TYPE.Conquest:
+                // 영토 정복 조건 - 현재는 단순히 목표값 확인
+                return condition.m_nowCompleteValue >= condition.m_completeValue;
+                
+            case RequestType.TYPE.Production:
+                // 특정 자원 생산 조건 - 현재 보유량 확인
+                if (GameManager.Instance != null)
+                {
+                    ResourceType.TYPE resourceType = (ResourceType.TYPE)condition.m_completeTargetInfo;
+                    long currentAmount = GameManager.Instance.GetResource(resourceType);
+                    return currentAmount >= condition.m_completeValue;
+                }
+                return false;
+                
+            case RequestType.TYPE.Stockpile:
+                // 특정 자원 보유 조건 - 현재 보유량 확인
+                if (GameManager.Instance != null)
+                {
+                    ResourceType.TYPE resourceType = (ResourceType.TYPE)condition.m_completeTargetInfo;
+                    long currentAmount = GameManager.Instance.GetResource(resourceType);
+                    return currentAmount >= condition.m_completeValue;
+                }
+                return false;
+                
+            default:
+                Debug.LogError($"Unknown request type: {argState.m_requestType}");
+                return false;
+        }
+    }
+
+    public void CancelRequest(RequestState argState)
+    {
+        // 요청 취소 처리
+        // 요청 목록에서 제거
+        m_gameDataManager.AcceptedRequestList.Remove(argState);
+        UpdateRequestBtns();
+        m_mainUIManager.UpdateAllMainText();
+    }
+
     public void OpenRequestDetailPanel(bool argIsAcceptable, RequestState argRequestIndex)
     {
-        m_requestDetailPanel.OnOpen(this, argIsAcceptable, argRequestIndex);
+        m_requestDetailPanel.OnOpen(m_mainUIManager ,this, argIsAcceptable, argRequestIndex);
     }
 }

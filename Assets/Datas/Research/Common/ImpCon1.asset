@@ -20,6 +20,8 @@ MonoBehaviour:
   m_prerequisites: []
   m_unlocks:
   - {fileID: 11400000, guid: b65a10079fe70ba4da27114df0da3796, type: 2}
+  m_effects:
+  - {fileID: 11400000, guid: de8f4061ff66e1a40b15aeefa61ab509, type: 2}
   m_icon: {fileID: 0}
   m_isFirstLocked: 0
   m_factionType: 0

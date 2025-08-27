@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 895ca96f05c98c34d94c32946029dd9f, type: 3}
   m_Name: Resource2
   m_EditorClassIdentifier: 
-  m_type: 0
   m_isGood: 1
   m_minDuration: 1
   m_maxDuration: 3
-  m_title: "Great Forest's Silver Blessing"
-  m_description: "It's been a long time since the small saplings from decades ago have grown this much."
+  m_title: Great Forest's Silver Blessing
+  m_description: It's been a long time since the small saplings from decades ago
+    have grown this much.
   m_conditionList: []
   m_effectList:
-  - {fileID: 11400000, guid: 0a1e6652d4d6e8d4aa01b05fcbbc8125, type: 2}
+  - {fileID: 11400000, guid: 8fe58a04d47a79748b590554ec4d5b3e, type: 2}

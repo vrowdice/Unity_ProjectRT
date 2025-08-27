@@ -19,7 +19,21 @@ MonoBehaviour:
   m_icon: {fileID: 0}
   m_factionColor: {r: 0, g: 0, b: 0, a: 0}
   m_traitDescription: 
-  m_uniqueResearch:
-  - {fileID: 11400000, guid: ad0402f93f10c354fa3dee46042d1e8c, type: 2}
-  - {fileID: 11400000, guid: af4ef22f1e450484ab9265b2c63b2323, type: 2}
-  - {fileID: 11400000, guid: fd4abcbf5e0b0d543b73791eb67a9e4c, type: 2}
+  m_research:
+  - {fileID: 11400000, guid: 0bac6e7466474df4d9429c137301f152, type: 2}
+  - {fileID: 11400000, guid: 888cc62062e7c3a40b5e1f778892229f, type: 2}
+  - {fileID: 11400000, guid: 3d8c4694c2a878e4ca91840f8c67e1a7, type: 2}
+  - {fileID: 11400000, guid: 572606cca91ab764bb2401968d3ba84b, type: 2}
+  - {fileID: 11400000, guid: 8182f9ab58583c6418c476950459a6a1, type: 2}
+  - {fileID: 11400000, guid: 22d225f7f6f5a1c4fbd36dd6f4ecfa1a, type: 2}
+  - {fileID: 11400000, guid: b49b23e9f76cc084cbd9c0c49003e3f6, type: 2}
+  - {fileID: 11400000, guid: 29fddd499d8246742ad46d8d064fd1ab, type: 2}
+  - {fileID: 11400000, guid: c285d0ab1c901074fb5b7b51021d990e, type: 2}
+  - {fileID: 11400000, guid: 888f8179378eaad4581fb70987d3a03d, type: 2}
+  - {fileID: 11400000, guid: 2173e37303694d34d9e546b5171646dc, type: 2}
+  - {fileID: 11400000, guid: f0a42569765ebfe49addf79d8aa065b3, type: 2}
+  - {fileID: 11400000, guid: 18872c71970a711478d5619c66c3ab91, type: 2}
+  - {fileID: 11400000, guid: d5fecf19f6600d441b4a29f50f1a02b4, type: 2}
+  - {fileID: 11400000, guid: 5cbe9b52898b217419a85c5ad40284fd, type: 2}
+  - {fileID: 11400000, guid: 2b2e7c1f0a37fb145a762c00f7aee707, type: 2}
+  - {fileID: 11400000, guid: 69907a7b424eb2f46b60dec0a136cc31, type: 2}

@@ -14,12 +14,12 @@ public class ResourceIconText : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_changeText = null;
 
-    //°¢°¢ ÃÊ±âÈ­ ÇÊ¿ä
-    //ÇØ´ç ÇÔ¼ö ¼±Çà ½ÇÇà ÈÄ º¯°æ ÅÃ½ºÆ® ½ÇÇà
+    //ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ ï¿½Ê¿ï¿½
+    //ï¿½Ø´ï¿½ ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
     public void InitializeMainText(ResourceType.TYPE argResourceType, long argBaseAmount)
     {
         if (m_icon != null)
-            m_icon.sprite = GameManager.Instance.GameDataManager.GetResourceIcon(argResourceType);
+            m_icon.sprite = GameDataManager.Instance.GetResourceIcon(argResourceType);
 
         if (m_text != null)
         {
@@ -33,7 +33,7 @@ public class ResourceIconText : MonoBehaviour
     public void InitializeMainText(TokenType.TYPE argTokenType, long argBaseAmount)
     {
         if (m_icon != null)
-            m_icon.sprite = GameManager.Instance.GameDataManager.GetTokenIcon(argTokenType);
+            m_icon.sprite = GameDataManager.Instance.GetTokenIcon(argTokenType);
 
         if (m_text != null)
         {

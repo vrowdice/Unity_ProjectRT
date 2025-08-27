@@ -4,10 +4,14 @@ using UnityEngine;
 
 public class MainPanel : BasePanel
 {
+    [Header("MainPanel")]
+    [SerializeField]
+    MinimapPanel m_minimapPanel = null;
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        // 초기화 로직이 필요한 경우 여기에 추가
     }
 
     // Update is called once per frame
@@ -18,9 +22,24 @@ public class MainPanel : BasePanel
 
     protected override void OnPanelOpen()
     {
-        // 메인 패널은 정보 패널을 표시하지 않음
-        m_showInfoPanel = false;
         SetPanelName("");
         SetBuildingLevel("");
+    }
+
+    public void ClickSkipBtn()
+    {
+
+    }
+
+    public void ClickMinimapBtn()
+    {
+        if (m_minimapPanel != null)
+        {
+            m_minimapPanel.OpenMinimap(GameDataManager.Instance, m_mainUIManager);
+        }
+        else
+        {
+            Debug.LogError("MinimapPanel is not assigned.");
+        }
     }
 }
