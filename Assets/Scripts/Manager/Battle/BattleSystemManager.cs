@@ -44,8 +44,8 @@ public class BattleSystemManager : MonoBehaviour
     [SerializeField] private CameraDragPan camPan;
     [SerializeField] private BoxCollider2D mapBounds;
 
-    [Header("스폰 충돌 검사(무할당=All)")]
-    [SerializeField] private LayerMask unitLayerMask = -1;
+    [Header("Unit 거리 조절")]
+    [SerializeField] private LayerMask unitLayerMask = 0;
 
     #endregion
 
@@ -67,8 +67,9 @@ public class BattleSystemManager : MonoBehaviour
     public Transform DefenseCameraPoint => defenseCameraPoint;
 
 
-    public event UnityAction UnitsChanged;
 
+
+    public event UnityAction UnitsChanged;
     private BattleRuntimeManager runtime;
     private BattleUIManager ui;
 
@@ -272,12 +273,14 @@ public class BattleSystemManager : MonoBehaviour
 
                 if (ub.UnitStat == null)
                 {
-                    Debug.LogError($"[BSM] 수동 배치 '{ub.name}'의 UnitStat이 null입니다. Initialize(stat) 필요.");
+                    Debug.LogError($"[BSM] 수동 배치 '{ub.name}'의 UnitData이 null입니다. Initialize(stat) 필요.");
                     continue;
                 }
 
                 FastAssignTeamAndMask(ub, TeamSide.Enemy);
                 AddEnemyUnit(ub);
+
+
             }
             yield break;
         }
@@ -320,9 +323,7 @@ public class BattleSystemManager : MonoBehaviour
         }
     }
 
-    // BattleSystemManager.cs
-
-    public UnitBase RequestSpawnAlly(UnitStatBase stat)
+    public UnitBase RequestSpawnAlly(UnitData stat)  
     {
         if (!stat || !stat.prefab) return null;
         var area = GetAllySpawnArea();
@@ -333,12 +334,17 @@ public class BattleSystemManager : MonoBehaviour
         if (go.TryGetComponent<UnitBase>(out var ub))
         {
             ub.Initialize(stat);
+
+            var mover = ub.GetComponent<UnitMovementController>();
+            if (mover) mover.SetMapBounds(mapBounds);
+
             ub.AssignTeam(TeamSide.Ally);
-            RegisterUnit(ub);              
-                                       
+            RegisterUnit(ub);
+
             return ub;
         }
 
+        Debug.Log($"[Spawn] 팀/스탯 로그는 TryGetComponent 성공 후에만 출력하세요.");
         Destroy(go);
         return null;
     }
@@ -350,10 +356,10 @@ public class BattleSystemManager : MonoBehaviour
         bool removed = allyUnits.Remove(unit);
         if (!removed) return false;
 
+        unit.OnDied -= HandleUnitDied;  
         Destroy(unit.gameObject);
 
-        UnitsChanged?.Invoke();         
-
+        UnitsChanged?.Invoke();
         return true;
     }
 
@@ -393,6 +399,9 @@ public class BattleSystemManager : MonoBehaviour
             Debug.LogWarning($"[BSM] TeamSide.Neutral 유닛은 등록하지 않음: {unit.name}");
         }
 
+        unit.OnDied -= HandleUnitDied;
+        unit.OnDied += HandleUnitDied;
+
         UnitsChanged?.Invoke();
     }
 
@@ -400,11 +409,18 @@ public class BattleSystemManager : MonoBehaviour
     {
         if (!unit) return;
 
+        unit.OnDied -= HandleUnitDied; 
+
         allyUnits.Remove(unit);
         enemyUnits.Remove(unit);
 
         UnitsChanged?.Invoke();
         CheckWinCondition();
+    }
+
+    private void HandleUnitDied(UnitBase dead)
+    {
+        UnregisterUnit(dead);
     }
 
     public void AddEnemyUnit(UnitBase unit)
@@ -414,6 +430,10 @@ public class BattleSystemManager : MonoBehaviour
 
         FastAssignTeamAndMask(unit, TeamSide.Enemy);
         enemyUnits.Add(unit);
+
+        var mover = unit.GetComponent<UnitMovementController>();
+        if (mover) mover.SetMapBounds(mapBounds);
+
         UnitsChanged?.Invoke();
     }
 
@@ -481,7 +501,6 @@ public class BattleSystemManager : MonoBehaviour
         if (!col) { Debug.LogError("[BSM] Collider null"); return Vector3.zero; }
 
         var b = col.bounds;
-
         const int MAX_TRY = 20;
         const float RADIUS = 0.3f;
 
@@ -489,17 +508,34 @@ public class BattleSystemManager : MonoBehaviour
         {
             float x = Random.Range(b.min.x, b.max.x);
             float y = Random.Range(b.min.y, b.max.y);
-            var p = new Vector3(x, y, 0f);
+            var p = new Vector3(x, y, 0.0f);
 
-            // 충돌 없으면 채택
             int hit = Physics2D.OverlapCircleNonAlloc(p, RADIUS, s_overlapBuf, unitLayerMask);
             if (hit == 0) return p;
         }
-
-        // 실패 시 마지막으로 랜덤 포인트 반환
         return new Vector3(Random.Range(b.min.x, b.max.x), Random.Range(b.min.y, b.max.y), 0.0f);
     }
 
+    #endregion
+
+    #region Unit Event Hooks for UI refresh
+    private void HookUnit(UnitBase u)
+    {
+        if (!u) return;
+        u.OnDied -= OnUnitDied_UIRefresh;
+        u.OnDied += OnUnitDied_UIRefresh;
+    }
+
+    private void UnhookUnit(UnitBase u)
+    {
+        if (!u) return;
+        u.OnDied -= OnUnitDied_UIRefresh;
+    }
+
+    private void OnUnitDied_UIRefresh(UnitBase dead)
+    {
+        UnitsChanged?.Invoke();
+    }
     #endregion
 
     #region Camera Pan Bounds

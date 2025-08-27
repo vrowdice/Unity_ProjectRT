@@ -21,11 +21,23 @@ public class RangedAttack : BaseAttack
 
         for (int i = 0; i < shots; i++)
         {
-            if (!IsTargetAlive(targetGO)) break;
             if (i > 0 && step > 0f) yield return new WaitForSeconds(step);
+            if (!IsTargetAlive(targetGO)) break;
+
+            if (!InEffectiveRange(attacker.transform, targetGO.transform, 0.9f)) break;
 
             float rawDamage = attacker.AttackPower * attacker.DamageCoefficient;
             var origin = (shootPoint != null) ? shootPoint : attacker.transform;
+
+            // 발사체 미설정 시 안전 폴백
+            // 그냥 없이 공격
+            var useDelivery = delivery;
+            if (useDelivery == HitDeliveryStrategy.Projectile && projectilePrefab == null)
+                useDelivery = HitDeliveryStrategy.Instant; 
+
+            HitDeliverer.Deliver(
+                attacker, targetGO, rawDamage, useDelivery,
+                projectilePrefab, origin, contextName: name);
 
             HitDeliverer.Deliver(
                 attacker,

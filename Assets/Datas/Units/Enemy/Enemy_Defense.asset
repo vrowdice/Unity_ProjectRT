@@ -10,33 +10,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1b380b4e2ae264a42b0bcd4938beb528, type: 3}
-  m_Name: Wolf_Range1
+  m_Name: Enemy_Defense
   m_EditorClassIdentifier: 
-  unitName: wewe
+  unitName: sfsf
   unitIcon: {fileID: 0}
-  factionType: 1
-  unitTagType: 0
-  attackPower: 5
-  defensePower: 3
-  maxHealth: 350
-  moveSpeed: 50
-  attackRange: 300
-  enemySearchRange: 6
-  attackSpeed: 15
+  factionType: 5
+  unitTagType: 2
+  attackPower: 20
+  defensePower: 10
+  maxHealth: 5
+  moveSpeed: 5
+  attackRange: 50
+  enemySearchRange: 3
+  attackSpeed: 10
   attackDelayRatio: 1
-  attackCount: 2
-  damageCoefficient: 0.75
+  attackCount: 1
+  damageCoefficient: 0.9
   baseMana: 0
   maxMana: 50
   manaRecoveryOnAttack: 10
   manaRecoveryPerSecond: 2
   active:
-    displayName: DoubleShot
+    displayName: GroupRecover
     skillLogic: 
     activeSkillType: 
     isSkillFinished: 0
     manaCost: 50
-    damageCoeff: 3
+    damageCoeff: 0
     attackCount: 0
     multiTargetRange: 0
     maxMultiTarget: 0
@@ -45,12 +45,12 @@ MonoBehaviour:
     areaAttackPrefab: {fileID: 0}
     areaAttackDirection: 
     areaAttackSpawnPosition: 
-    bonusEffectKey: MarkHunted
+    bonusEffectKey: B_EnhanceAttackSpeed
   passive:
     passiveLogic: 
     passiveCoeff1: 0
     passiveRange1: 0
     passiveCoeff2: 0
     passiveRange2: 0
-  prefab: {fileID: 7622308344849817174, guid: 52bf6e433a495b444acfa2aa1b74ced3, type: 3}
+  prefab: {fileID: 7622308344849817174, guid: b60e028f8b37de6409dae31b35afda1a, type: 3}
   unitIllustration: {fileID: 0}

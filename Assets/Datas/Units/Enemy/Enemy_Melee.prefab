@@ -13,13 +13,16 @@ GameObject:
   - component: {fileID: 1417197230055112447}
   - component: {fileID: -7034959524798964637}
   - component: {fileID: -7880659660371984583}
-  - component: {fileID: -9065248132271531539}
-  - component: {fileID: 4805266689067302322}
-  - component: {fileID: 4837668002567834425}
-  - component: {fileID: -8204378220083167667}
+  - component: {fileID: -8417917059010784136}
+  - component: {fileID: 2341903776392395555}
+  - component: {fileID: 2400582571196771288}
+  - component: {fileID: 3893418127338917686}
+  - component: {fileID: 562004514703627598}
+  - component: {fileID: -2278443925449410881}
+  - component: {fileID: 8575919834311764146}
   m_Layer: 7
-  m_Name: Wolf_Defence
-  m_TagString: Defense
+  m_Name: Enemy_Melee
+  m_TagString: Melee
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -51,7 +54,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 658834302946056439df5936296b03a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialStat: {fileID: 11400000, guid: 94dbc4395c07cef499c5380fe4b26599, type: 2}
+  initialStat: {fileID: 11400000, guid: 73c5d6a96f3889441b6c42913cc9933c, type: 2}
 --- !u!114 &1417197230055112447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -69,6 +72,8 @@ MonoBehaviour:
     m_Bits: 256
   skin: 0.02
   stopEpsilon: 0.01
+  mapBounds: {fileID: 0}
+  clampToMapBounds: 1
 --- !u!212 &-7034959524798964637
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -111,7 +116,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: ad65963212e8e4a43a106f2bcacf3c0f, type: 3}
-  m_Color: {r: 1, g: 0.39811313, b: 0.39811313, a: 1}
+  m_Color: {r: 1, g: 0.9758732, b: 0.4584905, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -166,7 +171,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1.15, y: 0.98}
   m_EdgeRadius: 0
---- !u!114 &-9065248132271531539
+--- !u!114 &-8417917059010784136
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -178,14 +183,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b8c165641d7668439b00c0e8d53f2a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackLogic: {fileID: 0}
-  skillLogic: {fileID: 0}
+  attackLogic: {fileID: 2400582571196771288}
+  skillLogic: {fileID: 562004514703627598}
   stopAtRangePercent: 0.9
   retargetEvery: 0.2
   releaseRangeMultiplier: 1
   resetManaOnSkill: 1
   keepMarchingWhenNoTarget: 1
---- !u!114 &4805266689067302322
+--- !u!114 &2341903776392395555
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -197,8 +202,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 497ea741daa632540a6f851b45dbb138, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  owner: {fileID: 0}
---- !u!114 &4837668002567834425
+  owner: {fileID: 4300245392352757035}
+--- !u!114 &2400582571196771288
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -207,18 +212,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 7622308344849817174}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1729c817c6519f544b751bc8135db3f8, type: 3}
+  m_Script: {fileID: 11500000, guid: 37896842628c5a34089899a311cfd1a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skillName: ThirstOfHunt
-  manaCost: 50
-  otherSkillRange: 500
-  otherSkillCoefficient: 10
-  includeCaster: 0
-  freezeRigidbody2D: 1
-  freezeAnimatorRootMotion: 1
-  lockYByMover: 1
---- !u!114 &-8204378220083167667
+  attackRange: 0
+--- !u!114 &3893418127338917686
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -230,3 +228,82 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3dd16535e1b414e4eb750fa0fab857a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &562004514703627598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dab8d26cdcce0ca4fbcaa51b21dbb7f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  skillName: FangStrike
+  manaCost: 50
+  skillDamageCoefficient: 1.5
+  skillAttackCount: 1
+  hitInterval: 0
+--- !u!50 &-2278443925449410881
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 1
+  m_SleepingMode: 1
+  m_CollisionDetection: 1
+  m_Constraints: 4
+--- !u!70 &8575919834311764146
+CapsuleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 1.15, y: 0.98}
+  m_Direction: 0

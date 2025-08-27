@@ -4,10 +4,10 @@ using UnityEngine;
 public class UnitBase : MonoBehaviour
 {
     [Header("초기 템플릿")]
-    [SerializeField] private UnitStatBase initialStat;
+    [SerializeField] private UnitData initialStat;
 
-    private UnitStatBase stat;
-    public UnitStatBase UnitStat => stat;
+    private UnitData stat;
+    public UnitData UnitStat => stat;
 
     // 파생/최종 값(컨트롤러가 여길 인식함)
     public string UnitName { get; private set; }
@@ -90,10 +90,14 @@ public class UnitBase : MonoBehaviour
         }
     }
 
-    public void Initialize(UnitStatBase newStat)
+    public void Initialize(UnitData newStat)
     {
         if (!newStat) { Debug.LogError($"[{name}] Initialize 실패: stat null"); return; }
         stat = newStat;
+
+        stat = ScriptableObject.Instantiate(newStat);
+        stat.name += " (Runtime)";
+        stat.hideFlags = HideFlags.DontSave;
 
         // SO 기본값
         float attackPower = Mathf.Max(0.0f, stat.attackPower);
@@ -113,7 +117,7 @@ public class UnitBase : MonoBehaviour
         float manaPerSec = Mathf.Max(0.0f, stat.manaRecoveryPerSecond);
 
         // 프리팹 오버라이드 병합
-        var ov = GetComponent<UnitStatOverride>();
+        var ov = GetComponent<UnitDataOverride>();
         if (ov)
         {
             attackPower = ov.attackPower.Merge(attackPower);

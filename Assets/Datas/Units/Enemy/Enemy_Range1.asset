@@ -10,34 +10,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1b380b4e2ae264a42b0bcd4938beb528, type: 3}
-  m_Name: Wolf_Melee1
+  m_Name: Enemy_Range1
   m_EditorClassIdentifier: 
-  unitName: eded
+  unitName: wewe
   unitIcon: {fileID: 0}
-  factionType: 1
-  unitTagType: 1
-  attackPower: 5
-  defensePower: 10
-  maxHealth: 600
-  moveSpeed: 50
-  attackRange: 75
-  attackSpeed: 10
+  factionType: 8
+  unitTagType: 0
+  attackPower: 20
+  defensePower: 3
+  maxHealth: 350
+  moveSpeed: 5
+  attackRange: 300
+  enemySearchRange: 6
+  attackSpeed: 15
   attackDelayRatio: 1
+  attackCount: 2
+  damageCoefficient: 0.75
   baseMana: 0
-  maxMana: 30
+  maxMana: 50
   manaRecoveryOnAttack: 10
   manaRecoveryPerSecond: 2
-  attackCount: 1
-  damageCoefficient: 1.2
-  enemySearchRange: 3
-  baseAttackBonusEffect: 
   active:
-    displayName: FangStrike
+    displayName: DoubleShot
     skillLogic: 
     activeSkillType: 
     isSkillFinished: 0
     manaCost: 50
-    damageCoeff: 1.5
+    damageCoeff: 3
     attackCount: 0
     multiTargetRange: 0
     maxMultiTarget: 0
@@ -46,12 +45,12 @@ MonoBehaviour:
     areaAttackPrefab: {fileID: 0}
     areaAttackDirection: 
     areaAttackSpawnPosition: 
-    bonusEffectKey: X / D_Stun(1.5)
+    bonusEffectKey: MarkHunted
   passive:
     passiveLogic: 
     passiveCoeff1: 0
     passiveRange1: 0
     passiveCoeff2: 0
     passiveRange2: 0
-  prefab: {fileID: 7622308344849817174, guid: 4d522838a7872d046bb457f84af68a58, type: 3}
+  prefab: {fileID: 7622308344849817174, guid: 18608b22a2a8cdd45a40c94dc47b8f5a, type: 3}
   unitIllustration: {fileID: 0}

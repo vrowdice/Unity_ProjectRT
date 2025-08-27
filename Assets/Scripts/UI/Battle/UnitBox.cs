@@ -4,14 +4,14 @@ using UnityEngine.UI;
 
 public class UnitBox : MonoBehaviour
 {
-    // === UI 참조 ===
+    // UI 참조
     [SerializeField] private Image unitIcon;
     [SerializeField] private TextMeshProUGUI unitNameText;
     [SerializeField] private TextMeshProUGUI countText;
     [SerializeField] private Button spawnButton;
 
-    // === 데이터 ===
-    private UnitStatBase unitStat;
+    // 데이터
+    private UnitData unitStat;
     private int currentCount;
     private BattleBeforeUI battleBeforeUI;
 
@@ -25,7 +25,7 @@ public class UnitBox : MonoBehaviour
         }
     }
 
-    public void Init(UnitStatBase stat, int count, BattleBeforeUI beforeUI)
+    public void Init(UnitData stat, int count, BattleBeforeUI beforeUI)
     {
         if (stat != null)
         {

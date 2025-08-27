@@ -10,34 +10,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1b380b4e2ae264a42b0bcd4938beb528, type: 3}
-  m_Name: Wolf_Defense1
+  m_Name: Enemy_Melee1
   m_EditorClassIdentifier: 
-  unitName: sfsf
+  unitName: eded
   unitIcon: {fileID: 0}
-  factionType: 1
-  unitTagType: 2
-  attackPower: 5
-  defensePower: 20
-  maxHealth: 100
+  factionType: 7
+  unitTagType: 1
+  attackPower: 20
+  defensePower: 10
+  maxHealth: 600
   moveSpeed: 5
-  attackRange: 50
+  attackRange: 75
+  enemySearchRange: 3
   attackSpeed: 10
   attackDelayRatio: 1
+  attackCount: 1
+  damageCoefficient: 1.2
   baseMana: 0
-  maxMana: 50
+  maxMana: 30
   manaRecoveryOnAttack: 10
   manaRecoveryPerSecond: 2
-  attackCount: 1
-  damageCoefficient: 0.9
-  enemySearchRange: 3
-  baseAttackBonusEffect: 
   active:
-    displayName: GroupRecover
+    displayName: FangStrike
     skillLogic: 
     activeSkillType: 
     isSkillFinished: 0
     manaCost: 50
-    damageCoeff: 0
+    damageCoeff: 1.5
     attackCount: 0
     multiTargetRange: 0
     maxMultiTarget: 0
@@ -46,12 +45,12 @@ MonoBehaviour:
     areaAttackPrefab: {fileID: 0}
     areaAttackDirection: 
     areaAttackSpawnPosition: 
-    bonusEffectKey: B_EnhanceAttackSpeed
+    bonusEffectKey: X / D_Stun(1.5)
   passive:
     passiveLogic: 
     passiveCoeff1: 0
     passiveRange1: 0
     passiveCoeff2: 0
     passiveRange2: 0
-  prefab: {fileID: 7622308344849817174, guid: 44fc131612cdf5343bb05ab22809b8fc, type: 3}
+  prefab: {fileID: 7622308344849817174, guid: 108c9bce9b6051946a4736a8c73336ac, type: 3}
   unitIllustration: {fileID: 0}

@@ -5,5 +5,5 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New EnemyArmyData", menuName = "EnemyArmyData")]
 public class EnemyArmyData : ScriptableObject
 {
-    public List<UnitStatBase> units;
+    public List<UnitData> units;
 }

@@ -13,7 +13,7 @@ public class DefensiveSkill : BaseSkill, IConfigurableSkill
     public bool freezeAnimatorRootMotion = true;
     public bool lockYByMover = true;
 
-    public void ApplyConfigFromStat(UnitStatBase stat)
+    public void ApplyConfigFromStat(UnitData stat)
     {
         if (stat == null || stat.active == null) return;
         if (stat.active.otherSkillRange > 0.0f) otherSkillRange = stat.active.otherSkillRange;
