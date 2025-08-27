@@ -117,7 +117,7 @@ public class UnitBase : MonoBehaviour
         float manaPerSec = Mathf.Max(0.0f, stat.manaRecoveryPerSecond);
 
         // 프리팹 오버라이드 병합
-        var ov = GetComponent<UnitStatOverride>();
+        var ov = GetComponent<UnitDataOverride>();
         if (ov)
         {
             attackPower = ov.attackPower.Merge(attackPower);

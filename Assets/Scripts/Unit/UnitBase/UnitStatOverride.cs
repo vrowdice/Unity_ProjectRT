@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [DisallowMultipleComponent]
-public class UnitStatOverride : MonoBehaviour
+public class UnitDataOverride : MonoBehaviour
 {
     [System.Serializable] public struct OptFloat { public bool use; public float value; public float Merge(float baseValue) => use ? value : baseValue; }
 
