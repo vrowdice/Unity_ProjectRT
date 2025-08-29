@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitName: sfsf
   unitIcon: {fileID: 0}
-  factionType: 5
+  factionType: 2
   unitTagType: 2
+  unitKey: 
   attackPower: 20
   defensePower: 10
   maxHealth: 5
@@ -45,7 +46,6 @@ MonoBehaviour:
     areaAttackPrefab: {fileID: 0}
     areaAttackDirection: 
     areaAttackSpawnPosition: 
-    bonusEffectKey: B_EnhanceAttackSpeed
   passive:
     passiveLogic: 
     passiveCoeff1: 0

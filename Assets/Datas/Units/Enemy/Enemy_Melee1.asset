@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitName: eded
   unitIcon: {fileID: 0}
-  factionType: 7
+  factionType: 2
   unitTagType: 1
+  unitKey: 
   attackPower: 20
   defensePower: 10
   maxHealth: 600
@@ -45,7 +46,6 @@ MonoBehaviour:
     areaAttackPrefab: {fileID: 0}
     areaAttackDirection: 
     areaAttackSpawnPosition: 
-    bonusEffectKey: X / D_Stun(1.5)
   passive:
     passiveLogic: 
     passiveCoeff1: 0
