@@ -1,6 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // 수치 미입력시 0으로
+// 이 친구는 원래 이렇게 태어났다라는 느낌
+// GameDataManager가 중앙에서 기본값을 오버라이드해서 최종 기본 스냅샷을 지정함 요긴 안전빵
 
 [CreateAssetMenu(fileName = "NewUnitStat", menuName = "Battle/Unit Stat")]
 public class UnitData : ScriptableObject
@@ -10,6 +13,10 @@ public class UnitData : ScriptableObject
     public Sprite unitIcon;
     public FactionType.TYPE factionType;
     public UnitTagType unitTagType;
+
+    [Header("식별자")]
+    // 있어도 그만 없어도 그만이지만 이거 지정해두면 편함
+    public string unitKey;
 
     [Header("기본 능력치")]
     [Min(0)] public float attackPower;
@@ -56,8 +63,6 @@ public class UnitData : ScriptableObject
         public string areaAttackDirection;
         public string areaAttackSpawnPosition;
 
-        [Header("부가효과 키")]
-        public string bonusEffectKey;
     }
 
     [System.Serializable]
@@ -77,4 +82,29 @@ public class UnitData : ScriptableObject
     [Header("프리팹")]
     public GameObject prefab;
     public Sprite unitIllustration;
+
+    // 에디터 전용 유효성 검사, 안정성을 위해 넣어둔것 신경x
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        // 음수/NaN 방어
+        attackPower = Mathf.Max(0, attackPower);
+        defensePower = Mathf.Max(0, defensePower);
+        maxHealth = Mathf.Max(1, maxHealth);
+        moveSpeed = Mathf.Max(0, moveSpeed);
+        attackRange = Mathf.Max(0, attackRange);
+        enemySearchRange = Mathf.Max(0, enemySearchRange);
+        attackSpeed = Mathf.Max(0, attackSpeed);
+        attackDelayRatio = Mathf.Clamp01(attackDelayRatio);
+        attackCount = Mathf.Max(1, attackCount);
+        damageCoefficient = Mathf.Max(0, damageCoefficient);
+
+        baseMana = Mathf.Max(0, baseMana);
+        maxMana = Mathf.Max(0, maxMana);
+        baseMana = Mathf.Min(baseMana, maxMana);
+        manaRecoveryOnAttack = Mathf.Max(0, manaRecoveryOnAttack);
+        manaRecoveryPerSecond = Mathf.Max(0, manaRecoveryPerSecond);
+    }
+#endif
+
 }
