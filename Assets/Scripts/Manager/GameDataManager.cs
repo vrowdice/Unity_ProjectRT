@@ -31,7 +31,7 @@ public class GameDataManager : MonoBehaviour
     [SerializeField] private List<RequestIcon> m_requestIconList = new();
     [SerializeField] private GameBalanceData m_gameBalanceData;
     [SerializeField] private RequestLineTemplate m_contactLineTemplate;
-    
+
     // 자동 로딩되는 데이터들 (인스펙터에서 숨김)
     private List<FactionData> m_factionDataList = new();
     private List<BuildingData> m_buildingDataList = new();
@@ -63,6 +63,7 @@ public class GameDataManager : MonoBehaviour
     public EventManager EventManager => m_eventManager;
     public EffectManager EffectManager => m_effectManager;
     public TileMapManager TileMapManager => m_tileMapManager;
+
 
     #region Unity Lifecycle
     void Awake()
@@ -498,6 +499,7 @@ public class GameDataManager : MonoBehaviour
         return m_requestIconDic.TryGetValue(type, out var icon) ? icon : null;
     }
     #endregion
+
 }
 
 #region Icon Structures
