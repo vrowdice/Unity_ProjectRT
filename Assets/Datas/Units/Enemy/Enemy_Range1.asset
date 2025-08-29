@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unitName: wewe
   unitIcon: {fileID: 0}
-  factionType: 8
+  factionType: 2
   unitTagType: 0
+  unitKey: 
   attackPower: 20
   defensePower: 3
   maxHealth: 350
@@ -45,7 +46,6 @@ MonoBehaviour:
     areaAttackPrefab: {fileID: 0}
     areaAttackDirection: 
     areaAttackSpawnPosition: 
-    bonusEffectKey: MarkHunted
   passive:
     passiveLogic: 
     passiveCoeff1: 0
