@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b380b4e2ae264a42b0bcd4938beb528, type: 3}
+  m_Name: Enemy_Range1
+  m_EditorClassIdentifier: 
+  unitName: wewe
+  unitIcon: {fileID: 0}
+  factionType: 2
+  unitTagType: 0
+  unitKey: 
+  attackPower: 20
+  defensePower: 3
+  maxHealth: 350
+  moveSpeed: 5
+  attackRange: 300
+  enemySearchRange: 6
+  attackSpeed: 15
+  attackDelayRatio: 1
+  attackCount: 2
+  damageCoefficient: 0.75
+  baseMana: 0
+  maxMana: 50
+  manaRecoveryOnAttack: 10
+  manaRecoveryPerSecond: 2
+  active:
+    displayName: DoubleShot
+    skillLogic: 
+    activeSkillType: 
+    isSkillFinished: 0
+    manaCost: 50
+    damageCoeff: 3
+    attackCount: 0
+    multiTargetRange: 0
+    maxMultiTarget: 0
+    otherSkillCoefficient: 0
+    otherSkillRange: 0
+    areaAttackPrefab: {fileID: 0}
+    areaAttackDirection: 
+    areaAttackSpawnPosition: 
+  passive:
+    passiveLogic: 
+    passiveCoeff1: 0
+    passiveRange1: 0
+    passiveCoeff2: 0
+    passiveRange2: 0
+  prefab: {fileID: 7622308344849817174, guid: 18608b22a2a8cdd45a40c94dc47b8f5a, type: 3}
+  unitIllustration: {fileID: 0}

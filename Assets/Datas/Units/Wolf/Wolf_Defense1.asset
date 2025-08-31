@@ -13,24 +13,23 @@ MonoBehaviour:
   m_Name: Wolf_Defense1
   m_EditorClassIdentifier: 
   unitName: sfsf
-  unitIcon: {fileID: 0}
+  unitIcon: {fileID: 21300000, guid: 12ec3da6df797f14cb4ab4b3c6eb87e0, type: 3}
   factionType: 1
   unitTagType: 2
-  attackPower: 5
-  defensePower: 30
+  attackPower: 20
+  defensePower: 10
   maxHealth: 100
-  moveSpeed: 50
+  moveSpeed: 5
   attackRange: 50
+  enemySearchRange: 3
   attackSpeed: 10
   attackDelayRatio: 1
+  attackCount: 1
+  damageCoefficient: 0.9
   baseMana: 0
   maxMana: 50
   manaRecoveryOnAttack: 10
   manaRecoveryPerSecond: 2
-  attackCount: 1
-  damageCoefficient: 0.9
-  enemySearchRange: 3
-  baseAttackBonusEffect: 
   active:
     displayName: GroupRecover
     skillLogic: 

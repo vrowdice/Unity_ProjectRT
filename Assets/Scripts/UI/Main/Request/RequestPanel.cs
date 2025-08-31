@@ -15,7 +15,7 @@ public class RequestPanel : BasePanel
     [SerializeField]
     RequestDetailPanel m_requestDetailPanel = null;
 
-    private List<FactionLikeImage> m_factionLikeImageList = new();
+    private List<RequestFactionLikeImage> m_factionLikeImageList = new();
 
     private List<RequestPanel> m_acceptableRequestPanelList = new();
     private List<RequestPanel> m_inProgressRequestPanelList = new();
@@ -83,8 +83,8 @@ public class RequestPanel : BasePanel
                 continue;
             }
 
-            FactionLikeImage _tmp = Instantiate(
-                m_factionLikeImagePrefeb.GetComponent<FactionLikeImage>(), m_factionLikeScrollViewContentTrans);
+            RequestFactionLikeImage _tmp = Instantiate(
+                m_factionLikeImagePrefeb.GetComponent<RequestFactionLikeImage>(), m_factionLikeScrollViewContentTrans);
 
             if (_tmp != null)
             {
@@ -99,7 +99,7 @@ public class RequestPanel : BasePanel
     /// </summary>
     private void UpdateExistingFactionLikeImages()
     {
-        foreach (FactionLikeImage item in m_factionLikeImageList)
+        foreach (RequestFactionLikeImage item in m_factionLikeImageList)
         {
             if (item == null) continue;
 

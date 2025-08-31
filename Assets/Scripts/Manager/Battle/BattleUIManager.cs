@@ -32,7 +32,7 @@ public class BattleUIManager : MonoBehaviour
     }
 
 
-    public void InitializeUI(List<UnitStatBase> allyUnitStats)
+    public void InitializeUI(List<UnitData> allyUnitStats)
     {
         if (allyUI && !allyUIInstance)
         {

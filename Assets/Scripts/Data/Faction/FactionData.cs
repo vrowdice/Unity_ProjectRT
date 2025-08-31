@@ -19,5 +19,5 @@ public class FactionData : ScriptableObject
     public List<ResearchData> m_research;   // 연구 데이터 (None 팩션 = 일반 연구, 다른 팩션 = 고유 연구)
 
     [Header("Unit Data")]
-    public List<UnitBase> m_unitData;
+    public List<UnitData> m_units;
 }

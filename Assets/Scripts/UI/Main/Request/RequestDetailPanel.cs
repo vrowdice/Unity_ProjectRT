@@ -18,8 +18,8 @@ public class RequestDetailPanel : MonoBehaviour
     TextMeshProUGUI m_factionLikeText = null;
     [SerializeField]
     Button m_acceptBtn = null;
-    [SerializeField]
-    Button m_refuseBtn = null;
+/*    [SerializeField]
+    Button m_refuseBtn = null;*/
     [SerializeField]
     TextMeshProUGUI m_acceptBtnText = null;
     [SerializeField]

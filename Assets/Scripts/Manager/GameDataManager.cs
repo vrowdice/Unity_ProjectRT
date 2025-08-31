@@ -31,7 +31,7 @@ public class GameDataManager : MonoBehaviour
     [SerializeField] private List<RequestIcon> m_requestIconList = new();
     [SerializeField] private GameBalanceData m_gameBalanceData;
     [SerializeField] private RequestLineTemplate m_contactLineTemplate;
-    
+
     // 자동 로딩되는 데이터들 (인스펙터에서 숨김)
     private List<FactionData> m_factionDataList = new();
     private List<BuildingData> m_buildingDataList = new();
@@ -47,9 +47,20 @@ public class GameDataManager : MonoBehaviour
     private readonly Dictionary<RequestType.TYPE, Sprite> m_requestIconDic = new();
     private readonly Dictionary<RequestType.TYPE, RequestLineTemplate> m_requestLineTemplateDic = new();
 
+    // 유닛 데이터 관리 -추가함
+    private readonly Dictionary<string, UnitData> m_unitByKey = new();
+    private readonly Dictionary<FactionType.TYPE, List<UnitData>> m_unitsByFaction = new();
+    private readonly Dictionary<UnitTagType, List<UnitData>> m_unitsByTag = new();
+
     // 요청 상태 관리
     private readonly List<RequestState> m_acceptableRequestList = new();
     private readonly List<RequestState> m_acceptedRequestList = new();
+
+    // 유닛 데이터 관리 -추가함
+    private readonly List<UnitData> m_unitDataList = new();
+
+    // 읽기 전용 접근자
+    public IReadOnlyList<UnitData> AllUnits => m_unitDataList;
 
     // 게임 시스템 엔트리
     private GameBalanceEntry m_gameBalanceEntry;
@@ -63,6 +74,7 @@ public class GameDataManager : MonoBehaviour
     public EventManager EventManager => m_eventManager;
     public EffectManager EffectManager => m_effectManager;
     public TileMapManager TileMapManager => m_tileMapManager;
+
 
     #region Unity Lifecycle
     void Awake()
@@ -99,8 +111,69 @@ public class GameDataManager : MonoBehaviour
         InitFactionDict();
         InitBuildingDict();
         InitRequestTemplateDict();
-    }
 
+        // FactionData의 Units를 이용해 Unit 인덱스 구성 -추가함
+        BuildUnitsFromFactions();
+    }
+    // FactionData의 m_units 리스트를 순회하며 유닛 데이터 수집 및 인덱스 구성 -추가함
+    private void BuildUnitsFromFactions()
+    {
+        m_unitDataList.Clear();
+        m_unitByKey.Clear();
+        m_unitsByFaction.Clear();
+        m_unitsByTag.Clear();
+
+        // m_factionDataList 는 기존 AutoLoadData()에서 채워짐
+        foreach (var faction in m_factionDataList)
+        {
+            if (faction == null || faction.m_units == null) continue;
+
+            foreach (var unit in faction.m_units)
+            {
+                if (!unit) continue;
+
+                // 보관 (중복 방지)
+                if (!m_unitDataList.Contains(unit))
+                    m_unitDataList.Add(unit);
+
+                // unitKey 인덱스
+                if (!string.IsNullOrEmpty(unit.unitKey))
+                {
+                    if (!m_unitByKey.ContainsKey(unit.unitKey))
+                        m_unitByKey.Add(unit.unitKey, unit);
+                    else
+                        Debug.LogWarning($"[GameDataManager] Duplicate unitKey '{unit.unitKey}' detected. First one kept.");
+                }
+
+                // 팩션 인덱스 (FactionData 기준으로 묶기)
+                var fType = faction.m_factionType; // FactionData의 타입 사용
+                if (!m_unitsByFaction.TryGetValue(fType, out var listByFaction))
+                {
+                    listByFaction = new List<UnitData>();
+                    m_unitsByFaction.Add(fType, listByFaction);
+                }
+                if (!listByFaction.Contains(unit))
+                    listByFaction.Add(unit);
+
+                // 태그 인덱스
+                if (!m_unitsByTag.TryGetValue(unit.unitTagType, out var listByTag))
+                {
+                    listByTag = new List<UnitData>();
+                    m_unitsByTag.Add(unit.unitTagType, listByTag);
+                }
+                if (!listByTag.Contains(unit))
+                    listByTag.Add(unit);
+
+                // (선택) 데이터 일관성 체크: 유닛에 적힌 factionType과 FactionData의 타입이 다르면 경고
+                if (unit.factionType != FactionType.TYPE.None && unit.factionType != fType)
+                {
+                    Debug.LogWarning($"[GameDataManager] Unit '{unit.unitName}' faction mismatch: UnitData={unit.factionType}, FactionData={fType}");
+                }
+            }
+        }
+
+        Debug.Log($"[GameDataManager] Units indexed from FactionData: {m_unitDataList.Count}");
+    }
     private void InitializeManagers()
     {
         // 필수 매니저들 자동 생성 및 초기화
@@ -498,6 +571,7 @@ public class GameDataManager : MonoBehaviour
         return m_requestIconDic.TryGetValue(type, out var icon) ? icon : null;
     }
     #endregion
+
 }
 
 #region Icon Structures

@@ -4,10 +4,10 @@ using UnityEngine;
 public class UnitBase : MonoBehaviour
 {
     [Header("초기 템플릿")]
-    [SerializeField] private UnitStatBase initialStat;
+    [SerializeField] private UnitData initialStat;
 
-    private UnitStatBase stat;
-    public UnitStatBase UnitStat => stat;
+    private UnitData stat;
+    public UnitData UnitStat => stat;
 
     // 파생/최종 값(컨트롤러가 여길 인식함)
     public string UnitName { get; private set; }
@@ -33,6 +33,10 @@ public class UnitBase : MonoBehaviour
     public float CurrentHealth { get; private set; }
     public bool IsDead => CurrentHealth <= 0.0f;
 
+    // 팩션 참조
+    public FactionEntry FactionEntry { get; private set; }
+    public FactionData FactionData => (FactionEntry != null) ? FactionEntry.m_data : null;
+
     // 팀/진영
     public FactionType.TYPE Faction => stat ? stat.factionType : FactionType.TYPE.None;
     public TeamSide Team { get; private set; } = TeamSide.Neutral;
@@ -45,6 +49,11 @@ public class UnitBase : MonoBehaviour
     private UnitTargetingController targeting;
     private BaseAttack attackLogic;
 
+    private void Start()
+    {
+        if (FactionEntry == null) AttachFactionContext();
+    }
+
     private void Awake()
     {
         movement = GetComponent<UnitMovementController>();
@@ -53,6 +62,12 @@ public class UnitBase : MonoBehaviour
 
         if (!stat && initialStat) Initialize(initialStat);
         else EnsureSafeDefaults();
+    }
+
+    // 최신 팩션 정보 갱신
+    public void RefreshFactionContext()
+    {
+        AttachFactionContext();
     }
 
     private void OnEnable()
@@ -90,12 +105,16 @@ public class UnitBase : MonoBehaviour
         }
     }
 
-    public void Initialize(UnitStatBase newStat)
+    public void Initialize(UnitData newStat)
     {
         if (!newStat) { Debug.LogError($"[{name}] Initialize 실패: stat null"); return; }
         stat = newStat;
 
-        // SO 기본값
+        stat = ScriptableObject.Instantiate(newStat);
+        stat.name += " (Runtime)";
+        stat.hideFlags = HideFlags.DontSave;
+
+        // SO 기본값 읽기
         float attackPower = Mathf.Max(0.0f, stat.attackPower);
         float defensePower = Mathf.Max(0.0f, stat.defensePower);
         float maxHealth = Mathf.Max(1.0f, stat.maxHealth);
@@ -113,7 +132,7 @@ public class UnitBase : MonoBehaviour
         float manaPerSec = Mathf.Max(0.0f, stat.manaRecoveryPerSecond);
 
         // 프리팹 오버라이드 병합
-        var ov = GetComponent<UnitStatOverride>();
+        var ov = GetComponent<UnitDataOverride>();
         if (ov)
         {
             attackPower = ov.attackPower.Merge(attackPower);
@@ -165,8 +184,29 @@ public class UnitBase : MonoBehaviour
         CurrentHealth = MaxHealth;
         IsCombatInProgress = false;
 
-        // 공격 템포있으면 발동
         attackLogic?.SetTempo(AttackActiveSec, AttackRecoverySec);
+
+        AttachFactionContext();
+    }
+
+    private void AttachFactionContext()
+    {
+        var gdm = GameDataManager.Instance;
+        if (gdm == null)
+        {
+            Debug.LogWarning($"[{name}] GameDataManager.Instance 없음. FactionEntry 연결 불가");
+            FactionEntry = null;
+            return;
+        }
+
+        // UnitData의 factionType을 기준으로 FactionEntry를 얻음
+        var fe = gdm.GetFactionEntry(Faction);
+        FactionEntry = fe;
+
+        // 연결 여부 
+#if UNITY_EDITOR
+        Debug.Log($"[{name}] Faction={Faction}, FactionEntry={(FactionEntry != null ? "OK" : "NULL")}");
+#endif
     }
 
     // 자원/체력 
@@ -207,6 +247,34 @@ public class UnitBase : MonoBehaviour
         attackLogic?.StopAttack();
         movement?.StopMove();
         gameObject.SetActive(false);
+    }
+
+    // 스냅샷
+    internal void ApplySnapshot(UnitStatSnapshot s)
+    {
+        UnitName = s.UnitName;
+
+        AttackPower = s.AttackPower;
+        DefensePower = s.DefensePower;
+        MaxHealth = s.MaxHealth;
+        MoveSpeed = s.MoveSpeed;
+        AttackRange = s.AttackRange;
+        EnemySearchRange = s.EnemySearchRange;
+
+        AttackSpeed = s.AttackSpeed;
+        AttackCycleSec = s.AttackCycleSec;
+        AttackActiveSec = s.AttackActiveSec;
+        AttackRecoverySec = s.AttackRecoverySec;
+        AttackCount = s.AttackCount;
+        DamageCoefficient = s.DamageCoefficient;
+
+        MaxMana = s.MaxMana;
+        CurrentMana = s.CurrentMana;
+        ManaRecoveryOnBasicAttack = s.ManaRecoveryOnBasicAttack;
+        ManaRecoveryPerSecond = s.ManaRecoveryPerSecond;
+
+        attackLogic?.SetTempo(AttackActiveSec, AttackRecoverySec);
+        EnsureSafeDefaults(); // 체력/마나 안전 클램프
     }
 
     // 이벤트/알림

@@ -3,7 +3,7 @@ using UnityEngine;
 
 public interface IConfigurableSkill
 {
-    void ApplyConfigFromStat(UnitStatBase stat);
+    void ApplyConfigFromStat(UnitData stat);
 }
 
 public abstract class BaseSkill : MonoBehaviour
@@ -17,8 +17,9 @@ public abstract class BaseSkill : MonoBehaviour
 
     public void StartCast(UnitBase caster, GameObject target)
     {
-        if (IsCasting) return;
-        if (caster == null) return;
+        if (IsCasting || caster == null) return;
+
+        if (manaCost > 0.0f && !caster.UseMana(manaCost)) return;
 
         IsCasting = true;
         UnitImpactEmitter.Emit(caster.gameObject, ImpactEventType.SkillCastStart, caster, target, 0, skillName);
@@ -35,6 +36,7 @@ public abstract class BaseSkill : MonoBehaviour
     private IEnumerator _Run(UnitBase caster, GameObject target)
     {
         yield return PerformSkillRoutine(caster, target);
+
         UnitImpactEmitter.Emit(caster.gameObject, ImpactEventType.SkillCastFinish, caster, target, 0, skillName);
         IsCasting = false;
     }

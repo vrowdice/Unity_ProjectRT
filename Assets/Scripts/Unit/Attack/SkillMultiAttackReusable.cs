@@ -4,65 +4,70 @@ using UnityEngine;
 
 public class SkillMultiAttackReusable : BaseSkill
 {
-    [Header("스킬 수치 (기획 컬럼 매핑)")]
-    [Min(0)] public float SkillDamageCoefficient = 1.0f;   
-    [Min(1)] public int SkillAttackCount = 2;         
-    [Min(0)] public int ManaCostOverride = -1;    
+    [Header("스킬 수치")]
+    [Min(0)] public float SkillDamageCoefficient = 1.0f;
+    [Min(1)] public int SkillAttackCount = 2;  
+    [Min(0)] public int ManaCostOverride = -1;  
 
-    public enum TargetCollectMode
-    {
-        AroundPrimary, 
-        AroundCaster    
-    }
+    public enum TargetCollectMode { AroundPrimary, AroundCaster }
 
     [Header("타겟 수집 옵션")]
     public TargetCollectMode collectMode = TargetCollectMode.AroundPrimary;
 
-    [Tooltip("추가 타겟을 찾을 반경 = 기준거리(공격사거리) * multiplier")]
+    [Tooltip("검색 반경 = (기준 사거리) * multiplier. 기준은 caster.AttackRange")]
     public float extraTargetSearchRadiusMultiplier = 1.0f;
 
     public enum DistanceAnchor { Primary, Caster }
     [Tooltip("가까운 순 정렬 기준")]
     public DistanceAnchor sortBy = DistanceAnchor.Primary;
 
-    //0이면 같은 프레임에 연속 적용
-    [Tooltip("히트 순서 간 프레임 텀")]
+    [Tooltip("히트 사이에 프레임 텀(0이면 같은 프레임에 연속 적용)")]
     [Min(0)] public int hitFrameGap = 0;
 
-    [Header("히트 효과 옵션")]
-    [Tooltip("히트 시 부여할 상태. None이면 미사용")]
+    [Header("히트 부가효과")]
     public StatusType onHitApplyStatus = StatusType.None;
-
-    [Tooltip("상태 지속시간(초). 0 이하는 즉시 만료")]
     public float onHitStatusDuration = 5f;
 
-    [Tooltip("피격자가 특정 상태일 때 본 스킬로 처치되면 발동할 커스텀 이벤트명")]
+    [Tooltip("피격자가 특정 상태일 때 처치되면 발생시킬 커스텀 이벤트명(빈 문자열이면 미사용)")]
     public string onKillTriggerEventName = "";
-
-    [Tooltip("onKillTriggerEventName을 발동시키기 위한 '필수 상태' (None이면 조건 없이 발동)")]
+    [Tooltip("위 이벤트의 필수 상태(None이면 조건 없음)")]
     public StatusType onKillRequiredStatus = StatusType.MarkHunted;
 
-    // 내부 버퍼
     private readonly List<UnitBase> _targets = new List<UnitBase>(8);
+
+    private static readonly Collider2D[] s_buf = new Collider2D[64];
 
     protected override IEnumerator PerformSkillRoutine(UnitBase caster, GameObject primaryTargetGO)
     {
+        // 코스트 덮어쓰기
         if (ManaCostOverride >= 0) this.manaCost = ManaCostOverride;
 
+        // 기본 유효성
         if (!ValidateCaster(caster)) yield break;
 
-        // 1차 타겟 유효성 확인 (AroundPrimary일 때는 반드시 필요)
+        // 중심/정렬 기준 결정
         UnitBase primary = null;
         if (collectMode == TargetCollectMode.AroundPrimary)
         {
             if (!ValidateTargetGO(primaryTargetGO)) yield break;
             primary = primaryTargetGO.GetComponent<UnitBase>();
-            if (!IsAttackableEnemy(caster, primary)) yield break;
+            if (!IsAttackableEnemy_Team(caster, primary)) yield break;
         }
 
-        // 타겟 수집
+        Vector3 center =
+            (collectMode == TargetCollectMode.AroundPrimary && primary != null)
+            ? primary.transform.position : caster.transform.position;
+
+        Vector3 sortPivot =
+            (sortBy == DistanceAnchor.Primary && primary != null)
+            ? primary.transform.position : caster.transform.position;
+
+        float radius = Mathf.Max(0.01f, caster.AttackRange) *
+                       Mathf.Max(0.01f, extraTargetSearchRadiusMultiplier);
+
+        // 타겟 수집 
         _targets.Clear();
-        CollectTargets(caster, primary, _targets, SkillAttackCount);
+        CollectTargets_NoAlloc(caster, primary, center, sortPivot, radius, SkillAttackCount, _targets);
 
         if (_targets.Count == 0) yield break;
 
@@ -73,90 +78,110 @@ public class SkillMultiAttackReusable : BaseSkill
         for (int i = 0; i < _targets.Count; i++)
         {
             var victim = _targets[i];
-            if (!IsAttackableEnemy(caster, victim)) continue;
+            if (!IsAttackableEnemy_Team(caster, victim)) continue;
 
-            bool hadReqStatus = (onKillRequiredStatus == StatusType.None) ? true : HasStatus(victim, onKillRequiredStatus);
+            bool hadReqStatus = (onKillRequiredStatus == StatusType.None) ||
+                                HasStatus(victim, onKillRequiredStatus);
 
-            // 데미지 적용
             victim.TakeDamage(damage);
 
-            // 히트 이펙트/로그
             UnitImpactEmitter.Emit(caster.gameObject, ImpactEventType.SkillCastHit,
                                    caster, victim.gameObject, damage, skillName);
 
-            // 히트 시 상태 부여
             if (onHitApplyStatus != StatusType.None)
                 TryApplyStatus(victim, onHitApplyStatus, onHitStatusDuration, caster);
 
-            // 처치 + 조건 상태 충족 시 커스텀 이벤트 트리거
             if (victim.IsDead && !string.IsNullOrEmpty(onKillTriggerEventName) && hadReqStatus)
-            {
                 TriggerCustomEvent(caster, victim, onKillTriggerEventName);
-            }
 
-            // 히트 간 텀
             for (int f = 0; f < hitFrameGap; f++)
                 yield return null;
         }
-
-        yield break;
     }
 
-    // 타겟 수집 로직
-    private void CollectTargets(UnitBase caster, UnitBase primary, List<UnitBase> buffer, int maxCount)
+    private void CollectTargets_NoAlloc(
+        UnitBase caster, UnitBase primary, Vector3 center, Vector3 sortPivot,
+        float radius, int maxCount, List<UnitBase> outList)
     {
-        // 검색 중심/정렬 기준 결정
-        Vector3 center = (collectMode == TargetCollectMode.AroundPrimary && primary != null)
-            ? primary.transform.position
-            : caster.transform.position;
-
-        Vector3 sortPivot = (sortBy == DistanceAnchor.Primary && primary != null)
-            ? primary.transform.position
-            : caster.transform.position;
-
-        // 반경
-        float radius = Mathf.Max(0.01f, caster.AttackRange) * Mathf.Max(0.01f, extraTargetSearchRadiusMultiplier);
-
-        var all = GameObject.FindObjectsOfType<UnitBase>();
-
-        if (collectMode == TargetCollectMode.AroundPrimary && primary != null)
-            buffer.Add(primary);
-
-        foreach (var u in all)
+        var tgt = caster.GetComponent<UnitTargetingController>();
+        if (tgt != null)
         {
-            if (u == null || u.IsDead) continue;
-            if (!IsAttackableEnemy(caster, u)) continue;
+            if (collectMode == TargetCollectMode.AroundPrimary && primary)
+                outList.Add(primary);
 
-            if (collectMode == TargetCollectMode.AroundPrimary && u == primary) continue;
+            int want = Mathf.Max(0, maxCount - outList.Count);
+            if (want > 0)
+            {
+                tgt.AcquireTargetsNonAlloc(outList, center, radius, want, preferCurrentFirst: false);
+            }
 
-            float dist = Vector3.Distance(center, u.transform.position);
-            if (dist <= radius) buffer.Add(u);
+            if (primary)
+                DeduplicateKeepFirst(outList, primary);
+
+            if (sortPivot != center) 
+                outList.Sort((a, b) => DistSqr(sortPivot, a).CompareTo(DistSqr(sortPivot, b)));
+
+            if (outList.Count > maxCount)
+                outList.RemoveRange(maxCount, outList.Count - maxCount);
+
+            return;
         }
 
-        // 거리 기준 정렬
-        buffer.Sort((a, b) =>
-            Vector3.Distance(sortPivot, a.transform.position).CompareTo(
-            Vector3.Distance(sortPivot, b.transform.position)));
+        int n = Physics2D.OverlapCircleNonAlloc(center, radius, s_buf, TeamLayers.GetEnemyMask(caster.Team));
+        if (collectMode == TargetCollectMode.AroundPrimary && primary)
+            outList.Add(primary);
 
-        // 최대 수만 유지
-        if (buffer.Count > maxCount) buffer.RemoveRange(maxCount, buffer.Count - maxCount);
+        for (int i = 0; i < n; i++)
+        {
+            var col = s_buf[i];
+            if (!col) continue;
+            var ub = col.GetComponent<UnitBase>();
+            if (!IsAttackableEnemy_Team(caster, ub)) continue;
+            if (collectMode == TargetCollectMode.AroundPrimary && ub == primary) continue;
+
+            outList.Add(ub);
+        }
+
+        outList.Sort((a, b) => DistSqr(sortPivot, a).CompareTo(DistSqr(sortPivot, b)));
+
+        if (outList.Count > maxCount)
+            outList.RemoveRange(maxCount, outList.Count - maxCount);
     }
 
-    // ====== 유틸 ======
+    private static void DeduplicateKeepFirst(List<UnitBase> list, UnitBase key)
+    {
+        bool seen = false;
+        for (int i = 0; i < list.Count; i++)
+        {
+            if (list[i] == key)
+            {
+                if (!seen) { seen = true; continue; }
+                list.RemoveAt(i); i--;
+            }
+        }
+    }
+
+    private static float DistSqr(Vector3 pivot, UnitBase ub)
+    {
+        if (!ub) return float.MaxValue;
+        var d = ub.transform.position - pivot;
+        return d.sqrMagnitude;
+    }
+
     private bool ValidateCaster(UnitBase c) => c != null && !c.IsDead;
 
     private bool ValidateTargetGO(GameObject go)
     {
-        if (go == null || !go.activeSelf) return false;
+        if (!go || !go.activeSelf) return false;
         var ub = go.GetComponent<UnitBase>();
-        return ub != null && !ub.IsDead;
+        return ub && !ub.IsDead;
     }
 
-    private bool IsAttackableEnemy(UnitBase caster, UnitBase target)
+    private bool IsAttackableEnemy_Team(UnitBase caster, UnitBase target)
     {
-        if (caster == null || target == null) return false;
+        if (!caster || !target) return false;
         if (target.IsDead) return false;
-        return caster.Faction != target.Faction; // 진영 비교
+        return caster.Team != target.Team;
     }
 
     private bool HasStatus(UnitBase unit, StatusType status)
@@ -173,13 +198,25 @@ public class SkillMultiAttackReusable : BaseSkill
 
     private void TriggerCustomEvent(UnitBase caster, UnitBase victim, string eventName)
     {
-        // 공통 이펙트/로그
         UnitImpactEmitter.Emit(caster.gameObject, ImpactEventType.CustomEvent,
                                caster, victim.gameObject, 0f, eventName);
 
-        // 중앙화된 시스템에 위임(실제 버프/보너스 효과는 여기서 구현)
         var broker = FindObjectOfType<BattleEventBroker>();
         if (broker) broker.Raise(eventName, caster, victim);
-        else Debug.Log($"[SkillMultiAttack] Event '{eventName}' fired by {caster.UnitName}");
+        else Debug.Log($"[SkillMultiAttack] Event '{eventName}' fired by {caster?.UnitName} -> {victim?.UnitName}");
     }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        var caster = GetComponent<UnitBase>();
+        if (!caster) return;
+
+        float radius = Mathf.Max(0.01f, caster.AttackRange) *
+                       Mathf.Max(0.01f, extraTargetSearchRadiusMultiplier);
+
+        Gizmos.color = (collectMode == TargetCollectMode.AroundPrimary) ? Color.red : Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, radius);
+    }
+#endif
 }

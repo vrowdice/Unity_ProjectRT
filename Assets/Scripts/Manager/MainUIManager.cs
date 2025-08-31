@@ -51,6 +51,12 @@ public class MainUIManager : MonoBehaviour, IUIManager
     [SerializeField]
     GameObject m_conditionPanelTextPrefeb = null;
 
+    [Header("Debug Settings")]
+    [SerializeField]
+    private bool m_enableDebugMode = false;
+    [SerializeField]
+    private GameObject m_debugManagerPrefab = null;
+
     // 참조 변수들
     private GameManager m_gameManager = null;
     private List<IUIPanel> m_iPanelList = new List<IUIPanel>();
@@ -60,6 +66,10 @@ public class MainUIManager : MonoBehaviour, IUIManager
     // 동적 패널 관리
     private ResourceAddInfoPanel m_currentInfoPanel = null;
     private GameObject m_backgroundBlocker = null;
+
+    // 디버그 매니저 관리
+    private GameObject m_debugManagerInstance = null;
+    private DebugManager m_debugManager = null;
 
     // 프로퍼티들
     public GameObject ResourceIconTextPrefeb { get => m_resourceIconTextPrefeb; }
@@ -160,6 +170,94 @@ public class MainUIManager : MonoBehaviour, IUIManager
 
         UpdateAllMainText();
         SetResourceIconButton();
+
+        // 디버그 모드가 활성화되어 있다면 디버그 매니저 초기화
+        InitializeDebugManager();
+    }
+
+    /// <summary>
+    /// 디버그 매니저 초기화
+    /// </summary>
+    private void InitializeDebugManager()
+    {
+        if (!m_enableDebugMode)
+        {
+            Debug.Log("Debug mode is disabled.");
+            return;
+        }
+
+        if (m_debugManagerPrefab == null)
+        {
+            Debug.LogWarning("Debug Manager prefab is not assigned. Debug features will not be available.");
+            return;
+        }
+
+        try
+        {
+            // 기존 디버그 매니저가 있다면 제거
+            if (m_debugManagerInstance != null)
+            {
+                DestroyImmediate(m_debugManagerInstance);
+            }
+
+            // 디버그 매니저 프리팹 생성
+            m_debugManagerInstance = Instantiate(m_debugManagerPrefab);
+            m_debugManager = m_debugManagerInstance.GetComponent<DebugManager>();
+
+            if (m_debugManager != null)
+            {
+                // 디버그 매니저 초기화
+                m_debugManager.Initialize(m_gameManager, this);
+                Debug.Log("Debug Manager successfully initialized. Press F1 to open debug panel.");
+            }
+            else
+            {
+                Debug.LogError("DebugManager component not found!");
+                if (m_debugManagerInstance != null)
+                {
+                    DestroyImmediate(m_debugManagerInstance);
+                    m_debugManagerInstance = null;
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Error occurred while initializing Debug Manager: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 디버그 모드 토글 (런타임에서 활성화/비활성화)
+    /// </summary>
+    [ContextMenu("Toggle Debug Mode")]
+    public void ToggleDebugMode()
+    {
+        m_enableDebugMode = !m_enableDebugMode;
+
+        if (m_enableDebugMode)
+        {
+            InitializeDebugManager();
+        }
+        else
+        {
+            DestroyDebugManager();
+        }
+
+        Debug.Log($"Debug mode {(m_enableDebugMode ? "enabled" : "disabled")}.");
+    }
+
+    /// <summary>
+    /// 디버그 매니저 제거
+    /// </summary>
+    private void DestroyDebugManager()
+    {
+        if (m_debugManagerInstance != null)
+        {
+            DestroyImmediate(m_debugManagerInstance);
+            m_debugManagerInstance = null;
+            m_debugManager = null;
+            Debug.Log("Debug Manager destroyed.");
+        }
     }
 
     public void SetResourceIconButton()
@@ -481,16 +579,11 @@ public class MainUIManager : MonoBehaviour, IUIManager
         UpdateAllMainText();
     }
 
-    //--디버그용--
-    //리소스를 모두 추가하거나 리소스를 모두
     /// <summary>
-    /// 디버그용: 모든 리소스를 1000씩 추가
+    /// 애플리케이션 종료 시 디버그 매니저 정리
     /// </summary>
-    public void AddResource1000()
+    private void OnDestroy()
     {
-        TryAdd(ResourceType.TYPE.Wood, 1000);
-        TryAdd(ResourceType.TYPE.Iron, 1000);
-        TryAdd(ResourceType.TYPE.Food, 1000);
-        TryAdd(ResourceType.TYPE.Tech, 1000);
+        DestroyDebugManager();
     }
 }

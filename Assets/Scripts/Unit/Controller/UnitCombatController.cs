@@ -10,16 +10,21 @@ public class UnitCombatController : MonoBehaviour
     private UnitMovementController _move;
     private Transform _tr;
 
-    [Header("외부 로직(선택)")]
+    [Header("외부 로직")]
     public BaseAttack attackLogic;
     public BaseSkill skillLogic;
 
-    [Header("문서값")]
-    [Range(0.5f, 1.0f)][SerializeField] private float stopAtRangePercent = 0.9f;
+    [Header("문서값 기록")]
+    [Range(0.5f, 1.0f)]
+    [SerializeField] private float stopAtRangePercent = 0.9f;
     [SerializeField, Min(0.05f)] private float retargetEvery = 0.20f;
-    [Range(1.0f, 2.0f)][SerializeField] private float releaseRangeMultiplier = 1.0f;
+    [Range(1.0f, 2.0f)]
+    [SerializeField] private float releaseRangeMultiplier = 1.0f;
     [SerializeField] private bool resetManaOnSkill = true;
     [SerializeField] private bool keepMarchingWhenNoTarget = true;
+
+    [Header("권장 옵션")]
+    [SerializeField] private bool blockBasicWhileCasting = true; 
 
     private bool _running;
     private float _retargetTimer;
@@ -41,15 +46,31 @@ public class UnitCombatController : MonoBehaviour
         if (!attackLogic) attackLogic = GetComponent<BaseAttack>();
     }
 
+    private void OnDisable() 
+    {
+        StopBattle();
+    }
+
     public void InitForBattle(Vector3 forwardDir)
     {
         _forwardDir = forwardDir.sqrMagnitude > 0.0f ? forwardDir.normalized : Vector3.right;
-        _retargetTimer = 0.0f; _running = true; _hadTargetPrev = false; _isMoving = false; _attackTempoSet = false;
+        _retargetTimer = 0.0f;
+        _running = true;
+        _hadTargetPrev = false;
+        _isMoving = false;
+        _attackTempoSet = false;
 
-        float stop = _unit.AttackRange * stopAtRangePercent; _stopDistSqr = stop * stop;
-        float rel = _unit.EnemySearchRange * releaseRangeMultiplier; _releaseDistSqr = rel * rel;
+        float stop = _unit.AttackRange * stopAtRangePercent;
+        _stopDistSqr = stop * stop;
 
-        if (attackLogic) { attackLogic.SetTempo(_unit.AttackActiveSec, _unit.AttackRecoverySec); _attackTempoSet = true; }
+        float rel = _unit.EnemySearchRange * releaseRangeMultiplier;
+        _releaseDistSqr = rel * rel;
+
+        if (attackLogic)
+        {
+            attackLogic.SetTempo(_unit.AttackActiveSec, _unit.AttackRecoverySec);
+            _attackTempoSet = true;
+        }
         StartMoveForwardIfNeeded();
         _unit.NotifyAttackActiveEnd();
     }
@@ -59,22 +80,29 @@ public class UnitCombatController : MonoBehaviour
         _running = false;
         if (attackLogic) attackLogic.StopAttack();
         if (_isMoving) { _move.StopMove(); _isMoving = false; }
-        _unit.NotifyAttackActiveEnd();
+        _unit?.NotifyAttackActiveEnd();
     }
 
     private void Update()
     {
         if (!_running || !_unit) return;
 
+        // 마나 자연 회복
         if (_unit.ManaRecoveryPerSecond > 0.0f)
             _unit.AddMana(_unit.ManaRecoveryPerSecond * Time.deltaTime);
 
+        // 타겟 유효성/재탐색
         EnsureTargetWithinMyRule();
 
         var tgtGO = _targeting.TargetedEnemy;
         bool hasTarget = tgtGO && tgtGO.activeSelf;
 
-        if (hasTarget && !_hadTargetPrev) { StopMoveIfNeeded(); if (attackLogic) attackLogic.StopAttack(); _unit.NotifyAttackActiveEnd(); }
+        if (hasTarget && !_hadTargetPrev)
+        {
+            StopMoveIfNeeded();
+            if (attackLogic) attackLogic.StopAttack();
+            _unit.NotifyAttackActiveEnd();
+        }
         _hadTargetPrev = hasTarget;
 
         if (!hasTarget)
@@ -90,9 +118,10 @@ public class UnitCombatController : MonoBehaviour
 
         if (dSqr <= _stopDistSqr)
         {
+            // 사거리 도달 
             StopMoveIfNeeded();
 
-            if (_unit.AttackSpeed <= 0.0f)
+            if (blockBasicWhileCasting && skillLogic && skillLogic.IsCasting)
             {
                 if (attackLogic) attackLogic.StopAttack();
                 _unit.NotifyAttackActiveEnd();
@@ -101,9 +130,22 @@ public class UnitCombatController : MonoBehaviour
 
             if (TryCastSkill(tgtGO)) return;
 
+            // APS==0 이면 평타 생략
+            if (_unit.AttackSpeed <= 0.0f)
+            {
+                if (attackLogic) attackLogic.StopAttack();
+                _unit.NotifyAttackActiveEnd();
+                return;
+            }
+
+            // 평타 시작
             if (attackLogic != null && !attackLogic.IsAttacking)
             {
-                if (!_attackTempoSet) { attackLogic.SetTempo(_unit.AttackActiveSec, _unit.AttackRecoverySec); _attackTempoSet = true; }
+                if (!_attackTempoSet)
+                {
+                    attackLogic.SetTempo(_unit.AttackActiveSec, _unit.AttackRecoverySec);
+                    _attackTempoSet = true;
+                }
                 attackLogic.StartAttack(_unit, tgtGO);
             }
         }
@@ -127,12 +169,17 @@ public class UnitCombatController : MonoBehaviour
         if (stat && stat.active != null)
         {
             skillLogic.manaCost = stat.active.manaCost;
-            skillLogic.skillName = string.IsNullOrEmpty(stat.active.displayName) ? stat.active.skillLogic : stat.active.displayName;
+            skillLogic.skillName = string.IsNullOrEmpty(stat.active.displayName)
+                ? stat.active.skillLogic
+                : stat.active.displayName;
         }
 
+        // 스킬 시전
         skillLogic.StartCast(_unit, target);
+
         if (resetManaOnSkill) _unit.AddMana(-_unit.CurrentMana);
         else _unit.UseMana(skillLogic.manaCost);
+
         _attackTempoSet = false;
         return true;
     }
@@ -143,18 +190,41 @@ public class UnitCombatController : MonoBehaviour
 
         if (cur)
         {
-            if (!cur.activeSelf) { _targeting.SetTarget(null); cur = null; }
+            if (!cur.activeSelf)
+            {
+                _targeting.SetTarget(null);
+                cur = null;
+            }
             else
             {
                 float dSqr = (_tr.position - cur.transform.position).sqrMagnitude;
-                if (dSqr > _releaseDistSqr) { _targeting.SetTarget(null); cur = null; }
+                if (dSqr > _releaseDistSqr)
+                {
+                    _targeting.SetTarget(null);
+                    cur = null;
+                }
             }
         }
 
         _retargetTimer += Time.deltaTime;
-        if (cur == null || _retargetTimer >= retargetEvery) { _retargetTimer = 0.0f; _targeting.FindNewTarget(); }
+        if (cur == null || _retargetTimer >= retargetEvery)
+        {
+            _retargetTimer = 0.0f;
+            _targeting.FindNewTarget();
+        }
     }
 
-    private void StartMoveForwardIfNeeded() { if (_isMoving) return; _move.StartMoveInDirection(_forwardDir, _unit.MoveSpeed); _isMoving = true; }
-    private void StopMoveIfNeeded() { if (!_isMoving) return; _move.StopMove(); _isMoving = false; }
+    private void StartMoveForwardIfNeeded()
+    {
+        if (_isMoving) return;
+        _move.StartMoveInDirection(_forwardDir, _unit.MoveSpeed);
+        _isMoving = true;
+    }
+
+    private void StopMoveIfNeeded()
+    {
+        if (!_isMoving) return;
+        _move.StopMove();
+        _isMoving = false;
+    }
 }

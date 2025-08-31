@@ -4,13 +4,16 @@ using UnityEngine;
 public class UnitMovementController : MonoBehaviour
 {
     [Header("충돌/지형")]
-    [Tooltip("벽/지형 레이어만 선택. (유닛/투사체 등은 제외)")]
     [SerializeField] private LayerMask obstacleMask;
-    [Tooltip("벽에 너무 붙어 보이지 않게 하는 안전 여백(미세 거리).")]
+    [Tooltip("벽에 너무 붙어 보이지 않게 하는 안전 여백")]
     [SerializeField] private float skin = 0.02f;
 
     [Header("이동 파라미터(디버그/튜닝)")]
-    [SerializeField] private float stopEpsilon = 0.01f; // 목표점 근접 판정
+    [SerializeField] private float stopEpsilon = 0.01f; 
+
+    [Header("맵 경계")]
+    [SerializeField] private BoxCollider2D mapBounds;
+    [SerializeField] private bool clampToMapBounds = true;
 
     private Vector3 _targetPosition;
     private Vector3 _dir;
@@ -42,6 +45,8 @@ public class UnitMovementController : MonoBehaviour
             _rb2d.interpolation = RigidbodyInterpolation2D.Interpolate;
         }
     }
+
+    public void SetMapBounds(BoxCollider2D bounds) => mapBounds = bounds;
 
     public void MoveTo(Vector3 target, float speed)
     {
@@ -103,14 +108,13 @@ public class UnitMovementController : MonoBehaviour
         }
     }
 
-
     private Vector3 ComputeAllowedDelta(Vector3 delta)
     {
         float dist = delta.magnitude;
         if (dist <= 1e-6f) return Vector3.zero;
 
         Vector2 dir = (Vector2)(delta / dist);
-        float allowedDist = dist; 
+        float allowedDist = dist;
 
         int hitCount = 0;
 
@@ -146,13 +150,36 @@ public class UnitMovementController : MonoBehaviour
     {
         if (delta.sqrMagnitude <= 1e-12f) return;
 
+        Vector3 cur = _rb2d ? (Vector3)_rb2d.position : transform.position;
+        Vector3 next = cur + delta;
+
+        if (clampToMapBounds && mapBounds)
+            next = ClampToMap(next);
+
         if (_rb2d && !_rb2d.isKinematic)
-        {
-            _rb2d.MovePosition(_rb2d.position + (Vector2)delta);
-        }
+            _rb2d.MovePosition((Vector2)next);
         else
-        {
-            transform.position += delta;
-        }
+            transform.position = next;
+    }
+
+
+    private Vector3 ClampToMap(Vector3 worldPos)
+    {
+        var b = mapBounds.bounds;
+
+        Vector3 ext = Vector3.zero;
+        if (_col2d) ext = _col2d.bounds.extents;
+
+        float minX = b.min.x + ext.x + skin;
+        float maxX = b.max.x - ext.x - skin;
+        float minY = b.min.y + ext.y + skin;
+        float maxY = b.max.y - ext.y - skin;
+
+        if (minX > maxX) { float mid = (b.min.x + b.max.x) * 0.5f; minX = maxX = mid; }
+        if (minY > maxY) { float mid = (b.min.y + b.max.y) * 0.5f; minY = maxY = mid; }
+
+        float x = Mathf.Clamp(worldPos.x, minX, maxX);
+        float y = Mathf.Clamp(worldPos.y, minY, maxY);
+        return new Vector3(x, y, worldPos.z);
     }
 }
