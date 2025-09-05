@@ -32,7 +32,7 @@ public class UnitCombatController : MonoBehaviour
     [Header("권장 옵션")]
     [SerializeField] private bool blockBasicWhileCasting = true;
 
-    [Header("애니메이션 설정")]
+    [Header("애니메이션 설정(클립명)")]
     [SerializeField] private string standingClip = "Standing";
     [SerializeField] private string moveClip = "Move";
     [SerializeField] private string attackClip = "Attack";
@@ -51,10 +51,6 @@ public class UnitCombatController : MonoBehaviour
 
     private float _stopDistSqr;
     private float _releaseDistSqr;
-
-    private int _minVisibleFps;
-    private bool _autoLoopWhenTooFast;
-    private UnitData.AttackAnimMode _attackAnimMode;
 
     private void Awake()
     {
@@ -96,7 +92,7 @@ public class UnitCombatController : MonoBehaviour
 
     public void InitForBattle(Vector3 forwardDir)
     {
-        _forwardDir = forwardDir.sqrMagnitude > 0.0f ? forwardDir.normalized : Vector3.right;
+        _forwardDir = (forwardDir.sqrMagnitude > 0.0f) ? forwardDir.normalized : Vector3.right;
         _retargetTimer = 0.0f;
         _running = true;
         _hadTargetPrev = false;
@@ -116,23 +112,15 @@ public class UnitCombatController : MonoBehaviour
         }
 
         StartMoveForwardIfNeeded();
-
         _unit.NotifyAttackActiveEnd();
 
         if (overrideSpawnFacingWithForwardDir && _anim)
             _anim.SetFlipX(_forwardDir.x < 0.0f);
 
+        // 초기 재생
         if (_isMoving) _anim?.Play(moveClip);
         else _anim?.Play(standingClip);
-
-        var stat = _unit.UnitStat;
-        _attackAnimMode = stat ? stat.attackAnimMode : UnitData.AttackAnimMode.Auto;
-        _minVisibleFps = stat ? stat.minVisibleFps : 12;
-        _autoLoopWhenTooFast = stat ? stat.autoLoopWhenTooFast : true;
-
-        if (stat) hardRestartAttackAnim = stat.hardRestartAttackAnim;
     }
-
 
     public void StopBattle()
     {
@@ -159,7 +147,7 @@ public class UnitCombatController : MonoBehaviour
         var tgtGO = _targeting.TargetedEnemy;
         bool hasTarget = tgtGO && tgtGO.activeSelf;
 
-        // 타겟 새 획득 시 이동 정지
+        // 타겟 새로 획득 → 이동 정지
         if (hasTarget && !_hadTargetPrev) StopMoveIfNeeded();
         _hadTargetPrev = hasTarget;
 
@@ -220,8 +208,7 @@ public class UnitCombatController : MonoBehaviour
             _move.MoveTo(tTr.position, _unit.MoveSpeed);
             _isMoving = true;
 
-            // 공격 중이면 Move가 Attack을 덮지 않음
-            if (!(attackLogic && attackLogic.IsAttacking))
+            if (!(attackLogic && attackLogic.IsAttacking) && !(_anim && _anim.IsPlayingOnce))
                 _anim?.Play(moveClip);
         }
     }
@@ -249,7 +236,6 @@ public class UnitCombatController : MonoBehaviour
         else _unit.UseMana(skillLogic.manaCost);
 
         _attackTempoSet = false;
-        // (스킬 전용 애니가 있다면: _anim?.PlayOnceDuration("Skill", castTime, ...))
         return true;
     }
 
@@ -283,20 +269,22 @@ public class UnitCombatController : MonoBehaviour
         }
     }
 
-    // 이동/애니
+    // 이동/정지 보조
     private void StartMoveForwardIfNeeded()
     {
         if (_isMoving) return;
+        if (_anim && _anim.IsPlayingOnce) return; // 공격 원샷 중이면 방해 금지
         _move.StartMoveInDirection(_forwardDir, _unit.MoveSpeed);
         _isMoving = true;
 
-        if (!(attackLogic && attackLogic.IsAttacking))
+        if (!(attackLogic && attackLogic.IsAttacking) && !(_anim && _anim.IsPlayingOnce))
             _anim?.Play(moveClip);
     }
 
     private void StopMoveIfNeeded()
     {
         if (!_isMoving) return;
+        if (_anim && _anim.IsPlayingOnce) return;
         _move.StopMove();
         _isMoving = false;
 
@@ -304,55 +292,15 @@ public class UnitCombatController : MonoBehaviour
             _anim?.Play(standingClip);
     }
 
+    // 공격 사이클 → 애니 원샷(길이/속도는 SO에 기록된 FPS/Loop 사용)
     private void HandleAttackCycleStarted(UnitBase who)
     {
         if (!_anim || !_anim.isActiveAndEnabled || !_anim.gameObject.activeInHierarchy) return;
 
-        // 공격 시작 시 타깃 방향으로 뒤집기
         if (flipToTargetOnAttackStart)
         {
             var tgt = _targeting.TargetedEnemy ? _targeting.TargetedEnemy.transform : null;
             if (tgt) _anim.SetFlipX(tgt.position.x < _tr.position.x);
-        }
-
-        // 프레임/시간 계산
-        int frames = (_anim != null) ? _anim.GetFrameCount(attackClip) : 0;
-        float act = Mathf.Max(0.05f, _unit.AttackActiveSec);
-
-        float minTimeShowAllAt30 = (frames > 0) ? (frames / 30.0f) : 0.0f;
-
-        bool useLoop;
-        switch (_attackAnimMode)
-        {
-            case UnitData.AttackAnimMode.LoopWhileAttacking:
-                useLoop = true;
-                break;
-
-            case UnitData.AttackAnimMode.OneShotPerCycle:
-                useLoop = false;
-                break;
-
-            default: 
-                useLoop = _autoLoopWhenTooFast && (frames > 1) && (act < minTimeShowAllAt30);
-                break;
-        }
-
-        if (useLoop)
-        {
-            if (_anim.CurrentClip != attackClip || _anim.IsPlayingOnce)
-            {
-                if (hardRestartAttackAnim) _anim.StopCurrent();
-                _anim.Play(attackClip);
-            }
-            return;
-        }
-
-        float desiredFps = (frames > 0 && act > 0.0f) ? Mathf.Clamp(frames / act, _minVisibleFps, 30f) : -1.0f;
-
-        if (_anim.CurrentClip == attackClip && _anim.IsPlayingOnce)
-        {
-            if (desiredFps > 0f) _anim.SetFpsForCurrent(desiredFps);
-            return;
         }
 
         if (hardRestartAttackAnim) _anim.StopCurrent();
@@ -363,19 +311,13 @@ public class UnitCombatController : MonoBehaviour
             {
                 if (!_isMoving && !(attackLogic && attackLogic.IsAttacking))
                     _anim.Play(standingClip);
-            },
-            fpsOverride: desiredFps
+            }
         );
     }
 
     private void HandleAttackCycleEnded(UnitBase who)
     {
-        if (_anim != null && _anim.IsPlayingOnce) return;
-
-        if (!(attackLogic && attackLogic.IsAttacking))
-        {
-            if (_isMoving) _anim?.Play(moveClip);
-            else _anim?.Play(standingClip);
-        }
+        if (_anim != null && _anim.IsPlayingOnce) return; // 원샷 마무리 콜백에서 스탠딩 처리
+        if (!_isMoving) _anim?.Play(standingClip);
     }
 }

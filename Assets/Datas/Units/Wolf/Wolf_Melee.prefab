@@ -154,6 +154,8 @@ MonoBehaviour:
   flipToTargetOnAttackStart: 1
   hardRestartAttackAnim: 1
   overrideSpawnFacingWithForwardDir: 0
+  moveCycleSeconds: 1
+  standingCycleSeconds: 1
 --- !u!114 &2341903776392395555
 MonoBehaviour:
   m_ObjectHideFlags: 0

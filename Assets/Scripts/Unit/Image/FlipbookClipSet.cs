@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // 프리팹이 물고 다닐 "플립북 클립 세트"
-
-[CreateAssetMenu(fileName = "FlipbookClipSet", menuName = "Animation/Flipbook Clip Set")]
+[CreateAssetMenu(fileName = "FlipbookClipSet", menuName = "Battle/Animation/Flipbook Clip Set")]
 public class FlipbookClipSet : ScriptableObject
 {
     [Header("에디터 스캔 대상 폴더(프로젝트 상대 경로)")]
-    [Tooltip("예: Assets/Image/Unit  (빌드/런타임에서는 사용하지 않음)")]
     public string assetFolder = "Assets/Image/Unit";
 
     [Serializable]
@@ -25,14 +23,14 @@ public class FlipbookClipSet : ScriptableObject
         public int MinIndex = 0;
         public int MaxIndex = 0;
 
-        [Header("프레임 목록 (에디터 스캔으로 채움)")]
+        [Header("프레임 목록")]
         public List<Sprite> Sprites = new List<Sprite>();
 
         [Header("재생 옵션")]
         [Min(1)] public int FPS = 10;
         public bool Loop = true;
 
-        [Header("프레임 이벤트(선택)")]
+        [Header("프레임 이벤트")]
         [Tooltip("특정 프레임에서 히트/사운드 등 이벤트 처리용 간단 훅")]
         public List<int> EventFrames = new List<int>();
     }

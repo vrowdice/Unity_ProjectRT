@@ -1,51 +1,57 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;     
 using UnityEngine;
 
 public class SkillMultiAttackReusable : BaseSkill
 {
-    [Header("½ºÅ³ ¼öÄ¡")]
-    [Min(0)] public float SkillDamageCoefficient = 1.0f;
-    [Min(1)] public int SkillAttackCount = 2;  
-    [Min(0)] public int ManaCostOverride = -1;  
+    [Header("ìŠ¤í‚¬ ìˆ˜ì¹˜")]
+    [Min(0)] public float SkillDamageCoefficient = 1.0f; // í”¼í•´ = ê³„ìˆ˜ * ê³µê²©ë ¥
+    [Min(1)] public int SkillAttackCount = 2;            
+    [Min(0)] public int ManaCostOverride = -1;          
 
     public enum TargetCollectMode { AroundPrimary, AroundCaster }
 
-    [Header("Å¸°Ù ¼öÁı ¿É¼Ç")]
+    [Header("íƒ€ê²Ÿ ìˆ˜ì§‘ ì˜µì…˜")]
     public TargetCollectMode collectMode = TargetCollectMode.AroundPrimary;
 
-    [Tooltip("°Ë»ö ¹İ°æ = (±âÁØ »ç°Å¸®) * multiplier. ±âÁØÀº caster.AttackRange")]
+    [Tooltip("ê²€ìƒ‰ ë°˜ê²½ = (ê¸°ì¤€ ì‚¬ê±°ë¦¬) * multiplier. ê¸°ì¤€ì€ caster.AttackRange")]
     public float extraTargetSearchRadiusMultiplier = 1.0f;
 
     public enum DistanceAnchor { Primary, Caster }
-    [Tooltip("°¡±î¿î ¼ø Á¤·Ä ±âÁØ")]
+    [Tooltip("ê°€ê¹Œìš´ ìˆœ ì •ë ¬ ê¸°ì¤€")]
     public DistanceAnchor sortBy = DistanceAnchor.Primary;
 
-    [Tooltip("È÷Æ® »çÀÌ¿¡ ÇÁ·¹ÀÓ ÅÒ(0ÀÌ¸é °°Àº ÇÁ·¹ÀÓ¿¡ ¿¬¼Ó Àû¿ë)")]
+    [Tooltip("íˆíŠ¸ ì‚¬ì´ì— í”„ë ˆì„ í…€(0ì´ë©´ ê°™ì€ í”„ë ˆì„ì— ì—°ì† ì ìš©)")]
     [Min(0)] public int hitFrameGap = 0;
 
-    [Header("È÷Æ® ºÎ°¡È¿°ú")]
+    [Header("íˆíŠ¸ ë¶€ê°€íš¨ê³¼")]
     public StatusType onHitApplyStatus = StatusType.None;
     public float onHitStatusDuration = 5f;
 
-    [Tooltip("ÇÇ°İÀÚ°¡ Æ¯Á¤ »óÅÂÀÏ ¶§ Ã³Ä¡µÇ¸é ¹ß»ı½ÃÅ³ Ä¿½ºÅÒ ÀÌº¥Æ®¸í(ºó ¹®ÀÚ¿­ÀÌ¸é ¹Ì»ç¿ë)")]
+    [Tooltip("í”¼ê²©ìê°€ íŠ¹ì • ìƒíƒœì¼ ë•Œ ì²˜ì¹˜ë˜ë©´ ë°œìƒì‹œí‚¬ ì»¤ìŠ¤í…€ ì´ë²¤íŠ¸ëª…")]
     public string onKillTriggerEventName = "";
-    [Tooltip("À§ ÀÌº¥Æ®ÀÇ ÇÊ¼ö »óÅÂ(NoneÀÌ¸é Á¶°Ç ¾øÀ½)")]
+    [Tooltip("ìœ„ ì´ë²¤íŠ¸ì˜ í•„ìˆ˜ ìƒíƒœ")]
     public StatusType onKillRequiredStatus = StatusType.MarkHunted;
 
+    // ë‚´ë¶€ ë²„í¼
     private readonly List<UnitBase> _targets = new List<UnitBase>(8);
-
     private static readonly Collider2D[] s_buf = new Collider2D[64];
+
+    // ë¦¬í”Œë ‰ì…˜ ìºì‹œ(ì„±ëŠ¥ ìµœì í™”ìš©) â€” íƒ€ì…ë‹¹ 1íšŒë§Œ ì°¾ê³  ì¬ì‚¬ìš©
+    private static MethodInfo s_AcquireTargetsMI;
 
     protected override IEnumerator PerformSkillRoutine(UnitBase caster, GameObject primaryTargetGO)
     {
-        // ÄÚ½ºÆ® µ¤¾î¾²±â
-        if (ManaCostOverride >= 0) this.manaCost = ManaCostOverride;
+        // ì½”ìŠ¤íŠ¸ ë®ì–´ì“°ê¸°
+        if (ManaCostOverride >= 0)
+            this.manaCost = ManaCostOverride;
 
-        // ±âº» À¯È¿¼º
-        if (!ValidateCaster(caster)) yield break;
+        // ê¸°ë³¸ ìœ íš¨ì„±
+        if (!ValidateCaster(caster))
+            yield break;
 
-        // Áß½É/Á¤·Ä ±âÁØ °áÁ¤
+        // ìˆ˜ì§‘ ì¤‘ì‹¬/ì •ë ¬ ì¶• ê²°ì •
         UnitBase primary = null;
         if (collectMode == TargetCollectMode.AroundPrimary)
         {
@@ -65,35 +71,43 @@ public class SkillMultiAttackReusable : BaseSkill
         float radius = Mathf.Max(0.01f, caster.AttackRange) *
                        Mathf.Max(0.01f, extraTargetSearchRadiusMultiplier);
 
-        // Å¸°Ù ¼öÁı 
+        // íƒ€ê²Ÿ ìˆ˜ì§‘
         _targets.Clear();
         CollectTargets_NoAlloc(caster, primary, center, sortPivot, radius, SkillAttackCount, _targets);
 
-        if (_targets.Count == 0) yield break;
+        if (_targets.Count == 0)
+            yield break;
 
-        // ÇÇÇØ °è»ê
+        // í”¼í•´ ê³„ì‚°(ê¸°ë³¸: ê³„ìˆ˜ * ê³µê²©ë ¥)
         float damage = Mathf.Max(0f, SkillDamageCoefficient) * caster.AttackPower;
 
-        // È÷Æ® ·çÇÁ
+        // íˆíŠ¸ ë£¨í”„
         for (int i = 0; i < _targets.Count; i++)
         {
             var victim = _targets[i];
-            if (!IsAttackableEnemy_Team(caster, victim)) continue;
+            if (!IsAttackableEnemy_Team(caster, victim))
+                continue;
 
             bool hadReqStatus = (onKillRequiredStatus == StatusType.None) ||
                                 HasStatus(victim, onKillRequiredStatus);
 
+            // ë°ë¯¸ì§€ ì ìš©
             victim.TakeDamage(damage);
 
-            UnitImpactEmitter.Emit(caster.gameObject, ImpactEventType.SkillCastHit,
-                                   caster, victim.gameObject, damage, skillName);
+            // ì„íŒ©íŠ¸ ì´ë²¤íŠ¸(íˆíŠ¸ í”¼ë“œë°±)
+            UnitImpactEmitter.Emit(
+                caster.gameObject, ImpactEventType.SkillCastHit,
+                caster, victim.gameObject, damage, skillName);
 
+            // ì˜¨íˆíŠ¸ ìƒíƒœ ë¶€ì—¬
             if (onHitApplyStatus != StatusType.None)
                 TryApplyStatus(victim, onHitApplyStatus, onHitStatusDuration, caster);
 
+            // í‚¬ íŠ¸ë¦¬ê±° (ì¡°ê±´ ìƒíƒœ ë§Œì¡± ì‹œ)
             if (victim.IsDead && !string.IsNullOrEmpty(onKillTriggerEventName) && hadReqStatus)
                 TriggerCustomEvent(caster, victim, onKillTriggerEventName);
 
+            // í”„ë ˆì„ ê°„ê²©
             for (int f = 0; f < hitFrameGap; f++)
                 yield return null;
         }
@@ -104,21 +118,51 @@ public class SkillMultiAttackReusable : BaseSkill
         float radius, int maxCount, List<UnitBase> outList)
     {
         var tgt = caster.GetComponent<UnitTargetingController>();
+
+        bool alreadyHasPrimary = false;
+        if (collectMode == TargetCollectMode.AroundPrimary && primary)
+        {
+            outList.Add(primary);
+            alreadyHasPrimary = true;
+        }
+
         if (tgt != null)
         {
-            if (collectMode == TargetCollectMode.AroundPrimary && primary)
-                outList.Add(primary);
-
             int want = Mathf.Max(0, maxCount - outList.Count);
             if (want > 0)
             {
-                tgt.AcquireTargetsNonAlloc(outList, center, radius, want, preferCurrentFirst: false);
+
+                if (s_AcquireTargetsMI == null)
+                {
+                    s_AcquireTargetsMI = tgt.GetType().GetMethod(
+                        "AcquireTargetsNonAlloc",
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                }
+
+                if (s_AcquireTargetsMI != null)
+                {
+                    object[] args = new object[] { outList, center, radius, want, false };
+                    try
+                    {
+                        s_AcquireTargetsMI.Invoke(tgt, args);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning($"[SkillMultiAttack] AcquireTargetsNonAlloc invoke failed: {e.Message}");
+                        // ì‹¤íŒ¨ ì‹œ í´ë°±
+                        PhysicsCollectEnemies(caster, primary, center, sortPivot, radius, maxCount, outList, alreadyHasPrimary);
+                    }
+                }
+                else
+                {
+                    PhysicsCollectEnemies(caster, primary, center, sortPivot, radius, maxCount, outList, alreadyHasPrimary);
+                }
             }
 
             if (primary)
                 DeduplicateKeepFirst(outList, primary);
 
-            if (sortPivot != center) 
+            if (sortPivot != center)
                 outList.Sort((a, b) => DistSqr(sortPivot, a).CompareTo(DistSqr(sortPivot, b)));
 
             if (outList.Count > maxCount)
@@ -127,17 +171,28 @@ public class SkillMultiAttackReusable : BaseSkill
             return;
         }
 
+        PhysicsCollectEnemies(caster, primary, center, sortPivot, radius, maxCount, outList, alreadyHasPrimary);
+    }
+
+    private void PhysicsCollectEnemies(
+        UnitBase caster, UnitBase primary, Vector3 center, Vector3 sortPivot,
+        float radius, int maxCount, List<UnitBase> outList, bool alreadyHasPrimary)
+    {
         int n = Physics2D.OverlapCircleNonAlloc(center, radius, s_buf, TeamLayers.GetEnemyMask(caster.Team));
-        if (collectMode == TargetCollectMode.AroundPrimary && primary)
-            outList.Add(primary);
 
         for (int i = 0; i < n; i++)
         {
             var col = s_buf[i];
             if (!col) continue;
+
             var ub = col.GetComponent<UnitBase>();
             if (!IsAttackableEnemy_Team(caster, ub)) continue;
-            if (collectMode == TargetCollectMode.AroundPrimary && ub == primary) continue;
+
+            // Primaryë¥¼ ì´ë¯¸ ë„£ì—ˆë‹¤ë©´ ì¤‘ë³µ ë°©ì§€
+            if (collectMode == TargetCollectMode.AroundPrimary && primary && ub == primary)
+            {
+                if (alreadyHasPrimary) continue;
+            }
 
             outList.Add(ub);
         }
@@ -147,6 +202,7 @@ public class SkillMultiAttackReusable : BaseSkill
         if (outList.Count > maxCount)
             outList.RemoveRange(maxCount, outList.Count - maxCount);
     }
+
 
     private static void DeduplicateKeepFirst(List<UnitBase> list, UnitBase key)
     {

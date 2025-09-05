@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 [DisallowMultipleComponent]
 public class UnitTargetingController : MonoBehaviour
@@ -13,10 +13,14 @@ public class UnitTargetingController : MonoBehaviour
     private struct Candidate { public UnitBase ub; public float d; }
     private static readonly List<Candidate> s_candidates = new();
 
+    private UnitMovementController _mover;   
+
     private void Awake()
     {
         if (owner == null) owner = GetComponent<UnitBase>();
         RefreshMask();
+
+        _mover = GetComponent<UnitMovementController>(); 
     }
 
     public void RefreshMask()
@@ -57,61 +61,41 @@ public class UnitTargetingController : MonoBehaviour
         if (prev == null && TargetedEnemy != null)
             owner.GetComponent<UnitMovementController>()?.StopMove();
 
+        if (TargetedEnemy && _mover && owner)
+        {
+            Vector3 dir = (TargetedEnemy.transform.position - owner.transform.position).normalized;
+            if (dir.sqrMagnitude > 1e-6f)
+                _mover.StartMoveInDirection(dir, owner.MoveSpeed);
+        }
     }
 
-
-    public int AcquireTargetsNonAlloc(List<UnitBase> outList, Vector3 center, float radius,
-                                      int maxTargets = -1, bool preferCurrentFirst = true)
+    private void Update()
     {
-        outList?.Clear();
-        if (outList == null || owner == null) return 0;
+        if (!owner || !_mover) return;
 
-        int n = (_opponentMask != 0)
-            ? Physics2D.OverlapCircleNonAlloc(center, radius, s_buf, _opponentMask)
-            : Physics2D.OverlapCircleNonAlloc(center, radius, s_buf);
+        var t = TargetedEnemy;
+        if (!t)
+            return;
 
-        s_candidates.Clear();
-
-        UnitBase current = null;
-        if (preferCurrentFirst && TargetedEnemy)
-            current = TargetedEnemy.GetComponent<UnitBase>() ?? TargetedEnemy.GetComponentInParent<UnitBase>();
-
-        for (int i = 0; i < n; i++)
+        var tUb = t.GetComponent<UnitBase>() ?? t.GetComponentInParent<UnitBase>();
+        if (!tUb || tUb.IsDead)
         {
-            var h = s_buf[i];
-            if (!h) continue;
-
-            var ub = h.GetComponent<UnitBase>();
-            if (!ub || ub.IsDead) continue;
-
-            if (_opponentMask == 0 && ub.Team == owner.Team) continue;
-
-            float d = Vector3.Distance(center, ub.transform.position);
-            s_candidates.Add(new Candidate { ub = ub, d = d });
+            TargetedEnemy = null;
+            return;
         }
 
-        if (s_candidates.Count == 0) return 0;
-
-        int added = 0;
-        if (current && s_candidates.Exists(c => c.ub == current))
+        float dist = Vector3.Distance(owner.transform.position, t.transform.position);
+        float stopRange = owner.AttackRange;            
+        if (dist > stopRange)
         {
-            outList.Add(current);
-            added++;
+            Vector3 dir = (t.transform.position - owner.transform.position).normalized;
+            if (dir.sqrMagnitude > 1e-6f)
+                _mover.StartMoveInDirection(dir, owner.MoveSpeed);
         }
-
-        s_candidates.Sort((a, b) => a.d.CompareTo(b.d));
-
-        int cap = (maxTargets <= 0) ? int.MaxValue : maxTargets;
-        for (int i = 0; i < s_candidates.Count && added < cap; i++)
+        else
         {
-            var ub = s_candidates[i].ub;
-            if (ub == null) continue;
-            if (ub == current) continue; 
-            outList.Add(ub);
-            added++;
+            _mover.StopMove();
         }
-
-        return added;
     }
 
 #if UNITY_EDITOR

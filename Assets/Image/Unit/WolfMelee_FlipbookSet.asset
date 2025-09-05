@@ -22,7 +22,7 @@ MonoBehaviour:
     Sprites:
     - {fileID: -1305551140, guid: 08fb00d457af6854a9f5df54a5ddf55b, type: 3}
     - {fileID: 716234730, guid: 08fb00d457af6854a9f5df54a5ddf55b, type: 3}
-    FPS: 8
+    FPS: 4
     Loop: 1
     EventFrames: 
   - Name: Move
@@ -34,7 +34,7 @@ MonoBehaviour:
     - {fileID: -681233519, guid: b34b86fc36c4b6146930e9b312860cc5, type: 3}
     - {fileID: 1110352663, guid: b34b86fc36c4b6146930e9b312860cc5, type: 3}
     - {fileID: 876021197, guid: b34b86fc36c4b6146930e9b312860cc5, type: 3}
-    FPS: 10
+    FPS: 5
     Loop: 1
     EventFrames: 
   - Name: Attack
@@ -46,6 +46,6 @@ MonoBehaviour:
     - {fileID: 744619001, guid: c010547329e67d04eb8f9733746cb387, type: 3}
     - {fileID: -1606477236, guid: c010547329e67d04eb8f9733746cb387, type: 3}
     - {fileID: 904923626, guid: c010547329e67d04eb8f9733746cb387, type: 3}
-    FPS: 12
-    Loop: 1
+    FPS: 15
+    Loop: 0
     EventFrames: 

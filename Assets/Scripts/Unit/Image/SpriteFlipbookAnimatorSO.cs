@@ -5,11 +5,11 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-// SO에 저장된 Sprite 배열만으로 플립북 재생
+// SO에 저장된 Sprite 배열을 FPS/Loop 옵션 그대로 재생하는 간단 애니메이터
 [DisallowMultipleComponent]
 public class SpriteFlipbookAnimatorSO : MonoBehaviour
 {
-    [Header("재생 정의")]
+    [Header("재생 정의(SO)")]
     [SerializeField] private FlipbookClipSet clipSet;
 
     [Header("출력 대상")]
@@ -42,8 +42,7 @@ public class SpriteFlipbookAnimatorSO : MonoBehaviour
 
     private void OnDisable()
     {
-        // 비활성화 시 재생 정리(유령 코루틴 방지)
-        StopCurrent();
+        StopCurrent(); // 유령 코루틴 방지
     }
 
     private void BuildCaches()
@@ -61,11 +60,10 @@ public class SpriteFlipbookAnimatorSO : MonoBehaviour
         {
             if (string.IsNullOrEmpty(c.Name)) continue;
             _clipLookup[c.Name] = c;
-
             var frames = c.Sprites?.Where(s => s != null).ToArray();
             if (frames == null || frames.Length == 0)
             {
-                Debug.LogWarning($"[SpriteFlipbookAnimatorSO] '{c.Name}' 프레임 비어있음. 에디터에서 스캔 필요", this);
+                Debug.LogWarning($"[Flipbook] '{c.Name}' 프레임 비어있음. 에디터에서 채워주세요.", this);
                 continue;
             }
             _clipSprites[c.Name] = frames;
@@ -77,51 +75,28 @@ public class SpriteFlipbookAnimatorSO : MonoBehaviour
 
     public void Play(string clipName, float fpsOverride = -1.0f)
     {
-        if (!ValidateClip(clipName)) return;
-        if (!CanAnimate()) return;            // 비활성 시 무시
+        if (!ValidateClip(clipName) || !CanAnimate()) return;
         StopCurrent();
         _isPlayingOnce = false;
         _currentClip = clipName;
-        _currentFps = fpsOverride > 0.0f ? fpsOverride : _clipLookup[clipName].FPS;
+        _currentFps = (fpsOverride > 0.0f) ? fpsOverride : _clipLookup[clipName].FPS;
         _playRoutine = StartAnimSafe(CoPlayLoop(clipName));
     }
 
     public void PlayOnce(string clipName, Action onComplete = null, float fpsOverride = -1.0f)
     {
-        if (!ValidateClip(clipName)) return;
-        if (!CanAnimate()) return;            // 비활성 시 무시
+        if (!ValidateClip(clipName) || !CanAnimate()) return;
         StopCurrent();
         _isPlayingOnce = true;
         _currentClip = clipName;
-        _currentFps = fpsOverride > 0.0f ? fpsOverride : _clipLookup[clipName].FPS;
+        _currentFps = (fpsOverride > 0.0f) ? fpsOverride : _clipLookup[clipName].FPS;
         _playRoutine = StartAnimSafe(CoPlayOnce(clipName, onComplete));
     }
 
-    // 프레임 수 얻기
-    public int GetFrameCount(string clipName)
-    {
-        return _clipSprites.TryGetValue(clipName, out var fr) && fr != null ? fr.Length : 0;
-    }
-
-    public void PlayOnceDuration(string clipName, float durationSec, System.Action onComplete = null)
-    {
-        int frames = GetFrameCount(clipName);
-        float fps = -1f;
-        if (durationSec > 0f && frames > 0)
-            fps = Mathf.Clamp(frames / durationSec, 6f, 30f);
-        PlayOnce(clipName, onComplete, fpsOverride: fps);
-    }
-
-    // (선택) 재시작 보장 버전
-    public void PlayOnceDurationRestart(string clipName, float durationSec, System.Action onComplete = null)
-    {
-        StopCurrent();
-        PlayOnceDuration(clipName, durationSec, onComplete);
-    }
-
-    // 크기 조절
+    // 크기 조절(비주얼만)
     public void SetVisualScale(float scale)
     {
+        scale = Mathf.Max(0.1f, scale);
         if (spriteRenderer) spriteRenderer.transform.localScale = Vector3.one * scale;
         if (uiImage) uiImage.rectTransform.localScale = Vector3.one * scale;
     }
@@ -139,14 +114,9 @@ public class SpriteFlipbookAnimatorSO : MonoBehaviour
         if (uiImage)
         {
             var t = uiImage.rectTransform.localScale;
-            t.x = Mathf.Abs(t.x) * (flip ? -1 : 1);
+            t.x = Mathf.Abs(t.x) * (flip ? -1.0f : 1.0f);
             uiImage.rectTransform.localScale = t;
         }
-    }
-
-    public void SetFpsForCurrent(float fps)
-    {
-        if (fps > 0f) _currentFps = fps;
     }
 
     private IEnumerator CoPlayLoop(string clipName)
@@ -161,11 +131,10 @@ public class SpriteFlipbookAnimatorSO : MonoBehaviour
         while (true)
         {
             SetSprite(frames[_currentFrame]);
-            FireSimpleEventIfAny(def, _currentFrame);
 
             _currentFrame = (_currentFrame + 1) % frames.Length;
-
             if (!def.Loop && _currentFrame == 0) yield break;
+
             yield return new WaitForSeconds(frameTime);
         }
     }
@@ -174,14 +143,12 @@ public class SpriteFlipbookAnimatorSO : MonoBehaviour
     {
         if (!CanAnimate()) yield break;
 
-        var def = _clipLookup[clipName];
         var frames = _clipSprites[clipName];
-        float frameTime = 1.0f / Mathf.Max(1f, _currentFps);
+        float frameTime = 1.0f / Mathf.Max(1.0f, _currentFps);
 
         for (_currentFrame = 0; _currentFrame < frames.Length; _currentFrame++)
         {
             SetSprite(frames[_currentFrame]);
-            FireSimpleEventIfAny(def, _currentFrame);
             yield return new WaitForSeconds(frameTime);
         }
 
@@ -197,23 +164,13 @@ public class SpriteFlipbookAnimatorSO : MonoBehaviour
         if (uiImage) uiImage.sprite = s;
     }
 
-    private void FireSimpleEventIfAny(FlipbookClipSet.ClipDef def, int frame)
-    {
-        // 이벤트 프레임 기능을 쓰려면: def.EventFrames.Contains(frame) 체크 후 Invoke
-    }
-
     public void SetClipSet(FlipbookClipSet set)
     {
         clipSet = set;
         BuildCaches();
-        LogLoadedClips();
-    }
-
-    private void LogLoadedClips()
-    {
 #if UNITY_EDITOR
         foreach (var kv in _clipSprites)
-            Debug.Log($"[Flipbook] Loaded clip '{kv.Key}' frames={kv.Value?.Length}", this);
+            Debug.Log($"[Flipbook] Loaded '{kv.Key}' frames={kv.Value?.Length}", this);
 #endif
     }
 
@@ -221,14 +178,9 @@ public class SpriteFlipbookAnimatorSO : MonoBehaviour
     {
         if (!_clipSprites.ContainsKey(name) || !_clipLookup.ContainsKey(name))
         {
-            Debug.LogWarning($"[SpriteFlipbookAnimatorSO] 클립 미존재: '{name}'. SO에 Name이 정확히 '{name}'인지, Sprites가 채워졌는지 확인.", this);
+            Debug.LogWarning($"[Flipbook] 클립 '{name}' 없음 또는 프레임 비어있음", this);
             return false;
         }
-        if (_clipSprites[name] == null || _clipSprites[name].Length == 0)
-        {
-            Debug.LogWarning($"[SpriteFlipbookAnimatorSO] 클립 '{name}'의 프레임이 0개입니다.", this);
-            return false;
-        }
-        return true;
+        return _clipSprites[name] != null && _clipSprites[name].Length > 0;
     }
 }
