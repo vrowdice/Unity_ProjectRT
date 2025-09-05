@@ -115,6 +115,7 @@ public class GameDataManager : MonoBehaviour
         // FactionData의 Units를 이용해 Unit 인덱스 구성 -추가함
         BuildUnitsFromFactions();
     }
+
     // FactionData의 m_units 리스트를 순회하며 유닛 데이터 수집 및 인덱스 구성 -추가함
     private void BuildUnitsFromFactions()
     {

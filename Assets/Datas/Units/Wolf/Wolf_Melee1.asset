@@ -13,23 +13,31 @@ MonoBehaviour:
   m_Name: Wolf_Melee1
   m_EditorClassIdentifier: 
   unitName: eded
-  unitIcon: {fileID: 21300000, guid: ad65963212e8e4a43a106f2bcacf3c0f, type: 3}
+  unitIcon: {fileID: -1305551140, guid: 08fb00d457af6854a9f5df54a5ddf55b, type: 3}
   factionType: 1
   unitTagType: 1
-  attackPower: 20
+  unitKey: 
+  attackPower: 50
   defensePower: 10
   maxHealth: 600
   moveSpeed: 5
   attackRange: 75
-  enemySearchRange: 3
-  attackSpeed: 10
-  attackDelayRatio: 1
+  enemySearchRange: 5
+  attackSpeed: 2
+  attackDelayRatio: 0.6
   attackCount: 1
   damageCoefficient: 1.2
   baseMana: 0
   maxMana: 30
   manaRecoveryOnAttack: 10
   manaRecoveryPerSecond: 2
+  visualScale: 0.5
+  flipbook: {fileID: 11400000, guid: dd8cb5b230bc4da408382e9aedcadbc0, type: 2}
+  spawnFacingRight: 0
+  attackAnimMode: 0
+  minVisibleFps: 12
+  autoLoopWhenTooFast: 1
+  hardRestartAttackAnim: 0
   active:
     displayName: FangStrike
     skillLogic: 
@@ -45,7 +53,6 @@ MonoBehaviour:
     areaAttackPrefab: {fileID: 0}
     areaAttackDirection: 
     areaAttackSpawnPosition: 
-    bonusEffectKey: X / D_Stun(1.5)
   passive:
     passiveLogic: 
     passiveCoeff1: 0
@@ -53,4 +60,4 @@ MonoBehaviour:
     passiveCoeff2: 0
     passiveRange2: 0
   prefab: {fileID: 7622308344849817174, guid: 4d522838a7872d046bb457f84af68a58, type: 3}
-  unitIllustration: {fileID: 0}
+  unitIllustration: {fileID: -1305551140, guid: 08fb00d457af6854a9f5df54a5ddf55b, type: 3}

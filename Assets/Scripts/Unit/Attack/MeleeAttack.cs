@@ -5,8 +5,11 @@ public class MeleeAttack : BaseAttack
 {
     protected override IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject targetGO)
     {
-        if (attacker == null || !IsTargetAlive(targetGO)) yield break;
-        if (!InEffectiveRange(attacker.transform, targetGO.transform, 1.05f)) yield break;
+        if (attacker == null || !IsTargetAlive(targetGO)) { IsAttacking = false; yield break; }
+        if (!InEffectiveRange(attacker.transform, targetGO.transform, 1.05f)) { IsAttacking = false; yield break; }
+
+        // 사이클 시작 이벤트 (애니/사운드 등 1:1 트리거)
+        RaiseAttackCycleStarted(attacker);
 
         int hits = Mathf.Max(1, attacker.AttackCount);
         float act = ActiveSec;
@@ -16,16 +19,18 @@ public class MeleeAttack : BaseAttack
         {
             if (i > 0 && step > 0.0f) yield return new WaitForSeconds(step);
             if (!IsTargetAlive(targetGO)) break;
-
             if (!InEffectiveRange(attacker.transform, targetGO.transform, 1.05f)) break;
 
             float raw = attacker.AttackPower * attacker.DamageCoefficient;
             ApplyDamage(attacker, targetGO, raw);
+
+            RaiseHit(attacker, i);
         }
 
         float consumed = (hits > 1) ? step * (hits - 1) : 0.0f;
         float remain = Mathf.Max(0.0f, act - consumed);
         if (remain > 0.0f) yield return new WaitForSeconds(remain);
 
+        RaiseAttackCycleEnded(attacker);
     }
 }

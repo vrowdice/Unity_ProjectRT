@@ -40,6 +40,24 @@ public class UnitData : ScriptableObject
     [Min(0)] public float manaRecoveryOnAttack;
     [Min(0)] public float manaRecoveryPerSecond;
 
+
+    [Header("크기")]
+    [Range(0.25f, 4.0f)] public float visualScale = 1.0f;
+
+    [Header("애니메이션")]
+    public FlipbookClipSet flipbook;
+
+    [Header("방향")]
+    public bool spawnFacingRight = true;
+
+    [Header("공격 애니메이션 정책")]
+    public AttackAnimMode attackAnimMode = AttackAnimMode.Auto;
+
+    [Range(6, 30)] public int minVisibleFps = 12;
+
+    public bool autoLoopWhenTooFast = true;
+    public bool hardRestartAttackAnim = false;
+
     [System.Serializable]
     public class ActiveSkillSpec
     {
@@ -64,6 +82,9 @@ public class UnitData : ScriptableObject
         public string areaAttackSpawnPosition;
 
     }
+
+    public enum AttackAnimMode { Auto, OneShotPerCycle, LoopWhileAttacking } 
+    public enum FacingOnAttack { None, FaceForwardOnBattleStart, FaceTargetOnAttackStart } 
 
     [System.Serializable]
     public class PassiveSkillSpec

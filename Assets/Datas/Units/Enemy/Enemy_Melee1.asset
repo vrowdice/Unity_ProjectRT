@@ -19,7 +19,7 @@ MonoBehaviour:
   unitKey: 
   attackPower: 20
   defensePower: 10
-  maxHealth: 600
+  maxHealth: 1001
   moveSpeed: 5
   attackRange: 75
   enemySearchRange: 3
@@ -31,6 +31,13 @@ MonoBehaviour:
   maxMana: 30
   manaRecoveryOnAttack: 10
   manaRecoveryPerSecond: 2
+  visualScale: 1
+  flipbook: {fileID: 0}
+  spawnFacingRight: 1
+  attackAnimMode: 0
+  minVisibleFps: 12
+  autoLoopWhenTooFast: 1
+  hardRestartAttackAnim: 0
   active:
     displayName: FangStrike
     skillLogic: 

@@ -12,14 +12,16 @@ GameObject:
   - component: {fileID: 4300245392352757035}
   - component: {fileID: 1417197230055112447}
   - component: {fileID: -7034959524798964637}
-  - component: {fileID: -7880659660371984583}
   - component: {fileID: -8417917059010784136}
   - component: {fileID: 2341903776392395555}
   - component: {fileID: 2400582571196771288}
   - component: {fileID: 3893418127338917686}
   - component: {fileID: 505078370938827603}
-  - component: {fileID: -5392247036380133966}
   - component: {fileID: -4234267437063298309}
+  - component: {fileID: 1251394429245910755}
+  - component: {fileID: 5485403828732808383}
+  - component: {fileID: -6505823942233890309}
+  - component: {fileID: 1690348289571782306}
   m_Layer: 6
   m_Name: Wolf_Melee
   m_TagString: Melee
@@ -112,10 +114,10 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: ad65963212e8e4a43a106f2bcacf3c0f, type: 3}
+  m_SortingLayerID: -1757928077
+  m_SortingLayer: 1
+  m_SortingOrder: 1
+  m_Sprite: {fileID: -1305551140, guid: 08fb00d457af6854a9f5df54a5ddf55b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -126,51 +128,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!61 &-7880659660371984583
-BoxCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7622308344849817174}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_ForceSendLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ForceReceiveLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_ContactCaptureLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_CallbackLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.15, y: 0.98}
-    newSize: {x: 1.15, y: 0.98}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1.15, y: 0.98}
-  m_EdgeRadius: 0
 --- !u!114 &-8417917059010784136
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -191,6 +148,12 @@ MonoBehaviour:
   resetManaOnSkill: 1
   keepMarchingWhenNoTarget: 1
   blockBasicWhileCasting: 1
+  standingClip: Standing
+  moveClip: Move
+  attackClip: Attack
+  flipToTargetOnAttackStart: 1
+  hardRestartAttackAnim: 1
+  overrideSpawnFacingWithForwardDir: 0
 --- !u!114 &2341903776392395555
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -216,7 +179,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37896842628c5a34089899a311cfd1a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackRange: 0
+  attackRange: 5
 --- !u!114 &3893418127338917686
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -256,8 +219,52 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
---- !u!70 &-5392247036380133966
-CapsuleCollider2D:
+--- !u!114 &-4234267437063298309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dab8d26cdcce0ca4fbcaa51b21dbb7f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  skillName: 
+  manaCost: 10
+  skillDamageCoefficient: 0
+  skillAttackCount: 1
+  hitInterval: 0
+--- !u!114 &1251394429245910755
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a3ac96ab62526343aa0e70c168aae68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  clipSet: {fileID: 11400000, guid: dd8cb5b230bc4da408382e9aedcadbc0, type: 2}
+  spriteRenderer: {fileID: -7034959524798964637}
+  uiImage: {fileID: 0}
+--- !u!114 &5485403828732808383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7622308344849817174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f90a2642b105e194298a6bc57d9474ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!61 &-6505823942233890309
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -289,22 +296,50 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
-  m_Size: {x: 1.15, y: 0.98}
-  m_Direction: 0
---- !u!114 &-4234267437063298309
-MonoBehaviour:
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 4.01, y: 3.75}
+    newSize: {x: 1.15, y: 0.98}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 2, y: 3.75}
+  m_EdgeRadius: 0
+--- !u!70 &1690348289571782306
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7622308344849817174}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dab8d26cdcce0ca4fbcaa51b21dbb7f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  skillName: 
-  manaCost: 10
-  skillDamageCoefficient: 0
-  skillAttackCount: 1
-  hitInterval: 0
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_Size: {x: 2.5, y: 3.5}
+  m_Direction: 0
