@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b380b4e2ae264a42b0bcd4938beb528, type: 3}
+  m_Name: Enemy_Melee1
+  m_EditorClassIdentifier: 
+  unitName: eded
+  unitIcon: {fileID: 0}
+  factionType: 2
+  unitTagType: 1
+  unitKey: 
+  attackPower: 20
+  defensePower: 10
+  maxHealth: 1001
+  moveSpeed: 5
+  attackRange: 75
+  enemySearchRange: 3
+  attackSpeed: 10
+  attackDelayRatio: 1
+  attackCount: 1
+  damageCoefficient: 1.2
+  baseMana: 0
+  maxMana: 30
+  manaRecoveryOnAttack: 10
+  manaRecoveryPerSecond: 2
+  visualScale: 1
+  flipbook: {fileID: 0}
+  spawnFacingRight: 1
+  attackAnimMode: 0
+  minVisibleFps: 12
+  autoLoopWhenTooFast: 1
+  hardRestartAttackAnim: 0
+  active:
+    displayName: FangStrike
+    skillLogic: 
+    activeSkillType: 
+    isSkillFinished: 0
+    manaCost: 50
+    damageCoeff: 1.5
+    attackCount: 0
+    multiTargetRange: 0
+    maxMultiTarget: 0
+    otherSkillCoefficient: 0
+    otherSkillRange: 0
+    areaAttackPrefab: {fileID: 0}
+    areaAttackDirection: 
+    areaAttackSpawnPosition: 
+  passive:
+    passiveLogic: 
+    passiveCoeff1: 0
+    passiveRange1: 0
+    passiveCoeff2: 0
+    passiveRange2: 0
+  prefab: {fileID: 7622308344849817174, guid: 108c9bce9b6051946a4736a8c73336ac, type: 3}
+  unitIllustration: {fileID: 0}

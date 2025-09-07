@@ -93,7 +93,7 @@ public class BuildingBtn : MonoBehaviour
     /// <returns>생산 자원 목록</returns>
     public List<ResourceAmount> GetProducedResources()
     {
-        return m_buildingEntry.CalculateProduction(m_buildingCountState);
+        return m_buildingEntry.CalculateProduction(TotalCount);
     }
 
     /// <summary>
@@ -130,7 +130,8 @@ public class BuildingBtn : MonoBehaviour
             return;
         }
 
-        if (TotalCount <= 0)
+        // 기존 건물 개수보다 많이 감소시킬 수 없음
+        if (m_buildingCountState <= -m_buildingCount)
         {
             GameManager.Instance.Warning(WarningMessages.WarningNegativeValue);
             return;
@@ -149,7 +150,16 @@ public class BuildingBtn : MonoBehaviour
     /// <returns>수정 가능 여부</returns>
     private bool CanModifyBuilding()
     {
-        if (m_buildingCount < 0)
+        // 건물 데이터가 유효한지 확인
+        if (m_buildingEntry == null || m_buildingEntry.m_data == null)
+        {
+            m_lockPanel.SetActive(true);
+            GameManager.Instance.Warning(WarningMessages.WarningAccessDenied);
+            return false;
+        }
+
+        // 건물이 언락되지 않은 경우 잠금
+        if (!m_buildingEntry.m_state.m_isUnlocked)
         {
             m_lockPanel.SetActive(true);
             GameManager.Instance.Warning(WarningMessages.WarningAccessDenied);
@@ -199,16 +209,18 @@ public class BuildingBtn : MonoBehaviour
     {
         UpdateLockPanel();
         ClearResourceContents();
-        UpdateProducedResources();
-        UpdateRequiredResources();
+        
+        // 언락된 건물만 리소스 정보 표시
+        if (m_buildingEntry.m_state.m_isUnlocked)
+        {
+            UpdateProducedResources();
+            UpdateRequiredResources();
+        }
     }
 
-    /// <summary>
-    /// 잠금 패널 상태를 업데이트합니다.
-    /// </summary>
     private void UpdateLockPanel()
     {
-        m_lockPanel.SetActive(m_buildingCount < 0);
+        m_lockPanel.SetActive(!m_buildingEntry.m_state.m_isUnlocked);
     }
 
     /// <summary>

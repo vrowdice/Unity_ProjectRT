@@ -6,7 +6,7 @@ public class TileMapState
     public Vector2Int m_index;
     public bool m_isFriendlyArea = false;
     public bool m_isRoad = false;
-    public ResourceAmount m_resourceAmount;
+    public GameResources m_resources;
 
     public TileMapState()
     {
@@ -14,7 +14,7 @@ public class TileMapState
         m_index = Vector2Int.zero;
         m_isFriendlyArea = false;
         m_isRoad = false;
-        m_resourceAmount = new ResourceAmount();
+        m_resources = new GameResources();
     }
 
     public TileMapState(TerrainType.TYPE terrainType, Vector2Int index, bool isFriendlyArea = false)
@@ -23,6 +23,6 @@ public class TileMapState
         m_index = index;
         m_isFriendlyArea = isFriendlyArea;
         m_isRoad = false;
-        m_resourceAmount = new ResourceAmount();
+        m_resources = new GameResources();
     }
 }

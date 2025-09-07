@@ -1,8 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
+using System.Collections;
 
 /// <summary>
 /// 메인 UI를 관리하는 매니저 클래스
@@ -14,6 +13,8 @@ public class MainUIManager : MonoBehaviour, IUIManager
     [SerializeField]
     List<GameObject> m_panelList = new List<GameObject>();
     [SerializeField]
+    GameObject m_quickMovePanel = null;
+    [SerializeField]
     GameObject m_BackMainBtn = null;
 
     [Header("Resource Panel Text")]
@@ -22,9 +23,9 @@ public class MainUIManager : MonoBehaviour, IUIManager
     [SerializeField]
     TextMeshProUGUI m_addWoodText = null;
     [SerializeField]
-    TextMeshProUGUI m_metalText = null;
+    TextMeshProUGUI m_ironText = null;
     [SerializeField]
-    TextMeshProUGUI m_addMetalText = null;
+    TextMeshProUGUI m_addIronText = null;
     [SerializeField]
     TextMeshProUGUI m_foodText = null;
     [SerializeField]
@@ -34,30 +35,45 @@ public class MainUIManager : MonoBehaviour, IUIManager
     [SerializeField]
     TextMeshProUGUI m_addTechText = null;
 
+    [Header("Resource Add Info Panel")]
+    [SerializeField]
+    GameObject m_resourceAddInfoPanelPrefab = null;
+
     [Header("Game Info Text")]
     [SerializeField]
     TextMeshProUGUI m_dateText = null;
     [SerializeField]
     TextMeshProUGUI m_requestText = null;
 
-    [Header("Panel Info Panel")]
-    [SerializeField]
-    GameObject m_panelInfoPanel = null;
-    [SerializeField]
-    TextMeshProUGUI m_panelInfoText = null;
-
     [Header("Common UI")]
     [SerializeField]
     GameObject m_resourceIconTextPrefeb = null;
+    [SerializeField]
+    GameObject m_conditionPanelTextPrefeb = null;
+
+    [Header("Debug Settings")]
+    [SerializeField]
+    private bool m_enableDebugMode = false;
+    [SerializeField]
+    private GameObject m_debugManagerPrefab = null;
 
     // 참조 변수들
     private GameManager m_gameManager = null;
     private List<IUIPanel> m_iPanelList = new List<IUIPanel>();
     private Transform m_canvasTrans = null;
     private int m_nowPanelIndex = 0;
+    
+    // 동적 패널 관리
+    private ResourceAddInfoPanel m_currentInfoPanel = null;
+    private GameObject m_backgroundBlocker = null;
+
+    // 디버그 매니저 관리
+    private GameObject m_debugManagerInstance = null;
+    private DebugManager m_debugManager = null;
 
     // 프로퍼티들
     public GameObject ResourceIconTextPrefeb { get => m_resourceIconTextPrefeb; }
+    public GameObject ConditionPanelTextPrefeb { get => m_conditionPanelTextPrefeb; }
     public Transform CanvasTrans => m_canvasTrans;
 
     /// <summary>
@@ -75,7 +91,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
                 m_woodText.text = formattedAmount;
                 break;
             case ResourceType.TYPE.Iron:
-                m_metalText.text = formattedAmount;
+                m_ironText.text = formattedAmount;
                 break;
             case ResourceType.TYPE.Food:
                 m_foodText.text = formattedAmount;
@@ -106,7 +122,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
                 m_addWoodText.text = "+ " + formattedAmount;
                 break;
             case ResourceType.TYPE.Iron:
-                m_addMetalText.text = "+ " + formattedAmount;
+                m_addIronText.text = "+ " + formattedAmount;
                 break;
             case ResourceType.TYPE.Food:
                 m_addFoodText.text = "+ " + formattedAmount;
@@ -124,10 +140,10 @@ public class MainUIManager : MonoBehaviour, IUIManager
     /// UI 매니저 초기화
     /// 패널 리스트 설정 및 첫 번째 패널 활성화
     /// </summary>
-    /// <param name="gameManager">게임 매니저 참조</param>
-    public void Initialize(GameManager gameManager)
+    /// <param name="argGameManager">게임 매니저 참조</param>
+    public void Initialize(GameManager argGameManager, GameDataManager argGameDataManager)
     {
-        m_gameManager = gameManager;
+        m_gameManager = argGameManager;
         m_canvasTrans = transform;
 
         //패널 초기화
@@ -153,6 +169,245 @@ public class MainUIManager : MonoBehaviour, IUIManager
         MovePanel(0);
 
         UpdateAllMainText();
+        SetResourceIconButton();
+
+        // 디버그 모드가 활성화되어 있다면 디버그 매니저 초기화
+        InitializeDebugManager();
+    }
+
+    /// <summary>
+    /// 디버그 매니저 초기화
+    /// </summary>
+    private void InitializeDebugManager()
+    {
+        if (!m_enableDebugMode)
+        {
+            Debug.Log("Debug mode is disabled.");
+            return;
+        }
+
+        if (m_debugManagerPrefab == null)
+        {
+            Debug.LogWarning("Debug Manager prefab is not assigned. Debug features will not be available.");
+            return;
+        }
+
+        try
+        {
+            // 기존 디버그 매니저가 있다면 제거
+            if (m_debugManagerInstance != null)
+            {
+                DestroyImmediate(m_debugManagerInstance);
+            }
+
+            // 디버그 매니저 프리팹 생성
+            m_debugManagerInstance = Instantiate(m_debugManagerPrefab);
+            m_debugManager = m_debugManagerInstance.GetComponent<DebugManager>();
+
+            if (m_debugManager != null)
+            {
+                // 디버그 매니저 초기화
+                m_debugManager.Initialize(m_gameManager, this);
+                Debug.Log("Debug Manager successfully initialized. Press F1 to open debug panel.");
+            }
+            else
+            {
+                Debug.LogError("DebugManager component not found!");
+                if (m_debugManagerInstance != null)
+                {
+                    DestroyImmediate(m_debugManagerInstance);
+                    m_debugManagerInstance = null;
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Error occurred while initializing Debug Manager: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 디버그 모드 토글 (런타임에서 활성화/비활성화)
+    /// </summary>
+    [ContextMenu("Toggle Debug Mode")]
+    public void ToggleDebugMode()
+    {
+        m_enableDebugMode = !m_enableDebugMode;
+
+        if (m_enableDebugMode)
+        {
+            InitializeDebugManager();
+        }
+        else
+        {
+            DestroyDebugManager();
+        }
+
+        Debug.Log($"Debug mode {(m_enableDebugMode ? "enabled" : "disabled")}.");
+    }
+
+    /// <summary>
+    /// 디버그 매니저 제거
+    /// </summary>
+    private void DestroyDebugManager()
+    {
+        if (m_debugManagerInstance != null)
+        {
+            DestroyImmediate(m_debugManagerInstance);
+            m_debugManagerInstance = null;
+            m_debugManager = null;
+            Debug.Log("Debug Manager destroyed.");
+        }
+    }
+
+    public void SetResourceIconButton()
+    {
+
+    }
+
+    public void OpenResourceAddInfoPanel(int argTypeInt)
+    {
+        // 인트 값을 ResourceType.TYPE으로 직접 캐스팅
+        if (!System.Enum.IsDefined(typeof(ResourceType.TYPE), argTypeInt))
+        {
+            Debug.LogWarning($"Invalid resource type index: {argTypeInt}");
+            return;
+        }
+        
+        ResourceType.TYPE resourceType = (ResourceType.TYPE)argTypeInt;
+        
+        // 이미 패널이 열려있으면 닫기
+        if (m_currentInfoPanel != null)
+        {
+            CloseCurrentInfoPanel();
+            return;
+        }
+        
+        // 프리팹이 없으면 에러
+        if (m_resourceAddInfoPanelPrefab == null)
+        {
+            Debug.LogError("Resource add info panel prefab is not assigned!");
+            return;
+        }
+        
+        // 배경 블로커 생성 (아무 곳이나 누르면 패널이 닫히도록)
+        CreateBackgroundBlocker();
+        
+        // 패널 생성
+        GameObject panelObject = Instantiate(m_resourceAddInfoPanelPrefab, m_canvasTrans);
+        m_currentInfoPanel = panelObject.GetComponent<ResourceAddInfoPanel>();
+        
+        if (m_currentInfoPanel == null)
+        {
+            Debug.LogError("ResourceAddInfoPanel component not found on prefab!");
+            Destroy(panelObject);
+            return;
+        }
+        
+        // 활성화된 모든 이펙트 가져오기
+        List<EffectBase> activeEffects = GameDataManager.Instance.EffectManager.GetAllActiveEffects();
+        
+        // 패널 초기화
+        m_currentInfoPanel.Init(activeEffects, resourceType);
+        
+        // 패널 위치 설정 (버튼 아래에 배치)
+        SetPanelPosition(argTypeInt);
+    }
+    
+    /// <summary>
+    /// 현재 열린 정보 패널 닫기
+    /// </summary>
+    private void CloseCurrentInfoPanel()
+    {
+        if (m_currentInfoPanel != null)
+        {
+            Destroy(m_currentInfoPanel.gameObject);
+            m_currentInfoPanel = null;
+        }
+        
+        if (m_backgroundBlocker != null)
+        {
+            Destroy(m_backgroundBlocker);
+            m_backgroundBlocker = null;
+        }
+    }
+    
+    /// <summary>
+    /// 배경 블로커 생성 (아무 곳이나 누르면 패널이 닫히도록)
+    /// </summary>
+    private void CreateBackgroundBlocker()
+    {
+        m_backgroundBlocker = new GameObject("BackgroundBlocker");
+        m_backgroundBlocker.transform.SetParent(m_canvasTrans, false);
+        
+        // RectTransform 설정
+        RectTransform rectTransform = m_backgroundBlocker.AddComponent<RectTransform>();
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.offsetMin = Vector2.zero;
+        rectTransform.offsetMax = Vector2.zero;
+        rectTransform.SetAsLastSibling(); // 맨 앞으로 보내기
+        
+        // Image 컴포넌트 추가 (투명하게)
+        UnityEngine.UI.Image image = m_backgroundBlocker.AddComponent<UnityEngine.UI.Image>();
+        image.color = new Color(0, 0, 0, 0);
+        
+        // Button 컴포넌트 추가
+        UnityEngine.UI.Button button = m_backgroundBlocker.AddComponent<UnityEngine.UI.Button>();
+        button.onClick.AddListener(CloseCurrentInfoPanel);
+        
+        // Button 설정 개선
+        button.transition = UnityEngine.UI.Selectable.Transition.None;
+        button.navigation = new UnityEngine.UI.Navigation { mode = UnityEngine.UI.Navigation.Mode.None };
+        
+        // RaycastTarget 활성화
+        image.raycastTarget = true;
+    }
+    
+    /// <summary>
+    /// 패널 위치 설정 (마우스 위치에 배치)
+    /// </summary>
+    /// <param name="resourceTypeIndex">리소스 타입 인덱스 (사용하지 않음)</param>
+    private void SetPanelPosition(int resourceTypeIndex)
+    {
+        if (m_currentInfoPanel == null) return;
+        
+        RectTransform panelRect = m_currentInfoPanel.GetComponent<RectTransform>();
+        if (panelRect != null)
+        {
+            // 마우스 위치를 Canvas 좌표로 변환
+            Vector2 mousePosition;
+            Canvas canvas = m_canvasTrans.GetComponent<Canvas>();
+            
+            if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceCamera)
+            {
+                // ScreenSpaceCamera 모드일 때
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    m_canvasTrans as RectTransform,
+                    Input.mousePosition,
+                    canvas.worldCamera,
+                    out mousePosition
+                );
+            }
+            else
+            {
+                // ScreenSpaceOverlay 모드일 때
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    m_canvasTrans as RectTransform,
+                    Input.mousePosition,
+                    null,
+                    out mousePosition
+                );
+            }
+            
+            // 패널을 마우스 위치에 배치
+            panelRect.anchoredPosition = mousePosition;
+            
+            // 패널의 앵커를 중앙으로 설정
+            panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+            panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRect.pivot = new Vector2(0f, 1f); // 왼쪽 상단을 피벗으로 설정
+        }
     }
 
     /// <summary>
@@ -225,6 +480,11 @@ public class MainUIManager : MonoBehaviour, IUIManager
         ActivateCurrentPanel();
         UpdateBackButton();
         OpenCurrentPanel();
+
+        if (m_quickMovePanel != null)
+        {
+            m_quickMovePanel.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -284,7 +544,7 @@ public class MainUIManager : MonoBehaviour, IUIManager
     {
         if (m_iPanelList[m_nowPanelIndex] != null)
         {
-            m_iPanelList[m_nowPanelIndex].OnOpen(GameManager.Instance.GameDataManager, this);
+            m_iPanelList[m_nowPanelIndex].OnOpen(GameDataManager.Instance, this);
         }
         else
         {
@@ -293,35 +553,12 @@ public class MainUIManager : MonoBehaviour, IUIManager
     }
 
     /// <summary>
-    /// 패널 설명 패널 설정
-    /// </summary>
-    /// <param name="argIsOn">활성화 여부</param>
-    /// <param name="argTextContent">텍스트 내용</param>
-    public void ManagePanelInfoPanel(bool argIsOn, string argTextContent)
-    {
-        if (m_panelInfoPanel == null)
-        {
-            Debug.LogError("m_panelInfoPanel is null!");
-            return;
-        }
-        
-        if (m_panelInfoText == null)
-        {
-            Debug.LogError("m_panelInfoText is null!");
-            return;
-        }
-        
-        m_panelInfoPanel.SetActive(argIsOn);
-        m_panelInfoText.text = argTextContent;
-    }
-
-    /// <summary>
     /// 요청 텍스트 업데이트
     /// 수락 가능한 요청 수 / 수락된 요청 수 형식으로 표시
     /// </summary>
     public void UpdateRequestText()
     {
-        m_requestText.text = m_gameManager.GameDataManager.AcceptableRequestList.Count + " / " + m_gameManager.GameDataManager.AcceptedRequestList.Count;
+        m_requestText.text = GameDataManager.Instance.AcceptableRequestList.Count + " / " + GameDataManager.Instance.AcceptedRequestList.Count;
     }
 
     /// <summary>
@@ -342,16 +579,11 @@ public class MainUIManager : MonoBehaviour, IUIManager
         UpdateAllMainText();
     }
 
-    //--디버그용--
-    //리소스를 모두 추가하거나 리소스를 모두
     /// <summary>
-    /// 디버그용: 모든 리소스를 1000씩 추가
+    /// 애플리케이션 종료 시 디버그 매니저 정리
     /// </summary>
-    public void AddResource1000()
+    private void OnDestroy()
     {
-        TryAdd(ResourceType.TYPE.Wood, 1000);
-        TryAdd(ResourceType.TYPE.Iron, 1000);
-        TryAdd(ResourceType.TYPE.Food, 1000);
-        TryAdd(ResourceType.TYPE.Tech, 1000);
+        DestroyDebugManager();
     }
 }

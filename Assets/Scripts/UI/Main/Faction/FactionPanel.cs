@@ -14,7 +14,7 @@ public class FactionPanel : BasePanel
     // Start is called before the first frame update
     void Start()
     {
-        m_gameDataManager = GameManager.Instance.GameDataManager;
+        m_gameDataManager = GameDataManager.Instance;
 
         foreach (KeyValuePair<FactionType.TYPE, FactionEntry> item in m_gameDataManager.FactionEntryDict)
         {

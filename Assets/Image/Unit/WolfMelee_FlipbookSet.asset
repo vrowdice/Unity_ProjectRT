@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d97c5f72e3d3ad24bafd525b7838c2d9, type: 3}
+  m_Name: WolfMelee_FlipbookSet
+  m_EditorClassIdentifier: 
+  assetFolder: Assets/Image/Unit
+  Clips:
+  - Name: Standing
+    Prefix: standing_
+    UseExplicitIndexRange: 0
+    MinIndex: 0
+    MaxIndex: 0
+    Sprites:
+    - {fileID: -1305551140, guid: 08fb00d457af6854a9f5df54a5ddf55b, type: 3}
+    - {fileID: 716234730, guid: 08fb00d457af6854a9f5df54a5ddf55b, type: 3}
+    FPS: 4
+    Loop: 1
+    EventFrames: 
+  - Name: Move
+    Prefix: move_
+    UseExplicitIndexRange: 0
+    MinIndex: 0
+    MaxIndex: 0
+    Sprites:
+    - {fileID: -681233519, guid: b34b86fc36c4b6146930e9b312860cc5, type: 3}
+    - {fileID: 1110352663, guid: b34b86fc36c4b6146930e9b312860cc5, type: 3}
+    - {fileID: 876021197, guid: b34b86fc36c4b6146930e9b312860cc5, type: 3}
+    FPS: 5
+    Loop: 1
+    EventFrames: 
+  - Name: Attack
+    Prefix: attack_
+    UseExplicitIndexRange: 0
+    MinIndex: 0
+    MaxIndex: 0
+    Sprites:
+    - {fileID: 744619001, guid: c010547329e67d04eb8f9733746cb387, type: 3}
+    - {fileID: -1606477236, guid: c010547329e67d04eb8f9733746cb387, type: 3}
+    - {fileID: 904923626, guid: c010547329e67d04eb8f9733746cb387, type: 3}
+    FPS: 15
+    Loop: 0
+    EventFrames: 

@@ -19,4 +19,23 @@ MonoBehaviour:
   m_icon: {fileID: 0}
   m_factionColor: {r: 0, g: 0, b: 0, a: 0}
   m_traitDescription: No Faction
-  m_uniqueResearch: []
+  m_research:
+  - {fileID: 11400000, guid: c9a620008e54cee49b25fcfebfeffe53, type: 2}
+  - {fileID: 11400000, guid: b65a10079fe70ba4da27114df0da3796, type: 2}
+  - {fileID: 11400000, guid: 8e133803093d3e64bbe8c31f7b54128e, type: 2}
+  - {fileID: 11400000, guid: 2560f953ee4d97b4b858cc401cfae112, type: 2}
+  - {fileID: 11400000, guid: a8ed85cb2538e9f4596067120fc65a6f, type: 2}
+  - {fileID: 11400000, guid: 674ac283ff97e914493e0815d0e37455, type: 2}
+  - {fileID: 11400000, guid: a1e456047e26e574c90b336b58f58f12, type: 2}
+  - {fileID: 11400000, guid: dd986a5939dc292429dbc6f59fb87b2a, type: 2}
+  - {fileID: 11400000, guid: ff78993da16cd3343b9e76b85c8ff8e5, type: 2}
+  - {fileID: 11400000, guid: 7ad0b4a38a0861d409aae1008a02c3de, type: 2}
+  - {fileID: 11400000, guid: e20b84dc52d20b34abf3be6e87fbf054, type: 2}
+  - {fileID: 11400000, guid: 5c0992b1013aeba4f8f0f79f9b9c827f, type: 2}
+  - {fileID: 11400000, guid: 162cfe82c3cc1764ab417a8955479e90, type: 2}
+  - {fileID: 11400000, guid: 5581946337868924092a50e4cf388882, type: 2}
+  - {fileID: 11400000, guid: f00ece7b4904ac142a0755b5cfce99fe, type: 2}
+  - {fileID: 11400000, guid: 7cb4db7b1135a0d41b5e327240e059a6, type: 2}
+  - {fileID: 11400000, guid: 9e68ddde7c25eea4bb7916aa854b41b5, type: 2}
+  - {fileID: 11400000, guid: 2828e10b746f5814b8ebe4a14b0f4bcb, type: 2}
+  - {fileID: 11400000, guid: a3b345686541fc94ba50f76e7973b1a8, type: 2}

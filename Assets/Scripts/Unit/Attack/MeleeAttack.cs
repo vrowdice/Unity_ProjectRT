@@ -1,32 +1,36 @@
 using System.Collections;
 using UnityEngine;
 
-// 근접 공격
 public class MeleeAttack : BaseAttack
 {
-    protected override IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject target)
+    protected override IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject targetGO)
     {
-        IsAttacking = true;
+        if (attacker == null || !IsTargetAlive(targetGO)) { IsAttacking = false; yield break; }
+        if (!InEffectiveRange(attacker.transform, targetGO.transform, 1.05f)) { IsAttacking = false; yield break; }
 
-        float intervalBetweenHits = attacker.attackFrequency / attacker.attackCount;
+        // 사이클 시작 이벤트 (애니/사운드 등 1:1 트리거)
+        RaiseAttackCycleStarted(attacker);
 
-        Debug.Log($"{attacker.unitName} 근접 공격을 시작");
+        int hits = Mathf.Max(1, attacker.AttackCount);
+        float act = ActiveSec;
+        float step = (hits > 1 && act > 0.0f) ? act / hits : 0.0f;
 
-        for (int i = 0; i < attacker.attackCount; i++)
+        for (int i = 0; i < hits; i++)
         {
-            if (target == null || !target.activeSelf)
-            {
-                StopAttack();
-                yield break;
-            }
+            if (i > 0 && step > 0.0f) yield return new WaitForSeconds(step);
+            if (!IsTargetAlive(targetGO)) break;
+            if (!InEffectiveRange(attacker.transform, targetGO.transform, 1.05f)) break;
 
-            float rawDamage = attacker.attackPower * attacker.damageCoefficient;
-            ApplyDamage(attacker, target, rawDamage);
+            float raw = attacker.AttackPower * attacker.DamageCoefficient;
+            ApplyDamage(attacker, targetGO, raw);
 
-            yield return new WaitForSeconds(intervalBetweenHits);
+            RaiseHit(attacker, i);
         }
 
-        IsAttacking = false;
-        Debug.Log($"{attacker.unitName}의 근접 공격이 끝.");
+        float consumed = (hits > 1) ? step * (hits - 1) : 0.0f;
+        float remain = Mathf.Max(0.0f, act - consumed);
+        if (remain > 0.0f) yield return new WaitForSeconds(remain);
+
+        RaiseAttackCycleEnded(attacker);
     }
 }

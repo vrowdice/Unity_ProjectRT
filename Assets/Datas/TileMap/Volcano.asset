@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93fb73814869783458a2263a475b4f9c, type: 3}
   m_Name: Volcano
   m_EditorClassIdentifier: 
-  m_terrainType: 13
+  m_terrainType: 12
   m_isMoveable: 0
   m_weight: 10
   m_closeTileMul: 0.2

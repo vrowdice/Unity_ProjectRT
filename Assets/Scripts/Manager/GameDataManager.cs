@@ -5,65 +5,94 @@ using UnityEngine;
 
 /// <summary>
 /// 게임의 모든 데이터를 관리하는 매니저 클래스
-/// 팩션, 연구, 건물, 이벤트, 요청 등의 데이터를 중앙에서 관리
+/// 팩션, 연구, 건물, 요청 등의 데이터를 중앙에서 관리
+/// 이벤트, 이펙트, 타일맵은 별도 매니저에서 관리
+/// 싱글톤 패턴으로 구현되어 전역에서 접근 가능
 /// </summary>
 public class GameDataManager : MonoBehaviour
 {
-    [Header("Game Data")]
-    [SerializeField] private List<TileMapData> m_tileMapDataList = new();
-    [SerializeField] private List<EventGroupData> m_eventGroupDataList = new();
-    [SerializeField] private List<FactionData> m_factionDataList = new();
-    [SerializeField] private List<ResearchData> m_commonResearchDataList = new();
-    [SerializeField] private List<BuildingData> m_buildingDataList = new();
-    [SerializeField] private List<RequestLineTemplate> m_requestLineTemplateList = new();
-    [SerializeField] private RequestLineTemplate m_contactLineTemplate;
-
-    [Header("Common Data")]
+    // 싱글톤 인스턴스
+    public static GameDataManager Instance { get; private set; }
+    
+    private EventManager m_eventManager;
+    private EffectManager m_effectManager;
+    private TileMapManager m_tileMapManager;
+    
+    [Header("Data Paths")]
+    [SerializeField] private string m_factionDataPath = "Assets/Datas/Faction";
+    [SerializeField] private string m_buildingDataPath = "Assets/Datas/Building";
+    [SerializeField] private string m_requestLineTemplatePath = "Assets/Datas/RequestLineTemplate";
+    [SerializeField] private string m_eventGroupDataPath = "Assets/Datas/Event/EventGroup";
+    [SerializeField] private string m_tileMapDataPath = "Assets/Datas/TileMap";
+    
+    [Header("Common Data (Manual Setup)")]
     [SerializeField] private List<ResourceIcon> m_resourceIconList = new();
     [SerializeField] private List<TokenIcon> m_tokenIconList = new();
     [SerializeField] private List<RequestIcon> m_requestIconList = new();
     [SerializeField] private GameBalanceData m_gameBalanceData;
+    [SerializeField] private RequestLineTemplate m_contactLineTemplate;
+
+    // 자동 로딩되는 데이터들 (인스펙터에서 숨김)
+    private List<FactionData> m_factionDataList = new();
+    private List<BuildingData> m_buildingDataList = new();
+    private List<RequestLineTemplate> m_requestLineTemplateList = new();
+    private List<EventGroupData> m_eventGroupDataList = new();
+    private List<TileMapData> m_tileMapDataList = new();
 
     // 데이터 딕셔너리들
-    private readonly Dictionary<TerrainType.TYPE, TileMapData> m_tileMapDataDic = new();
     private readonly Dictionary<FactionType.TYPE, FactionEntry> m_factionEntryDic = new();
-    private readonly Dictionary<string, ResearchEntry> m_commonResearchEntryDic = new();
     private readonly Dictionary<string, BuildingEntry> m_buildingEntryDic = new();
     private readonly Dictionary<ResourceType.TYPE, Sprite> m_resourceIconDic = new();
     private readonly Dictionary<TokenType.TYPE, Sprite> m_tokenIconDic = new();
     private readonly Dictionary<RequestType.TYPE, Sprite> m_requestIconDic = new();
     private readonly Dictionary<RequestType.TYPE, RequestLineTemplate> m_requestLineTemplateDic = new();
 
+    // 유닛 데이터 관리 -추가함
+    private readonly Dictionary<string, UnitData> m_unitByKey = new();
+    private readonly Dictionary<FactionType.TYPE, List<UnitData>> m_unitsByFaction = new();
+    private readonly Dictionary<UnitTagType, List<UnitData>> m_unitsByTag = new();
+
     // 요청 상태 관리
     private readonly List<RequestState> m_acceptableRequestList = new();
     private readonly List<RequestState> m_acceptedRequestList = new();
-    private TileMapState[,] m_tileMap;
+
+    // 유닛 데이터 관리 -추가함
+    private readonly List<UnitData> m_unitDataList = new();
+
+    // 읽기 전용 접근자
+    public IReadOnlyList<UnitData> AllUnits => m_unitDataList;
 
     // 게임 시스템 엔트리
     private GameBalanceEntry m_gameBalanceEntry;
-    private EventEntry m_eventEntry;
 
     // 프로퍼티들
-    public Dictionary<TerrainType.TYPE, TileMapData> TileMapDataDict => m_tileMapDataDic;
     public Dictionary<FactionType.TYPE, FactionEntry> FactionEntryDict => m_factionEntryDic;
-    public Dictionary<string, ResearchEntry> CommonResearchEntryDict => m_commonResearchEntryDic;
     public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDic;
     public List<RequestState> AcceptableRequestList => m_acceptableRequestList;
     public List<RequestState> AcceptedRequestList => m_acceptedRequestList;
     public GameBalanceEntry GameBalanceEntry => m_gameBalanceEntry;
-    public EventEntry EventEntry => m_eventEntry;
-    public TileMapState[,] TileMap => m_tileMap;
+    public EventManager EventManager => m_eventManager;
+    public EffectManager EffectManager => m_effectManager;
+    public TileMapManager TileMapManager => m_tileMapManager;
+
 
     #region Unity Lifecycle
     void Awake()
     {
-        #if UNITY_EDITOR
-        if (m_tileMapDataList.Count == 0 || m_factionDataList.Count == 0 || m_buildingDataList.Count == 0)
+        // 싱글톤 패턴 적용
+        if (Instance == null)
         {
-            AutoLoadData();
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
-        #endif
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
 
+        // 게임 시작 시 자동으로 데이터 로딩
+        AutoLoadData();
         InitializeGameData();
     }
     #endregion
@@ -74,28 +103,105 @@ public class GameDataManager : MonoBehaviour
         InitDict();
         InitIconDict();
         InitBalanceEntry();
-        InitEventEntry();
-        GenerateTileMap();
+        InitializeManagers();
     }
 
     private void InitDict()
     {
-        InitTileMapDict();
         InitFactionDict();
-        InitResearchDict();
         InitBuildingDict();
         InitRequestTemplateDict();
+
+        // FactionData의 Units를 이용해 Unit 인덱스 구성 -추가함
+        BuildUnitsFromFactions();
     }
 
-    private void InitTileMapDict()
+    // FactionData의 m_units 리스트를 순회하며 유닛 데이터 수집 및 인덱스 구성 -추가함
+    private void BuildUnitsFromFactions()
     {
-        m_tileMapDataDic.Clear();
-        foreach (TileMapData tileMap in m_tileMapDataList)
+        m_unitDataList.Clear();
+        m_unitByKey.Clear();
+        m_unitsByFaction.Clear();
+        m_unitsByTag.Clear();
+
+        // m_factionDataList 는 기존 AutoLoadData()에서 채워짐
+        foreach (var faction in m_factionDataList)
         {
-            if (!m_tileMapDataDic.ContainsKey(tileMap.m_terrainType))
+            if (faction == null || faction.m_units == null) continue;
+
+            foreach (var unit in faction.m_units)
             {
-                m_tileMapDataDic.Add(tileMap.m_terrainType, tileMap);
+                if (!unit) continue;
+
+                // 보관 (중복 방지)
+                if (!m_unitDataList.Contains(unit))
+                    m_unitDataList.Add(unit);
+
+                // unitKey 인덱스
+                if (!string.IsNullOrEmpty(unit.unitKey))
+                {
+                    if (!m_unitByKey.ContainsKey(unit.unitKey))
+                        m_unitByKey.Add(unit.unitKey, unit);
+                    else
+                        Debug.LogWarning($"[GameDataManager] Duplicate unitKey '{unit.unitKey}' detected. First one kept.");
+                }
+
+                // 팩션 인덱스 (FactionData 기준으로 묶기)
+                var fType = faction.m_factionType; // FactionData의 타입 사용
+                if (!m_unitsByFaction.TryGetValue(fType, out var listByFaction))
+                {
+                    listByFaction = new List<UnitData>();
+                    m_unitsByFaction.Add(fType, listByFaction);
+                }
+                if (!listByFaction.Contains(unit))
+                    listByFaction.Add(unit);
+
+                // 태그 인덱스
+                if (!m_unitsByTag.TryGetValue(unit.unitTagType, out var listByTag))
+                {
+                    listByTag = new List<UnitData>();
+                    m_unitsByTag.Add(unit.unitTagType, listByTag);
+                }
+                if (!listByTag.Contains(unit))
+                    listByTag.Add(unit);
+
+                // (선택) 데이터 일관성 체크: 유닛에 적힌 factionType과 FactionData의 타입이 다르면 경고
+                if (unit.factionType != FactionType.TYPE.None && unit.factionType != fType)
+                {
+                    Debug.LogWarning($"[GameDataManager] Unit '{unit.unitName}' faction mismatch: UnitData={unit.factionType}, FactionData={fType}");
+                }
             }
+        }
+
+        Debug.Log($"[GameDataManager] Units indexed from FactionData: {m_unitDataList.Count}");
+    }
+    private void InitializeManagers()
+    {
+        // 필수 매니저들 자동 생성 및 초기화
+        m_eventManager = gameObject.AddComponent<EventManager>();
+        m_effectManager = gameObject.AddComponent<EffectManager>();
+        m_tileMapManager = gameObject.AddComponent<TileMapManager>();
+
+        // 각 매니저에게 필요한 데이터 할당
+        AssignDataToManagers();
+
+        m_eventManager.Initialize(this);
+        m_effectManager.Initialize(this);
+        m_tileMapManager.Initialize(this);
+    }
+
+    private void AssignDataToManagers()
+    {
+        // EventManager에 이벤트 데이터 할당
+        if (m_eventManager != null)
+        {
+            m_eventManager.SetEventGroupDataList(m_eventGroupDataList);
+        }
+
+        // TileMapManager에 타일맵 데이터 할당
+        if (m_tileMapManager != null)
+        {
+            m_tileMapManager.SetTileMapDataList(m_tileMapDataList);
         }
     }
 
@@ -111,18 +217,7 @@ public class GameDataManager : MonoBehaviour
         }
     }
 
-    private void InitResearchDict()
-    {
-        m_commonResearchEntryDic.Clear();
-        foreach (ResearchData research in m_commonResearchDataList)
-        {
-            if (!m_commonResearchEntryDic.ContainsKey(research.m_code))
-            {
-                m_commonResearchEntryDic.Add(research.m_code, new ResearchEntry(research));
-            }
-        }
-        LockResearch();
-    }
+
 
     private void InitBuildingDict()
     {
@@ -182,210 +277,170 @@ public class GameDataManager : MonoBehaviour
         GameBalanceEntry.m_state.m_dateMul = 1.0f;
     }
 
-    private void InitEventEntry()
-    {
-        m_eventEntry = new EventEntry(m_eventGroupDataList, this);
-    }
 
-    /// <summary>
-    /// GameBalanceData의 설정을 기반으로 타일맵을 생성합니다.
-    /// </summary>
-    private void GenerateTileMap()
-    {
-        if (m_gameBalanceData == null)
-        {
-            Debug.LogError("GameBalanceData가 설정되지 않았습니다.");
-            return;
-        }
-
-        Vector2Int mapSize = m_gameBalanceData.m_mapSize;
-        int friendlySettleCount = m_gameBalanceData.m_friendlySettle;
-        int enemySettleCount = m_gameBalanceData.m_enemySettle;
-
-        // MapDataGenerator를 사용하여 맵 생성
-        MapDataGenerator mapGenerator = new MapDataGenerator(
-            mapSize,
-            m_tileMapDataList,
-            TerrainType.TYPE.Settlement, // 친화적 정착지 타입
-            friendlySettleCount,
-            TerrainType.TYPE.Settlement, // 적대적 정착지 타입 (같은 타입 사용)
-            enemySettleCount
-        );
-
-        m_tileMap = mapGenerator.GenerateMapData();
-    }
-
-    /// <summary>
-    /// 지정된 시드로 타일맵을 재생성합니다.
-    /// </summary>
-    /// <param name="seed">맵 생성에 사용할 시드</param>
-    public void RegenerateTileMap(string seed = null)
-    {
-        if (m_gameBalanceData == null)
-        {
-            Debug.LogError("GameBalanceData가 설정되지 않았습니다.");
-            return;
-        }
-
-        Vector2Int mapSize = m_gameBalanceData.m_mapSize;
-        int friendlySettleCount = m_gameBalanceData.m_friendlySettle;
-        int enemySettleCount = m_gameBalanceData.m_enemySettle;
-
-        // MapDataGenerator를 사용하여 맵 생성 (시드 지정)
-        MapDataGenerator mapGenerator = new MapDataGenerator(
-            mapSize,
-            m_tileMapDataList,
-            seed,
-            TerrainType.TYPE.Settlement,
-            friendlySettleCount,
-            TerrainType.TYPE.Settlement,
-            enemySettleCount
-        );
-
-        m_tileMap = mapGenerator.GenerateMapData();
-        Debug.Log($"타일맵이 재생성되었습니다. 크기: {mapSize.x}x{mapSize.y}, 시드: {seed ?? "랜덤"}");
-    }
-
-    /// <summary>
-    /// 지정된 위치의 타일맵 상태를 반환합니다.
-    /// </summary>
-    /// <param name="x">X 좌표</param>
-    /// <param name="y">Y 좌표</param>
-    /// <returns>타일맵 상태, 범위를 벗어나면 null</returns>
-    public TileMapState GetTileMapState(int x, int y)
-    {
-        if (m_tileMap == null)
-        {
-            Debug.LogWarning("타일맵이 생성되지 않았습니다.");
-            return null;
-        }
-
-        if (x >= 0 && x < m_tileMap.GetLength(0) && y >= 0 && y < m_tileMap.GetLength(1))
-        {
-            return m_tileMap[x, y];
-        }
-
-        Debug.LogWarning($"타일맵 좌표가 범위를 벗어났습니다: ({x}, {y})");
-        return null;
-    }
-
-    /// <summary>
-    /// 타일맵의 크기를 반환합니다.
-    /// </summary>
-    /// <returns>타일맵 크기 (Vector2Int)</returns>
-    public Vector2Int GetTileMapSize()
-    {
-        if (m_tileMap == null)
-        {
-            return Vector2Int.zero;
-        }
-
-        return new Vector2Int(m_tileMap.GetLength(0), m_tileMap.GetLength(1));
-    }
-
-    private void LockResearch()
-    {
-        // 먼저 모든 연구를 잠금 해제
-        foreach (var research in m_commonResearchDataList)
-        {
-            if (research.m_unlocks != null)
-            {
-                foreach (var unlockResearch in research.m_unlocks)
-                {
-                    if (m_commonResearchEntryDic.TryGetValue(unlockResearch.m_code, out var unlockEntry))
-                    {
-                        unlockEntry.m_state.m_isLocked = false;
-                    }
-                }
-            }
-        }
-
-        // 선행 조건 확인하여 잠금 설정
-        foreach (var research in m_commonResearchDataList)
-        {
-            if (research.m_prerequisites != null && research.m_prerequisites.Count > 0)
-            {
-                bool allPrerequisitesMet = research.m_prerequisites.All(prereq => 
-                    m_commonResearchEntryDic.TryGetValue(prereq.m_code, out var prereqEntry) && 
-                    prereqEntry.m_state.m_isResearched);
-
-                if (!allPrerequisitesMet)
-                {
-                    m_commonResearchEntryDic[research.m_code].m_state.m_isLocked = true;
-                }
-            }
-        }
-    }
     #endregion
 
     #region Data Loading
     public void AutoLoadData()
     {
         #if UNITY_EDITOR
-        LoadAllDataFromAssets();
+        LoadAllDataFromPaths();
         #else
-        Debug.LogWarning("Auto data loading is only available in editor.");
+        // 빌드에서는 Resources에서 로딩
+        LoadDataFromResources();
         #endif
     }
 
     public void LoadDataFromResources()
     {
         DataLoader.LoadAllDataFromResources(
-            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList,
             m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
-            m_tokenIconList, m_requestIconList, ref m_gameBalanceData);
+            m_tokenIconList, m_requestIconList, ref m_gameBalanceData,
+            GetResourcesPath(m_factionDataPath),
+            GetResourcesPath(m_buildingDataPath), GetResourcesPath(m_requestLineTemplatePath),
+            GetResourcesPath(m_eventGroupDataPath), GetResourcesPath(m_tileMapDataPath));
     }
 
-    public void LoadMapData()
+    private string GetResourcesPath(string assetPath)
     {
-        #if UNITY_EDITOR
-        LoadTileMapDataFromAssets();
-        #else
-        Debug.LogWarning("Load Map Data is only available in editor.");
-        #endif
+        // Assets/Resources/ 경로를 Resources/ 경로로 변환
+        if (assetPath.StartsWith("Assets/Resources/"))
+        {
+            return assetPath.Substring("Assets/Resources/".Length);
+        }
+        else if (assetPath.StartsWith("Assets/"))
+        {
+            return assetPath.Substring("Assets/".Length);
+        }
+        return assetPath;
     }
 
     #if UNITY_EDITOR
     private void LoadAllDataFromAssets()
     {
         DataLoader.LoadAllDataFromAssets(
-            m_tileMapDataList, m_eventGroupDataList, m_factionDataList, m_commonResearchDataList,
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList,
             m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
             m_tokenIconList, m_requestIconList, ref m_gameBalanceData);
     }
 
-    private void LoadTileMapDataFromAssets()
+    private void LoadAllDataFromPaths()
     {
-        DataLoader.LoadTileMapDataFromAssets(m_tileMapDataList);
+        DataLoader.LoadAllDataFromPaths(
+            m_tileMapDataList, m_eventGroupDataList, m_factionDataList,
+            m_buildingDataList, m_requestLineTemplateList, m_resourceIconList,
+            m_tokenIconList, m_requestIconList, ref m_gameBalanceData,
+            m_factionDataPath, m_buildingDataPath, m_requestLineTemplatePath,
+            m_eventGroupDataPath, m_tileMapDataPath);
     }
     #endif
     #endregion
 
     #region Game Actions
-    public void RandomBuilding(int buildingCount)
+    public List<string> RandomBuilding(int buildingCount)
     {
+        List<string> addedBuildings = new List<string>();
+        
         for (int i = 0; i < buildingCount; i++)
         {
-            ProbabilityUtils.GetRandomElement(BuildingEntryDict).Value.m_state.m_amount++;
+            var randomBuilding = ProbabilityUtils.GetRandomElement(BuildingEntryDict);
+            if (randomBuilding.Value != null)
+            {
+                randomBuilding.Value.m_state.m_amount++;
+                addedBuildings.Add(randomBuilding.Key);
+            }
         }
+        
+        return addedBuildings;
     }
 
-    public void AddSpecificBuilding(string buildingCode, int count = 1)
+    public List<string> RandomUnlockedBuilding(int buildingCount)
+    {
+        List<string> addedBuildings = new List<string>();
+        
+        var unlockedBuildings = BuildingEntryDict.Where(kvp => kvp.Value.m_state.m_isUnlocked).ToList();
+        
+        for (int i = 0; i < buildingCount && unlockedBuildings.Count > 0; i++)
+        {
+            var randomBuilding = ProbabilityUtils.GetRandomElement(unlockedBuildings);
+            if (randomBuilding.Value != null)
+            {
+                randomBuilding.Value.m_state.m_amount++;
+                addedBuildings.Add(randomBuilding.Key);
+            }
+        }
+        
+        return addedBuildings;
+    }
+
+    public bool AddSpecificBuilding(string buildingCode, int count = 1)
     {
         if (string.IsNullOrEmpty(buildingCode))
         {
             Debug.LogWarning("Building code is empty.");
-            return;
+            return false;
         }
 
         if (m_buildingEntryDic.TryGetValue(buildingCode, out var buildingEntry))
         {
             buildingEntry.m_state.m_amount += count;
             Debug.Log($"Building '{buildingCode}' {count} added. Total count: {buildingEntry.m_state.m_amount}");
+            return true;
         }
         else
         {
             Debug.LogWarning($"Building code '{buildingCode}' not found.");
+            return false;
+        }
+    }
+
+    public List<string> UnlockRandomBuilding(int unlockCount)
+    {
+        List<string> unlockedBuildings = new List<string>();
+        
+        var lockedBuildings = BuildingEntryDict.Where(kvp => !kvp.Value.m_state.m_isUnlocked).ToList();
+        
+        for (int i = 0; i < unlockCount && lockedBuildings.Count > 0; i++)
+        {
+            var randomBuilding = ProbabilityUtils.GetRandomElement(lockedBuildings);
+            if (randomBuilding.Value != null)
+            {
+                randomBuilding.Value.m_state.m_isUnlocked = true;
+                unlockedBuildings.Add(randomBuilding.Key);
+                lockedBuildings.Remove(randomBuilding);
+            }
+        }
+        
+        return unlockedBuildings;
+    }
+
+    public bool UnlockSpecificBuilding(string buildingCode, int unlockCount = 1)
+    {
+        if (string.IsNullOrEmpty(buildingCode))
+        {
+            Debug.LogWarning("Building code is empty.");
+            return false;
+        }
+
+        if (m_buildingEntryDic.TryGetValue(buildingCode, out var buildingEntry))
+        {
+            if (!buildingEntry.m_state.m_isUnlocked)
+            {
+                buildingEntry.m_state.m_isUnlocked = true;
+                Debug.Log($"Building '{buildingCode}' unlocked.");
+                return true;
+            }
+            else
+            {
+                Debug.LogWarning($"Building '{buildingCode}' is already unlocked.");
+                return false;
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Building code '{buildingCode}' not found.");
+            return false;
         }
     }
 
@@ -410,22 +465,86 @@ public class GameDataManager : MonoBehaviour
             m_acceptableRequestList.Remove(request);
         }
     }
+
+    public void RefuseRequest(RequestState request)
+    {
+        if (m_acceptableRequestList.Contains(request))
+        {
+            // 요청을 거절하면 팩션 호감도가 감소
+            if (request.m_factionType != FactionType.TYPE.None)
+            {
+                var factionEntry = GetFactionEntry(request.m_factionType);
+                if (factionEntry != null)
+                {
+                    // 요청 거절 시 호감도 절반만큼 감소 (또는 고정값)
+                    int likeDecrease = Mathf.Max(1, request.m_factionAddLike / 2);
+                    factionEntry.m_state.m_like = Mathf.Max(0, factionEntry.m_state.m_like - likeDecrease);
+                    Debug.Log($"Faction {request.m_factionType} like decreased by {likeDecrease}. Current like: {factionEntry.m_state.m_like}");
+                }
+            }
+            
+            // 수락 가능한 요청 목록에서 제거
+            m_acceptableRequestList.Remove(request);
+        }
+    }
+
+    /// <summary>
+    /// 팩션 우호도 변경 시 연구 잠금 상태 업데이트
+    /// </summary>
+    /// <param name="factionType">변경된 팩션 타입</param>
+    public void UpdateResearchByFactionLike(FactionType.TYPE factionType)
+    {
+        // 모든 팩션에서 해당 팩션 타입의 연구들 확인
+        foreach (var factionKvp in m_factionEntryDic)
+        {
+            var factionEntry = factionKvp.Value;
+            if (factionEntry.m_data.m_research != null)
+            {
+                foreach (var researchData in factionEntry.m_data.m_research)
+                {
+                    if (researchData.m_factionType == factionType)
+                    {
+                        var researchState = factionEntry.GetResearchState(researchData.m_code);
+                        if (researchState != null)
+                        {
+                            bool shouldUnlock = researchData.CheckFactionLikeRequirement(this);
+                            researchState.m_isLocked = !shouldUnlock;
+                        }
+                    }
+                }
+            }
+        }
+    }
     #endregion
 
     #region Data Access
-    public TileMapData GetTileMapData(TerrainType.TYPE argType)
-    {
-        return m_tileMapDataDic.TryGetValue(argType, out var data) ? data : null;
-    }
-
     public FactionEntry GetFactionEntry(FactionType.TYPE argType)
     {
         return m_factionEntryDic.TryGetValue(argType, out var entry) ? entry : null;
     }
 
-    public ResearchEntry GetCommonResearchEntry(string argKey)
+    /// <summary>
+    /// 모든 팩션에서 특정 연구 코드의 데이터와 상태 찾기
+    /// </summary>
+    /// <param name="researchCode">연구 코드</param>
+    /// <returns>연구 데이터와 상태를 담은 튜플 (없으면 null)</returns>
+    public (ResearchData data, ResearchState state, FactionEntry faction)? GetResearchInfo(string researchCode)
     {
-        return !string.IsNullOrEmpty(argKey) && m_commonResearchEntryDic.TryGetValue(argKey, out var entry) ? entry : null;
+        if (string.IsNullOrEmpty(researchCode)) return null;
+        
+        foreach (var factionKvp in m_factionEntryDic)
+        {
+            var factionEntry = factionKvp.Value;
+            var researchData = factionEntry.GetResearchData(researchCode);
+            var researchState = factionEntry.GetResearchState(researchCode);
+            
+            if (researchData != null && researchState != null)
+            {
+                return (researchData, researchState, factionEntry);
+            }
+        }
+        
+        return null;
     }
 
     public BuildingEntry GetBuildingEntry(string argKey)
@@ -453,6 +572,7 @@ public class GameDataManager : MonoBehaviour
         return m_requestIconDic.TryGetValue(type, out var icon) ? icon : null;
     }
     #endregion
+
 }
 
 #region Icon Structures
