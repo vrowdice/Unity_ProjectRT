@@ -4,15 +4,20 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewFactionData", menuName = "Faction Data")]
 public class FactionData : ScriptableObject
 {
-    public FactionType.TYPE m_factionType; // ÆÑ¼Ç À¯Çü (enum)
+    public FactionType.TYPE m_factionType; // íŒ©ì…˜ íƒ€ì… (enum)
     public string m_name;
     [TextArea]
-    public string m_description;     // ¼³¸í
+    public string m_description;     // ì„¤ëª…
     public Sprite m_illustration;
-    public Sprite m_icon;            // ¾ÆÀÌÄÜ
-    public Color m_factionColor;     // °íÀ¯ »ö»ó
+    public Sprite m_icon;            // ì•„ì´ì½˜
+    public Color m_factionColor;     // íŒ©ì…˜ ìƒ‰ìƒ
 
     [TextArea]
-    public string m_traitDescription; // °íÀ¯ Æ¯¼º ¼³¸í
-    public List<ResearchData> m_uniqueResearch;
+    public string m_traitDescription; // íŒ©ì…˜ íŠ¹ì„± ì„¤ëª…
+    
+    [Header("Research Data")]
+    public List<ResearchData> m_research;   // ì—°êµ¬ ë°ì´í„° (None íŒ©ì…˜ = ì¼ë°˜ ì—°êµ¬, ë‹¤ë¥¸ íŒ©ì…˜ = ê³ ìœ  ì—°êµ¬)
+
+    [Header("Unit Data")]
+    public List<UnitData> m_units;
 }

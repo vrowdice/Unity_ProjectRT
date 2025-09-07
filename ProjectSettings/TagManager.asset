@@ -6,12 +6,18 @@ TagManager:
   tags:
   - BBUI
   - EBBUI
-  - ShortUnit
-  - LongUnit
-  - DefenseUnit
-  - MyShortUnit
-  - MyLongUnit
-  - MyDefenseUnit
+  - meleeUnit
+  - rangeUnit
+  - defenseUnit
+  - MymeleeUnit
+  - MyrangeUnit
+  - MydefenseUnit
+  - Melee
+  - Range
+  - defence
+  - Defense
+  - range
+  - melee
   layers:
   - Default
   - TransparentFX
@@ -19,10 +25,10 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
+  - AllyUnit
+  - EnemyUnit
+  - BattleMap
+  - SpawnArea
   - 
   - 
   - 

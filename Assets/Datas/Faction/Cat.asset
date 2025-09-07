@@ -19,5 +19,4 @@ MonoBehaviour:
   m_icon: {fileID: 0}
   m_factionColor: {r: 0, g: 0, b: 0, a: 0}
   m_traitDescription: 
-  m_uniqueResearch:
-  - {fileID: 11400000, guid: c9688609cc671f146998908e0399f7c9, type: 2}
+  m_uniqueResearch: []

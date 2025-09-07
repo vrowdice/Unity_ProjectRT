@@ -8,31 +8,42 @@ public class AddBuildingEffect : EffectBase
     [Header("Building Settings")]
     public int m_addCount = 1;
     
-    [Header("Specific Building (Optional)")]
-    [Tooltip("Enter building code to specify a particular building. Leave empty to add random building.")]
+    [Header("Specific Building")]
+    [Tooltip("Enter building code to specify a particular building to add.")]
     public string m_specificBuildingCode = "";
 
     private GameDataManager m_gameDataManager = null;
 
-    public override void Activate(GameDataManager argDataManager)
+    public override void Activate(GameDataManager argDataManager, string argEventName)
     {
         m_gameDataManager = argDataManager;
 
-        // Check if specific building is specified
         if (!string.IsNullOrEmpty(m_specificBuildingCode))
         {
-            // Add specific building
             argDataManager.AddSpecificBuilding(m_specificBuildingCode, m_addCount);
-        }
-        else
-        {
-            // Add random building
-            argDataManager.RandomBuilding(m_addCount);
         }
     }
 
     public override void Deactivate(GameDataManager argDataManager)
     {
+        // 건물 추가는 영구적이므로 제거할 필요 없음
+    }
 
+    /// <summary>
+    /// 이펙트 정보를 사용자에게 표시할 수 있는 문자열 반환 (오버라이드)
+    /// </summary>
+    /// <returns>이펙트 정보 문자열</returns>
+    public override string GetEffectInfo()
+    {
+        string baseInfo = base.GetEffectInfo();
+        
+        if (!IsActive)
+        {
+            return baseInfo;
+        }
+        
+        string buildingInfo = $"{m_specificBuildingCode} 건물 {m_addCount}개";
+        
+        return $"{baseInfo}\n{buildingInfo}";
     }
 }

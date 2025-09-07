@@ -39,9 +39,9 @@ public class EventPanel : BasePanel
         GameObjectUtils.ClearChildren(m_eventInfoScrollViewContentTrans);
 
         // 활성 이벤트가 없으면 리턴
-        if (GameDataManager?.EventEntry?.m_state?.m_activeEventList == null)
+        if (GameDataManager?.EventManager?.EventState?.m_activeEventList == null)
         {
-            Debug.LogWarning("No active events found or EventEntry is null.");
+            Debug.LogWarning("No active events found or EventState is null.");
             return;
         }
 
@@ -54,7 +54,7 @@ public class EventPanel : BasePanel
     /// </summary>
     private void CreateEventPanels()
     {
-        foreach(ActiveEvent activeEvent in GameDataManager.EventEntry.m_state.m_activeEventList)
+        foreach(ActiveEvent activeEvent in GameDataManager.EventManager.EventState.m_activeEventList)
         {
             if (activeEvent == null)
             {

@@ -22,15 +22,38 @@ public class ResearchData : ScriptableObject
 
     public FactionType.TYPE m_factionType; //추가: 해당 연구의 진영 타입
 
+    [Header("Faction Requirements")]
+    public int m_requiredFactionLike = 0; // 필요한 우호도 (기본값 0 = 조건 없음)
+
+    /// <summary>
+    /// 팩션 우호도 조건 확인 (일반 연구는 항상 true, 팩션별 연구는 우호도 체크)
+    /// </summary>
+    /// <param name="dataManager">게임 데이터 매니저</param>
+    /// <returns>조건 만족 여부</returns>
+    public bool CheckFactionLikeRequirement(GameDataManager dataManager)
+    {
+        // 일반 연구(None)이거나 조건 없음
+        if (m_factionType == FactionType.TYPE.None || m_requiredFactionLike <= 0)
+            return true;
+            
+        var factionEntry = dataManager.GetFactionEntry(m_factionType);
+        return factionEntry != null && factionEntry.m_state.m_like >= m_requiredFactionLike;
+    }
+
     /// <summary>
     /// 연구 완료 시 모든 이펙트 활성화
     /// </summary>
     /// <param name="dataManager">게임 데이터 매니저</param>
-    public void ActivateAllEffect(GameDataManager dataManager)
+    /// <param name="researchEntry">연구 엔트리 (이펙트 추적용)</param>
+    public void ActivateAllEffect(GameDataManager dataManager, ResearchEntry researchEntry)
     {
-        foreach(EffectBase item in m_effects)
+        foreach(EffectBase effect in m_effects)
         {
-            item.Activate(dataManager);
+            if (effect.ActivateEffect(dataManager, m_name))
+            {
+                // 활성화 성공 시 ResearchEntry에 추가
+                researchEntry.AddActiveEffect(effect);
+            }
         }
     }
 
@@ -38,11 +61,15 @@ public class ResearchData : ScriptableObject
     /// 연구 효과 비활성화 (필요시 사용)
     /// </summary>
     /// <param name="dataManager">게임 데이터 매니저</param>
-    public void DeactivateAllEffect(GameDataManager dataManager)
+    /// <param name="researchEntry">연구 엔트리 (이펙트 추적용)</param>
+    public void DeactivateAllEffect(GameDataManager dataManager, ResearchEntry researchEntry)
     {
-        foreach (EffectBase item in m_effects)
+        foreach (EffectBase effect in m_effects)
         {
-            item.Deactivate(dataManager);
+            if (effect.DeactivateEffect(dataManager))
+            {
+                researchEntry.RemoveActiveEffect(effect);
+            }
         }
     }
 }

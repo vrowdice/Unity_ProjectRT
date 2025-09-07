@@ -1,32 +1,31 @@
 using System.Collections;
 using UnityEngine;
 
-// 근접 공격
 public class MeleeAttack : BaseAttack
 {
-    protected override IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject target)
+    protected override IEnumerator PerformAttackRoutine(UnitBase attacker, GameObject targetGO)
     {
-        IsAttacking = true;
+        if (attacker == null || !IsTargetAlive(targetGO)) yield break;
+        if (!InEffectiveRange(attacker.transform, targetGO.transform, 1.05f)) yield break;
 
-        float intervalBetweenHits = attacker.attackFrequency / attacker.attackCount;
+        int hits = Mathf.Max(1, attacker.AttackCount);
+        float act = ActiveSec;
+        float step = (hits > 1 && act > 0.0f) ? act / hits : 0.0f;
 
-        Debug.Log($"{attacker.unitName} 근접 공격을 시작");
-
-        for (int i = 0; i < attacker.attackCount; i++)
+        for (int i = 0; i < hits; i++)
         {
-            if (target == null || !target.activeSelf)
-            {
-                StopAttack();
-                yield break;
-            }
+            if (i > 0 && step > 0.0f) yield return new WaitForSeconds(step);
+            if (!IsTargetAlive(targetGO)) break;
 
-            float rawDamage = attacker.attackPower * attacker.damageCoefficient;
-            ApplyDamage(attacker, target, rawDamage);
+            if (!InEffectiveRange(attacker.transform, targetGO.transform, 1.05f)) break;
 
-            yield return new WaitForSeconds(intervalBetweenHits);
+            float raw = attacker.AttackPower * attacker.DamageCoefficient;
+            ApplyDamage(attacker, targetGO, raw);
         }
 
-        IsAttacking = false;
-        Debug.Log($"{attacker.unitName}의 근접 공격이 끝.");
+        float consumed = (hits > 1) ? step * (hits - 1) : 0.0f;
+        float remain = Mathf.Max(0.0f, act - consumed);
+        if (remain > 0.0f) yield return new WaitForSeconds(remain);
+
     }
 }

@@ -31,7 +31,7 @@ public class FactionDataEditor : Editor
             .Where(r => r.m_factionType == factionData.m_factionType)
             .ToList();
 
-        factionData.m_uniqueResearch = filtered;
+        factionData.m_research = filtered;
         EditorUtility.SetDirty(factionData);
 
         Debug.Log($"{filtered.Count} research {factionData.m_factionType} applied to faction.");

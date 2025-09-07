@@ -146,7 +146,7 @@ public static class RequestGenerator
                 continue;
             }
 
-            if (factionEntryDict.TryGetValue(item, out FactionEntry entry) && !entry.m_state.m_have)
+            if (factionEntryDict.TryGetValue(item, out FactionEntry entry) && entry.m_state.m_like <= 0)
             {
                 factionTypes.RemoveAt(i);
             }

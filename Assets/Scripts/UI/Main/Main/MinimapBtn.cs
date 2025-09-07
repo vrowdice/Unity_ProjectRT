@@ -11,11 +11,13 @@ public class MinimapBtn : MonoBehaviour
 
     private TileMapData m_tileMapData = null;
     private TileMapState m_tileMapState = null;
+    private MinimapPanel m_minimapPanel = null;
 
-    public void Init(TileMapData argTileMapData, TileMapState argTileMapState)
+    public void Init(TileMapData argTileMapData, TileMapState argTileMapState, MinimapPanel argMinimapPanel)
     {
         m_tileMapData = argTileMapData;
         m_tileMapState = argTileMapState;
+        m_minimapPanel = argMinimapPanel;
 
         gameObject.GetComponent<Image>().color = m_tileMapData.m_color;
         if (argTileMapState.m_isRoad == true)
@@ -27,6 +29,6 @@ public class MinimapBtn : MonoBehaviour
 
     public void Click()
     {
-
+        m_minimapPanel.OpenMinimapDetailPanel(m_tileMapData, m_tileMapState);
     }
 }

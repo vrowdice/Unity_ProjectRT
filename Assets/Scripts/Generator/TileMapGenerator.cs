@@ -17,9 +17,18 @@ public class MapDataGenerator
     private TerrainType.TYPE enemySettleTerrain;
     private int enemySettleCount;
 
+    // Balance params
+    private int friendlySettleResourceBase;
+    private int normalTileResourceBase;
+    private int enemyTileResourceBase;
+    private float settleMul;
+    private float mainMul;
+
     public MapDataGenerator(Vector2Int mapSize, List<TileMapData> templates, string seed,
         TerrainType.TYPE friendlySettle, int friendlySettleCount,
-        TerrainType.TYPE enemySettle, int enemySettleCount)
+        TerrainType.TYPE enemySettle, int enemySettleCount,
+        int friendlyBase, int normalBase, int enemyBase,
+        float settleMul, float mainMul)
     {
         this.mapSize = mapSize;
         this.terrainTemplates = templates;
@@ -28,6 +37,11 @@ public class MapDataGenerator
         this.friendlySettlementCount = friendlySettleCount;
         this.enemySettleTerrain = enemySettle;
         this.enemySettleCount = enemySettleCount;
+        this.friendlySettleResourceBase = friendlyBase;
+        this.normalTileResourceBase = normalBase;
+        this.enemyTileResourceBase = enemyBase;
+        this.settleMul = settleMul;
+        this.mainMul = Mathf.Max(0.0001f, mainMul);
 
         InitializeRandomSeed();
         terrainTemplatesDictionary = terrainTemplates.ToDictionary(t => t.m_terrainType, t => t);
@@ -37,8 +51,11 @@ public class MapDataGenerator
     // 외부에서 시드를 지정하지 않으면 내부적으로 무작위 시드를 사용하도록 합니다.
     public MapDataGenerator(Vector2Int mapSize, List<TileMapData> templates,
         TerrainType.TYPE friendlySettle, int friendlySettleCount,
-        TerrainType.TYPE enemySettle, int enemySettleCount)
-        : this(mapSize, templates, null, friendlySettle, friendlySettleCount, enemySettle, enemySettleCount)
+        TerrainType.TYPE enemySettle, int enemySettleCount,
+        int friendlyBase, int normalBase, int enemyBase,
+        float settleMul, float mainMul)
+        : this(mapSize, templates, null, friendlySettle, friendlySettleCount, enemySettle, enemySettleCount,
+               friendlyBase, normalBase, enemyBase, settleMul, mainMul)
     {
     }
 
@@ -60,6 +77,7 @@ public class MapDataGenerator
         GenerateRoads(mapData);
         PlaceSpecialSettlements(mapData);
         AssignTerrainsToAllTiles(mapData);
+        AssignResourcesToAllTiles(mapData);
 
         return mapData;
     }
@@ -380,8 +398,7 @@ public class MapDataGenerator
         {
             Vector2Int neighbor = tile + dir;
 
-            if (neighbor.x >= 0 && neighbor.x < mapSize.x &&
-                neighbor.y >= 0 && neighbor.y < mapSize.y &&
+            if (neighbor.x >= 0 && neighbor.x < mapSize.x && neighbor.y >= 0 && neighbor.y < mapSize.y &&
                 areaConstraint(neighbor.x, neighbor.y) &&
                 !currentTiles.Contains(neighbor) &&
                 !frontier.Contains(neighbor) &&
@@ -458,6 +475,52 @@ public class MapDataGenerator
         else
         {
             Debug.LogError($"지형 템플릿을 찾을 수 없습니다: {type}");
+        }
+    }
+
+    private void AssignResourcesToAllTiles(TileMapState[,] mapData)
+    {
+        for (int x = 0; x < mapSize.x; x++)
+        {
+            for (int y = 0; y < mapSize.y; y++)
+            {
+                var state = mapData[x, y];
+                if (terrainTemplatesDictionary.TryGetValue(state.m_terrainType, out var template))
+                {
+                    float baseValue;
+                    bool isSettlement = state.m_terrainType == friendlySettlementTerrain || state.m_terrainType == enemySettleTerrain;
+                    if (isSettlement)
+                    {
+                        float ratio = settleMul / mainMul;
+                        if (state.m_isFriendlyArea)
+                        {
+                            baseValue = friendlySettleResourceBase * ratio;
+                        }
+                        else
+                        {
+                            baseValue = enemyTileResourceBase * ratio;
+                        }
+                    }
+                    else
+                    {
+                        baseValue = normalTileResourceBase + ((x * x + y * y) / mainMul);
+                    }
+
+                    long wood = (long)(baseValue * template.m_woodMul);
+                    long iron = (long)(baseValue * template.m_iromMul);
+                    long food = (long)(baseValue * template.m_foodMul);
+                    long tech = (long)(baseValue * template.m_techMul);
+
+                    state.m_resources.SetAmount(ResourceType.TYPE.Wood, wood);
+                    state.m_resources.SetAmount(ResourceType.TYPE.Iron, iron);
+                    state.m_resources.SetAmount(ResourceType.TYPE.Food, food);
+                    state.m_resources.SetAmount(ResourceType.TYPE.Tech, tech);
+                }
+                else
+                {
+                    state.m_resources.Clear();
+                }
+            }
         }
     }
 }

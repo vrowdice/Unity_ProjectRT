@@ -1,28 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MoverightBut : MonoBehaviour
 {
-    private BattleManager battleManager;
-    private string enemybattleBeforeUITag = "EBBUI";
-    private GameObject battleBeforeUI;
-    [SerializeField] private GameObject battleBeforeUIFeb;
-
-    void Start()
+    public void OnClick_ToggleView()
     {
-        battleManager = GameObject.Find("BattleManager").GetComponent<BattleManager>();
-    }
-
-    public void MoveRightCamera()
-    {
-        if (battleManager != null)
-        {
-            battleManager.isAttackField = true;
-            battleBeforeUI = GameObject.FindWithTag(enemybattleBeforeUITag);
-            Canvas canvas = FindObjectOfType<Canvas>();
-            battleManager.battleBeforeUI = Instantiate(battleBeforeUIFeb, canvas.transform);
-            Destroy(battleBeforeUI);
-        }
+        // BattleSystemManager의 ToggleView() 메서드를 호출하여
+        // 아군/적 진영 화면을 전환합니다.
+        BattleSystemManager.Instance?.ToggleView();
     }
 }
