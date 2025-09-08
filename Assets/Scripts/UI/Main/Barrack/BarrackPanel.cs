@@ -17,11 +17,9 @@ public class BarrackPanel : BasePanel
     [SerializeField]
     Transform m_factionToggleContentTrans;
 
-    [Header("Faction Filter")]
+    [Header("Unit Detail Panel Reference")]
     [SerializeField]
-    ToggleGroup m_factionToggleGroup;
-    [SerializeField]
-    Toggle m_allFactionToggle; // 전체 팩션 토글
+    private BarrackUnitDetailPanel m_unitDetailPanel;
 
     [Header("Unit Type Filter Toggles")]
     [SerializeField]
@@ -76,31 +74,8 @@ public class BarrackPanel : BasePanel
     /// </summary>
     private void InitializeFilters()
     {
-        // 팩션 필터 초기화
-        InitializeFactionFilters();
-        
         // 유닛 타입 필터 초기화
         InitializeUnitTypeFilters();
-    }
-
-    /// <summary>
-    /// 팩션 필터 토글 시스템 초기화
-    /// </summary>
-    private void InitializeFactionFilters()
-    {
-        // 전체 팩션 토글 설정
-        if (m_allFactionToggle != null && m_factionToggleGroup != null)
-        {
-            m_allFactionToggle.group = m_factionToggleGroup;
-            m_allFactionToggle.onValueChanged.AddListener((isOn) => {
-                if (isOn) OnFactionSelected(FactionType.TYPE.None);
-            });
-            
-            // 기본으로 전체 팩션 선택
-            m_allFactionToggle.isOn = true;
-        }
-
-        m_currentSelectedFaction = FactionType.TYPE.None;
     }
 
     /// <summary>
@@ -183,12 +158,6 @@ public class BarrackPanel : BasePanel
                 BarrackFactionToggle toggleComponent = factionToggle.GetComponent<BarrackFactionToggle>();
                 toggleComponent.Init(factionEntry.Value.m_data);
                 
-                // 팩션 토글을 토글 그룹에 추가
-                if (m_factionToggleGroup != null)
-                {
-                    toggleComponent.SetToggleGroup(m_factionToggleGroup);
-                }
-                
                 // 팩션 선택 콜백 설정
                 toggleComponent.SetOnFactionSelected(OnFactionSelected);
                 
@@ -209,10 +178,30 @@ public class BarrackPanel : BasePanel
             {
                 GameObject factionUnitPanel = Instantiate(m_factionUnitPanelPrefab, m_unitScrollViewContentTrans);
                 BarrackFactionUnitPanel panelComponent = factionUnitPanel.GetComponent<BarrackFactionUnitPanel>();
-                panelComponent.Init(factionEntry.Value.m_data);
+                panelComponent.Init(factionEntry.Value.m_data, this);
                 
                 m_activeFactionPanels.Add(panelComponent);
             }
+        }
+    }
+
+    /// <summary>
+    /// BarrackUnitDetailPanel로 유닛 상세를 오픈
+    /// </summary>
+    public void ShowUnitDetail(UnitData unit)
+    {
+        if (unit == null)
+        {
+            Debug.LogWarning("ShowUnitDetail called with null unit");
+            return;
+        }
+        if (m_unitDetailPanel != null)
+        {
+            m_unitDetailPanel.Show(unit);
+        }
+        else
+        {
+            Debug.LogWarning("m_unitDetailPanel is not assigned in inspector");
         }
     }
 

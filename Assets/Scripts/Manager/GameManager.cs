@@ -191,7 +191,7 @@ public class GameManager : MonoBehaviour
         }
 
         // 강제 연락 요청 체크
-        if (balanceEntry.m_data.m_forcedContactRequestList.Contains(Date))
+        if (balanceEntry.m_data.m_forcedContactRequestDateList.Contains(Date))
         {
             GameDataManager.Instance.ForceContactRequest();
         }

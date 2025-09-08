@@ -19,14 +19,11 @@ public class GameBalanceData : ScriptableObject
 
     [Header("Request")]
     public List<RequestTypeBalance> m_requestTypeBalanceList = new();
-    public List<int> m_forcedContactRequestList = new();
+    public List<int> m_forcedContactRequestDateList = new();
     public int m_maxRequest = 5;
     public int m_makeRequestDate = 5;
-    //ù ��° ������ �� Ȯ��
     public float m_firstContactPer = 70.0f;
-    //�� �Ƿ� ����Ŭ�� �� ��° �̻� ������ ���� Ȯ��
     public float m_overSecondContactPer = 25.0f;
-    //�ι� �̻� ������ ���� ��� ������ Ȯ��
     public float m_noContactChangePer = 15.0f;
 
     [Header("Event")]

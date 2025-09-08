@@ -18,10 +18,12 @@ public class BarrackFactionUnitPanel : MonoBehaviour
     GameObject m_unitBtnPrefab;
 
     private FactionData m_factionData;
+    private BarrackPanel m_ownerPanel;
     private List<BarrackUnitBtn> m_unitButtons = new List<BarrackUnitBtn>();
 
-    public void Init(FactionData argFactionData){
+    public void Init(FactionData argFactionData, BarrackPanel ownerPanel){
         m_factionData = argFactionData;
+        m_ownerPanel = ownerPanel;
         m_factionName.text = argFactionData.m_name;
         m_factionIcon.sprite = argFactionData.m_icon;
 
@@ -31,7 +33,7 @@ public class BarrackFactionUnitPanel : MonoBehaviour
         foreach (var unitData in argFactionData.m_units){
             GameObject unitBtn = Instantiate(m_unitBtnPrefab, m_unitBtnContentTrans);
             BarrackUnitBtn unitBtnComponent = unitBtn.GetComponent<BarrackUnitBtn>();
-            unitBtnComponent.Init(unitData);
+            unitBtnComponent.Init(unitData, m_ownerPanel);
             
             m_unitButtons.Add(unitBtnComponent);
         }

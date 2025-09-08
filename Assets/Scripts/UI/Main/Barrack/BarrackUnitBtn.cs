@@ -12,9 +12,11 @@ public class BarrackUnitBtn : MonoBehaviour
     TextMeshProUGUI m_unitName;
 
     private UnitData m_unitData;
+    private BarrackPanel m_ownerPanel;
 
-    public void Init(UnitData argUnitData){
+    public void Init(UnitData argUnitData, BarrackPanel ownerPanel){
         m_unitData = argUnitData;
+        m_ownerPanel = ownerPanel;
         m_unitIcon.sprite = argUnitData.unitIcon;
         m_unitName.text = argUnitData.unitName;
     }
@@ -29,6 +31,13 @@ public class BarrackUnitBtn : MonoBehaviour
     }
 
     public void OnClickUnitBtn(){
-        Debug.Log($"OnClickUnitBtn - {m_unitData?.unitName}");
+        if (m_ownerPanel != null && m_unitData != null)
+        {
+            m_ownerPanel.ShowUnitDetail(m_unitData);
+        }
+        else
+        {
+            Debug.LogWarning("Owner BarrackPanel is null or unit data is null.");
+        }
     }
 }
