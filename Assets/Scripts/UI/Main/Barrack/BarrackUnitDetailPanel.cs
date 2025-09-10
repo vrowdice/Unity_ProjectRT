@@ -38,7 +38,7 @@ public class BarrackUnitDetailPanel : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void Show(UnitData unit)
+    public void Init(UnitData unit)
     {
         if (unit == null)
         {

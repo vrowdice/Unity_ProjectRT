@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewResearchData", menuName = "Research Data")]
-public class ResearchData : ScriptableObject
+public class FactionResearchData : ScriptableObject
 {
     public string m_code;
     public string m_name;
@@ -12,8 +12,8 @@ public class ResearchData : ScriptableObject
     public int m_cost;
     public float m_duration; // 연구 완료 시간
 
-    public List<ResearchData> m_prerequisites; // 선행 연구 ID 목록
-    public List<ResearchData> m_unlocks;       // 해금되는 연구 ID 목록
+    public List<FactionResearchData> m_prerequisites; // 선행 연구 ID 목록
+    public List<FactionResearchData> m_unlocks;       // 해금되는 연구 ID 목록
 
     public List<EffectBase> m_effects; //연구 완료 시 활성화되는 이펙트
 
@@ -45,7 +45,7 @@ public class ResearchData : ScriptableObject
     /// </summary>
     /// <param name="dataManager">게임 데이터 매니저</param>
     /// <param name="researchEntry">연구 엔트리 (이펙트 추적용)</param>
-    public void ActivateAllEffect(GameDataManager dataManager, ResearchEntry researchEntry)
+    public void ActivateAllEffect(GameDataManager dataManager, FactionResearchEntry researchEntry)
     {
         foreach(EffectBase effect in m_effects)
         {
@@ -62,7 +62,7 @@ public class ResearchData : ScriptableObject
     /// </summary>
     /// <param name="dataManager">게임 데이터 매니저</param>
     /// <param name="researchEntry">연구 엔트리 (이펙트 추적용)</param>
-    public void DeactivateAllEffect(GameDataManager dataManager, ResearchEntry researchEntry)
+    public void DeactivateAllEffect(GameDataManager dataManager, FactionResearchEntry researchEntry)
     {
         foreach (EffectBase effect in m_effects)
         {

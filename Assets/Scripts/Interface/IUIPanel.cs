@@ -2,6 +2,6 @@ using TMPro;
 
 public interface IUIPanel
 {
-    void OnOpen(GameDataManager argDataManager, MainUIManager argUIManager);
+    void OnOpen(GameDataManager argDataManager, IUIManager argUIManager);
     void OnClose();
 }

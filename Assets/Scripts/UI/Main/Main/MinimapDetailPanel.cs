@@ -10,9 +10,9 @@ public class MinimapDetailPanel : MonoBehaviour
 	TextMeshProUGUI m_titleText = null;
 	[SerializeField]
 	Transform m_resourceContentTrans = null;
-	private MainUIManager m_mainUIManager = null;
+	private IUIManager m_mainUIManager = null;
 
-	public void Open(TileMapData argTileMapData, TileMapState argTileMapState, MainUIManager argUIManager)
+	public void Open(TileMapData argTileMapData, TileMapState argTileMapState, IUIManager argUIManager)
     {
 		m_mainUIManager = argUIManager;
 

@@ -56,7 +56,7 @@ public class ResearchPanel : BasePanel
     /// 연구 상세 패널 열기
     /// </summary>
     /// <param name="researchEntry">연구 항목 데이터</param>
-    public void OpenResearchDetailPanel(ResearchEntry researchEntry)
+    public void OpenResearchDetailPanel(FactionResearchEntry researchEntry)
     {
         if (m_researchDetailPanel != null)
         {
@@ -113,18 +113,18 @@ public class ResearchPanel : BasePanel
                 {
                     if (researchData == null) continue;
 
-                    var researchState = factionEntry.GetResearchState(researchData.m_code);
-                    if (researchState == null) continue;
+                    var researchEntry = GameDataManager.Instance.GetResearchEntry(researchData.m_code);
+                    if (researchEntry == null) continue;
 
                     // 연구 중인 항목인지 확인 (잠금 해제되었고, 연구가 진행 중인 경우)
-                    if (!researchState.m_isLocked && researchState.IsInProgress)
+                    if (!researchEntry.m_state.m_isLocked && researchEntry.m_state.IsInProgress)
                     {
                         GameObject btnObj = Instantiate(m_researchInprogressBtnPrefeb, m_researchInprogressScrollViewContentTrans);
                         ResearchInprogressBtn inprogressBtn = btnObj.GetComponent<ResearchInprogressBtn>();
                         
                         if (inprogressBtn != null)
                         {
-                            inprogressBtn.Initialize(this, researchData, researchState, factionEntry);
+                            inprogressBtn.Initialize(this, researchData, researchEntry.m_state, factionEntry);
                             m_inprogressButtons.Add(inprogressBtn);
                         }
                         else
@@ -141,7 +141,7 @@ public class ResearchPanel : BasePanel
     /// 특정 연구 항목의 진행도 업데이트
     /// </summary>
     /// <param name="researchEntry">업데이트할 연구 항목</param>
-    public void UpdateResearchProgress(ResearchEntry researchEntry)
+    public void UpdateResearchProgress(FactionResearchEntry researchEntry)
     {
         // 연구 중인 버튼들 중에서 해당 항목을 찾아 업데이트
         foreach (ResearchInprogressBtn btn in m_inprogressButtons)
@@ -164,7 +164,7 @@ public class ResearchPanel : BasePanel
     /// 연구 중인 버튼 제거
     /// </summary>
     /// <param name="researchEntry">제거할 연구 항목</param>
-    private void RemoveInprogressButton(ResearchEntry researchEntry)
+    private void RemoveInprogressButton(FactionResearchEntry researchEntry)
     {
         for (int i = m_inprogressButtons.Count - 1; i >= 0; i--)
         {
@@ -363,13 +363,13 @@ public class ResearchPanel : BasePanel
             {
                 if (researchData == null) continue;
 
-                var researchState = factionEntry.GetResearchState(researchData.m_code);
-                if (researchState == null) continue;
+                var researchEntry = GameDataManager.Instance.GetResearchEntry(researchData.m_code);
+                if (researchEntry == null) continue;
 
-                bool shouldCreate = ShouldCreateResearchButton(researchData, researchState, panelIndex);
+                bool shouldCreate = ShouldCreateResearchButton(researchData, researchEntry.m_state, panelIndex);
                 if (shouldCreate)
                 {
-                    CreateResearchButton(researchData, researchState, factionEntry);
+                    CreateResearchButton(researchData, researchEntry.m_state, factionEntry);
                 }
             }
         }
@@ -382,7 +382,7 @@ public class ResearchPanel : BasePanel
     /// <param name="researchState">연구 상태</param>
     /// <param name="panelIndex">패널 인덱스</param>
     /// <returns>생성 여부</returns>
-    private bool ShouldCreateResearchButton(ResearchData researchData, ResearchState researchState, int panelIndex)
+    private bool ShouldCreateResearchButton(FactionResearchData researchData, FactionResearchState researchState, int panelIndex)
     {
         switch (panelIndex)
         {
@@ -405,7 +405,7 @@ public class ResearchPanel : BasePanel
     /// <param name="researchData">연구 데이터</param>
     /// <param name="researchState">연구 상태</param>
     /// <param name="factionEntry">팩션 엔트리</param>
-    private void CreateResearchButton(ResearchData researchData, ResearchState researchState, FactionEntry factionEntry)
+    private void CreateResearchButton(FactionResearchData researchData, FactionResearchState researchState, FactionEntry factionEntry)
     {
         GameObject btnObj = Instantiate(m_commonResearchBtnPrefeb, m_researchScrollViewContentTrans);
         ResearchBtn researchBtn = btnObj.GetComponent<ResearchBtn>();

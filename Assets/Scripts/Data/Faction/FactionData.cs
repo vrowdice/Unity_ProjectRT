@@ -16,7 +16,7 @@ public class FactionData : ScriptableObject
     public string m_traitDescription; // 팩션 특성 설명
     
     [Header("Research Data")]
-    public List<ResearchData> m_research;   // 연구 데이터 (None 팩션 = 일반 연구, 다른 팩션 = 고유 연구)
+    public List<FactionResearchData> m_research;   // 연구 데이터 (None 팩션 = 일반 연구, 다른 팩션 = 고유 연구)
 
     [Header("Unit Data")]
     public List<UnitData> m_units;

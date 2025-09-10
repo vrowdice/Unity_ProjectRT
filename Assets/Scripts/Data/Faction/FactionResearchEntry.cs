@@ -1,18 +1,18 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public class ResearchEntry
+public class FactionResearchEntry
 {
-    public ResearchData m_data;
-    public ResearchState m_state;
+    public FactionResearchData m_data;
+    public FactionResearchState m_state;
     
     // 활성화된 이펙트들을 추적하는 리스트 (ResearchEntry에 추가)
     private List<EffectBase> m_activeEffects = new();
 
-    public ResearchEntry(ResearchData argData)
+    public FactionResearchEntry(FactionResearchData argData)
     {
         this.m_data = argData;
-        this.m_state = new ResearchState();
+        this.m_state = new FactionResearchState();
 
         m_state.m_isLocked = m_data.m_isFirstLocked;
     }

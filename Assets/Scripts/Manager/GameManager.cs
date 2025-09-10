@@ -226,21 +226,21 @@ public class GameManager : MonoBehaviour
             {
                 if (researchData == null) continue;
 
-                var researchState = factionEntry.GetResearchState(researchData.m_code);
-                if (researchState == null) continue;
+                var researchEntry = GameDataManager.Instance.GetResearchEntry(researchData.m_code);
+                if (researchEntry == null) continue;
 
                 // 연구가 진행 중인 경우에만 진행도 증가
-                if (researchState.IsInProgress)
+                if (researchEntry.m_state.IsInProgress)
                 {
                     // 진행도 증가
-                    researchState.m_progress += daysPassed;
+                    researchEntry.m_state.m_progress += daysPassed;
 
                     // 연구 완료 체크
-                    if (researchState.m_progress >= researchData.m_duration)
+                    if (researchEntry.m_state.m_progress >= researchData.m_duration)
                     {
                         // 연구 완료
-                        researchState.m_progress = (int)researchData.m_duration;
-                        researchState.m_isResearched = true;
+                        researchEntry.m_state.m_progress = (int)researchData.m_duration;
+                        researchEntry.m_state.m_isResearched = true;
                         
                         // 연구 완료 시 이펙트 활성화
                         if (researchData.m_effects != null)

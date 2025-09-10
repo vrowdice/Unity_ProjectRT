@@ -7,11 +7,21 @@ public class TitleUIManager : MonoBehaviour, IUIManager
     [SerializeField]
     List<GameObject> m_panelList = new List<GameObject>();
 
+    [Header("Common UI Prefabs")]
+    [SerializeField]
+    GameObject m_resourceIconTextPrefeb = null;
+    [SerializeField]
+    GameObject m_conditionPanelTextPrefeb = null;
+
     private List<IUIPanel> m_iPanelList = new List<IUIPanel>();
     private Transform m_canvasTrans = null;
     private int m_nowPanelIndex = 0;
 
     public Transform CanvasTrans => m_canvasTrans;
+    
+    // IUIManager 인터페이스 구현
+    public GameObject ResourceIconTextPrefeb => m_resourceIconTextPrefeb;
+    public GameObject ConditionPanelTextPrefeb => m_conditionPanelTextPrefeb;
 
     void Start()
     {
@@ -101,8 +111,8 @@ public class TitleUIManager : MonoBehaviour, IUIManager
     {
         if (m_iPanelList[m_nowPanelIndex] != null)
         {
-            // Title 씬에서는 MainUIManager가 없으므로 두 번째 인자는 null 전달
-            m_iPanelList[m_nowPanelIndex].OnOpen(GameDataManager.Instance, null);
+            // TitleUIManager는 IUIManager를 구현하므로 this를 전달
+            m_iPanelList[m_nowPanelIndex].OnOpen(GameDataManager.Instance, this);
         }
         else
         {

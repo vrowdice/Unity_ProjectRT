@@ -22,7 +22,7 @@ public class MinimapPanel : MonoBehaviour
 	private ScrollRect scrollRect;
 	private RectTransform contentRect;
 	private GameDataManager m_gameDataManager = null;
-	private MainUIManager m_mainUIManager = null;
+	private IUIManager m_mainUIManager = null;
 
 	void Start()
 	{
@@ -53,7 +53,7 @@ public class MinimapPanel : MonoBehaviour
 		}
 	}
 
-	public void OpenMinimap(GameDataManager argDataManager, MainUIManager argUIManager)
+	public void OpenMinimap(GameDataManager argDataManager, IUIManager argUIManager)
 	{
 		m_gameDataManager = argDataManager;
 		m_mainUIManager = argUIManager;

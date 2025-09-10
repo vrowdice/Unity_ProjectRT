@@ -16,8 +16,8 @@ public class ResearchInprogressBtn : MonoBehaviour
     Slider m_progressSlider = null;
 
     private ResearchPanel m_researchPanel = null;
-    private ResearchData m_researchData = null;
-    private ResearchState m_researchState = null;
+    private FactionResearchData m_researchData = null;
+    private FactionResearchState m_researchState = null;
     private FactionEntry m_factionEntry = null;
     private float m_researchTime = 0f;
     private float m_totalResearchTime = 0f;
@@ -41,7 +41,7 @@ public class ResearchInprogressBtn : MonoBehaviour
     /// <param name="researchData">연구 데이터</param>
     /// <param name="researchState">연구 상태</param>
     /// <param name="factionEntry">팩션 엔트리</param>
-    public void Initialize(ResearchPanel researchPanel, ResearchData researchData, ResearchState researchState, FactionEntry factionEntry)
+    public void Initialize(ResearchPanel researchPanel, FactionResearchData researchData, FactionResearchState researchState, FactionEntry factionEntry)
     {
         m_researchPanel = researchPanel;
         m_researchData = researchData;
@@ -75,11 +75,11 @@ public class ResearchInprogressBtn : MonoBehaviour
     /// 연구 항목 데이터 반환 (호환성을 위해 임시 ResearchEntry 생성)
     /// </summary>
     /// <returns>연구 항목 데이터</returns>
-    public ResearchEntry GetResearchEntry()
+    public FactionResearchEntry GetResearchEntry()
     {
         if (m_researchData != null && m_researchState != null)
         {
-            var tempEntry = new ResearchEntry(m_researchData);
+            var tempEntry = new FactionResearchEntry(m_researchData);
             tempEntry.m_state = m_researchState;
             return tempEntry;
         }
@@ -156,7 +156,7 @@ public class ResearchInprogressBtn : MonoBehaviour
         if (m_researchPanel != null && m_researchData != null && m_researchState != null)
         {
             // 임시로 ResearchEntry를 생성해서 전달 (OpenResearchDetailPanel이 수정되기 전까지)
-            var tempEntry = new ResearchEntry(m_researchData);
+            var tempEntry = new FactionResearchEntry(m_researchData);
             tempEntry.m_state = m_researchState;
             m_researchPanel.OpenResearchDetailPanel(tempEntry);
         }

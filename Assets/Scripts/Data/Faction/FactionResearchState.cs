@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public class ResearchState
+public class FactionResearchState
 {
     public int m_progress = -1;  // -1: 미시작, 0~: 진행도
     public bool m_isLocked = false;

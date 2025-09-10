@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MainPanel : BasePanel
+public class MainMainPanel : BasePanel
 {
     [Header("MainPanel")]
     [SerializeField]

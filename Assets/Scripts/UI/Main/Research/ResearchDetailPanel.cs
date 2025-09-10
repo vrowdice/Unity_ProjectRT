@@ -19,7 +19,7 @@ public class ResearchDetailPanel : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI m_researchPanelBtnText = null;
     
-    private ResearchEntry m_currentResearchEntry = null;
+    private FactionResearchEntry m_currentResearchEntry = null;
     private ResearchPanel m_researchPanel = null;
 
     // Start is called before the first frame update
@@ -43,7 +43,7 @@ public class ResearchDetailPanel : MonoBehaviour
     /// </summary>
     /// <param name="researchEntry">연구 항목 데이터</param>
     /// <param name="researchPanel">연구 패널 참조</param>
-    public void SetResearchDetail(ResearchEntry researchEntry, ResearchPanel researchPanel)
+    public void SetResearchDetail(FactionResearchEntry researchEntry, ResearchPanel researchPanel)
     {
         m_currentResearchEntry = researchEntry;
         m_researchPanel = researchPanel;
@@ -91,7 +91,7 @@ public class ResearchDetailPanel : MonoBehaviour
             return;
         }
 
-        ResearchState state = m_currentResearchEntry.m_state;
+        FactionResearchState state = m_currentResearchEntry.m_state;
 
         if (state.m_isLocked)
         {
@@ -124,7 +124,7 @@ public class ResearchDetailPanel : MonoBehaviour
     {
         if (m_currentResearchEntry == null) return;
 
-        ResearchState state = m_currentResearchEntry.m_state;
+        FactionResearchState state = m_currentResearchEntry.m_state;
 
         if (state.m_isLocked || state.IsCompleted)
         {
@@ -198,7 +198,7 @@ public class ResearchDetailPanel : MonoBehaviour
             return;
         }
 
-        ResearchState state = m_currentResearchEntry.m_state;
+        FactionResearchState state = m_currentResearchEntry.m_state;
         if (state == null || !state.IsInProgress)
         {
             return;

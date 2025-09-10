@@ -15,11 +15,11 @@ public class ResearchBtn : MonoBehaviour
 
     private string m_researchCode;
     private ResearchPanel m_researchPanel = null;
-    private ResearchData m_researchData = null;
-    private ResearchState m_researchState = null;
+    private FactionResearchData m_researchData = null;
+    private FactionResearchState m_researchState = null;
     private FactionEntry m_factionEntry = null;
 
-    public void Initialize(ResearchPanel argResearchPanel, ResearchData argResearchData, ResearchState argResearchState, FactionEntry argFactionEntry)
+    public void Initialize(ResearchPanel argResearchPanel, FactionResearchData argResearchData, FactionResearchState argResearchState, FactionEntry argFactionEntry)
     {
         m_researchPanel = argResearchPanel;
         m_researchData = argResearchData;
@@ -39,7 +39,7 @@ public class ResearchBtn : MonoBehaviour
         if (m_researchPanel != null && m_researchData != null && m_researchState != null && m_factionEntry != null)
         {
             // 임시로 ResearchEntry를 생성해서 전달 (OpenResearchDetailPanel이 수정되기 전까지)
-            var tempEntry = new ResearchEntry(m_researchData);
+            var tempEntry = new FactionResearchEntry(m_researchData);
             tempEntry.m_state = m_researchState;
             m_researchPanel.OpenResearchDetailPanel(tempEntry);
         }

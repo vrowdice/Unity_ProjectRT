@@ -379,25 +379,17 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 1215069278}
-    - target: {fileID: 2761838008651843482, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
+    - target: {fileID: 5022141008201432960, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -250
       objectReference: {fileID: 0}
-    - target: {fileID: 2761838008651843482, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2761838008651843482, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3248639388715968666, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
-      propertyPath: m_Value
-      value: 1
+    - target: {fileID: 5649471503547003721, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -130
       objectReference: {fileID: 0}
     - target: {fileID: 6393524419919394774, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
       propertyPath: m_Name
-      value: Canvas
+      value: MainUIManager
       objectReference: {fileID: 0}
     - target: {fileID: 7168801345563836019, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
       propertyPath: m_Pivot.x
@@ -478,14 +470,6 @@ PrefabInstance:
     - target: {fileID: 7168801345563836019, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8682083684830477979, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8682083684830477979, guid: d9062aaad0a6b724d8ad0e7161c55147, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -0.00051217776
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

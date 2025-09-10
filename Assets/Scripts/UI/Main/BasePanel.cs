@@ -14,23 +14,23 @@ public abstract class BasePanel : MonoBehaviour, IUIPanel
     [SerializeField] protected string m_levelPrefix = "LV. "; // 레벨 표시 접두사
 
     protected GameDataManager m_gameDataManager = null;
-    protected MainUIManager m_mainUIManager = null;
+    protected IUIManager m_mainUIManager = null;
 
     // 프로퍼티들
     public GameDataManager GameDataManager => m_gameDataManager;
-    public MainUIManager MainUIManager => m_mainUIManager;
+    public IUIManager MainUIManager => m_mainUIManager;
 
     /// <summary>
     /// 패널이 열릴 때 호출되는 공통 로직
     /// </summary>
     /// <param name="argDataManager">게임 데이터 매니저</param>
     /// <param name="argUIManager">UI 매니저</param>
-    public virtual void OnOpen(GameDataManager argDataManager, MainUIManager argUIManager)
+    public virtual void OnOpen(GameDataManager argDataManager, IUIManager argUIManager)
     {
         // null 체크
         if (argDataManager == null || argUIManager == null)
         {
-            Debug.LogError("GameDataManager or MainUIManager is null in BasePanel.OnOpen");
+            Debug.LogError("GameDataManager or IUIManager is null in BasePanel.OnOpen");
             return;
         }
 

@@ -27,12 +27,12 @@ public class RequestDetailPanel : MonoBehaviour
     // [SerializeField]
     // TextMeshProUGUI m_descriptionText = null;
 
-    private MainUIManager m_mainUIManager;
+    private IUIManager m_mainUIManager;
     private RequestPanel m_requestPanel;
     private RequestState m_nowRequestState;
     private bool m_isAcceptable;
 
-    public void OnOpen(MainUIManager argMainUIManager, RequestPanel argRequestPanel, bool argIsAcceptable, RequestState argState)
+    public void OnOpen(IUIManager argMainUIManager, RequestPanel argRequestPanel, bool argIsAcceptable, RequestState argState)
     {
         m_mainUIManager = argMainUIManager;
         m_requestPanel = argRequestPanel;

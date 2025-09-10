@@ -166,8 +166,8 @@ public class EffectManager : MonoBehaviour
             {
                 foreach (var researchData in factionEntry.m_data.m_research)
                 {
-                    var researchState = factionEntry.GetResearchState(researchData.m_code);
-                    if (researchState != null && researchState.m_isResearched)
+                    var researchEntry = GameDataManager.Instance.GetResearchEntry(researchData.m_code);
+                    if (researchEntry != null && researchEntry.m_state.m_isResearched)
                     {
                         // 연구가 완료된 경우 해당 연구의 이펙트들을 추가
                         if (researchData.m_effects != null)
@@ -189,10 +189,10 @@ public class EffectManager : MonoBehaviour
     /// <returns>해당 연구의 활성 이펙트 리스트</returns>
     public List<EffectBase> GetResearchEffects(string researchCode)
     {
-        var researchInfo = m_gameDataManager.GetResearchInfo(researchCode);
-        if (researchInfo.HasValue && researchInfo.Value.state.m_isResearched)
+        var researchEntry = m_gameDataManager.GetResearchEntry(researchCode);
+        if (researchEntry != null && researchEntry.m_state.m_isResearched)
         {
-            return researchInfo.Value.data.m_effects ?? new List<EffectBase>();
+            return researchEntry.m_data.m_effects ?? new List<EffectBase>();
         }
         
         return new List<EffectBase>();
@@ -214,10 +214,10 @@ public class EffectManager : MonoBehaviour
             {
                 foreach (var researchData in factionEntry.m_data.m_research)
                 {
-                    var researchState = factionEntry.GetResearchState(researchData.m_code);
-                    if (researchState != null && researchState.m_isResearched)
+                    var researchEntry = GameDataManager.Instance.GetResearchEntry(researchData.m_code);
+                    if (researchEntry != null && researchEntry.m_state.m_isResearched)
                     {
-                        string effectInfo = GetResearchEffectInfo(researchData, researchState);
+                        string effectInfo = GetResearchEffectInfo(researchData, researchEntry.m_state);
                         if (!string.IsNullOrEmpty(effectInfo))
                         {
                             researchInfos.Add(effectInfo);
@@ -242,10 +242,10 @@ public class EffectManager : MonoBehaviour
     /// <returns>연구 이펙트 정보 문자열</returns>
     public string GetResearchEffectInfo(string researchCode)
     {
-        var researchInfo = m_gameDataManager.GetResearchInfo(researchCode);
-        if (researchInfo.HasValue)
+        var researchEntry = m_gameDataManager.GetResearchEntry(researchCode);
+        if (researchEntry != null)
         {
-            return GetResearchEffectInfo(researchInfo.Value.data, researchInfo.Value.state);
+            return GetResearchEffectInfo(researchEntry.m_data, researchEntry.m_state);
         }
         
         return $"연구 코드 '{researchCode}'를 찾을 수 없습니다.";
@@ -257,7 +257,7 @@ public class EffectManager : MonoBehaviour
     /// <param name="researchData">연구 데이터</param>
     /// <param name="researchState">연구 상태</param>
     /// <returns>연구 이펙트 정보 문자열</returns>
-    private string GetResearchEffectInfo(ResearchData researchData, ResearchState researchState)
+    private string GetResearchEffectInfo(FactionResearchData researchData, FactionResearchState researchState)
     {
         if (!researchState.m_isResearched)
         {
@@ -289,8 +289,8 @@ public class EffectManager : MonoBehaviour
             {
                 foreach (var researchData in factionEntry.m_data.m_research)
                 {
-                    var researchState = factionEntry.GetResearchState(researchData.m_code);
-                    if (researchState != null && researchState.m_isResearched)
+                    var researchEntry = GameDataManager.Instance.GetResearchEntry(researchData.m_code);
+                    if (researchEntry != null && researchEntry.m_state.m_isResearched)
                     {
                         // 연구의 모든 이펙트 비활성화
                         if (researchData.m_effects != null)

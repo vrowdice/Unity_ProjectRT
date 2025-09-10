@@ -21,8 +21,8 @@ public class FactionDataEditor : Editor
     private void ApplyFactionResearch(FactionData factionData)
     {
         string[] guids = AssetDatabase.FindAssets("t:ResearchData");
-        List<ResearchData> allResearch = guids
-            .Select(guid => AssetDatabase.LoadAssetAtPath<ResearchData>(AssetDatabase.GUIDToAssetPath(guid)))
+        List<FactionResearchData> allResearch = guids
+            .Select(guid => AssetDatabase.LoadAssetAtPath<FactionResearchData>(AssetDatabase.GUIDToAssetPath(guid)))
             .Where(r => r != null)
             .ToList();
 

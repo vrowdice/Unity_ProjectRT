@@ -197,7 +197,7 @@ public class BarrackPanel : BasePanel
         }
         if (m_unitDetailPanel != null)
         {
-            m_unitDetailPanel.Show(unit);
+            m_unitDetailPanel.Init(unit);
         }
         else
         {

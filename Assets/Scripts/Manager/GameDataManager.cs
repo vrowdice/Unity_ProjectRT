@@ -47,6 +47,10 @@ public class GameDataManager : MonoBehaviour
     private readonly Dictionary<RequestType.TYPE, Sprite> m_requestIconDic = new();
     private readonly Dictionary<RequestType.TYPE, RequestLineTemplate> m_requestLineTemplateDic = new();
 
+    // 팩션별 연구 및 유닛 딕셔너리들
+    private readonly Dictionary<string, FactionResearchEntry> m_factionResearchEntryDic = new();
+    private readonly Dictionary<string, FactionUnitEntry> m_factionUnitEntryDic = new();
+
     // 유닛 데이터 관리 -추가함
     private readonly Dictionary<string, UnitData> m_unitByKey = new();
     private readonly Dictionary<FactionType.TYPE, List<UnitData>> m_unitsByFaction = new();
@@ -68,6 +72,8 @@ public class GameDataManager : MonoBehaviour
     // 프로퍼티들
     public Dictionary<FactionType.TYPE, FactionEntry> FactionEntryDict => m_factionEntryDic;
     public Dictionary<string, BuildingEntry> BuildingEntryDict => m_buildingEntryDic;
+    public Dictionary<string, FactionResearchEntry> FactionResearchEntryDict => m_factionResearchEntryDic;
+    public Dictionary<string, FactionUnitEntry> FactionUnitEntryDict => m_factionUnitEntryDic;
     public List<RequestState> AcceptableRequestList => m_acceptableRequestList;
     public List<RequestState> AcceptedRequestList => m_acceptedRequestList;
     public GameBalanceEntry GameBalanceEntry => m_gameBalanceEntry;
@@ -111,12 +117,14 @@ public class GameDataManager : MonoBehaviour
         InitFactionDict();
         InitBuildingDict();
         InitRequestTemplateDict();
+        InitFactionResearchDict();
+        InitFactionUnitDict();
 
-        // FactionData의 Units를 이용해 Unit 인덱스 구성 -추가함
+        // FactionData의 Units를 이용해 Unit 인덱스 구성 -추가함 (기존 로직 유지)
         BuildUnitsFromFactions();
     }
 
-    // FactionData의 m_units 리스트를 순회하며 유닛 데이터 수집 및 인덱스 구성 -추가함
+    // FactionData의 m_units 리스트를 순회하며 유닛 데이터 수집 및 인덱스 구성 - 기존 로직 유지
     private void BuildUnitsFromFactions()
     {
         m_unitDataList.Clear();
@@ -242,6 +250,48 @@ public class GameDataManager : MonoBehaviour
             if (!m_requestLineTemplateDic.ContainsKey(item.m_type))
             {
                 m_requestLineTemplateDic.Add(item.m_type, item);
+            }
+        }
+    }
+
+    private void InitFactionResearchDict()
+    {
+        m_factionResearchEntryDic.Clear();
+        foreach (FactionData faction in m_factionDataList)
+        {
+            if (faction.m_research != null)
+            {
+                foreach (FactionResearchData research in faction.m_research)
+                {
+                    if (research != null && !string.IsNullOrEmpty(research.m_code))
+                    {
+                        if (!m_factionResearchEntryDic.ContainsKey(research.m_code))
+                        {
+                            m_factionResearchEntryDic.Add(research.m_code, new FactionResearchEntry(research));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void InitFactionUnitDict()
+    {
+        m_factionUnitEntryDic.Clear();
+        foreach (FactionData faction in m_factionDataList)
+        {
+            if (faction.m_units != null)
+            {
+                foreach (UnitData unit in faction.m_units)
+                {
+                    if (unit != null && !string.IsNullOrEmpty(unit.unitKey))
+                    {
+                        if (!m_factionUnitEntryDic.ContainsKey(unit.unitKey))
+                        {
+                            m_factionUnitEntryDic.Add(unit.unitKey, new FactionUnitEntry(unit));
+                        }
+                    }
+                }
             }
         }
     }
@@ -494,24 +544,14 @@ public class GameDataManager : MonoBehaviour
     /// <param name="factionType">변경된 팩션 타입</param>
     public void UpdateResearchByFactionLike(FactionType.TYPE factionType)
     {
-        // 모든 팩션에서 해당 팩션 타입의 연구들 확인
-        foreach (var factionKvp in m_factionEntryDic)
+        // 모든 연구에서 해당 팩션 타입의 연구들 확인
+        foreach (var researchKvp in m_factionResearchEntryDic)
         {
-            var factionEntry = factionKvp.Value;
-            if (factionEntry.m_data.m_research != null)
+            var researchEntry = researchKvp.Value;
+            if (researchEntry.m_data.m_factionType == factionType)
             {
-                foreach (var researchData in factionEntry.m_data.m_research)
-                {
-                    if (researchData.m_factionType == factionType)
-                    {
-                        var researchState = factionEntry.GetResearchState(researchData.m_code);
-                        if (researchState != null)
-                        {
-                            bool shouldUnlock = researchData.CheckFactionLikeRequirement(this);
-                            researchState.m_isLocked = !shouldUnlock;
-                        }
-                    }
-                }
+                bool shouldUnlock = researchEntry.m_data.CheckFactionLikeRequirement(this);
+                researchEntry.m_state.m_isLocked = !shouldUnlock;
             }
         }
     }
@@ -524,27 +564,25 @@ public class GameDataManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 모든 팩션에서 특정 연구 코드의 데이터와 상태 찾기
+    /// 특정 연구 코드의 데이터와 상태 찾기
     /// </summary>
     /// <param name="researchCode">연구 코드</param>
-    /// <returns>연구 데이터와 상태를 담은 튜플 (없으면 null)</returns>
-    public (ResearchData data, ResearchState state, FactionEntry faction)? GetResearchInfo(string researchCode)
+    /// <returns>연구 엔트리 (없으면 null)</returns>
+    public FactionResearchEntry GetResearchEntry(string researchCode)
     {
         if (string.IsNullOrEmpty(researchCode)) return null;
-        
-        foreach (var factionKvp in m_factionEntryDic)
-        {
-            var factionEntry = factionKvp.Value;
-            var researchData = factionEntry.GetResearchData(researchCode);
-            var researchState = factionEntry.GetResearchState(researchCode);
-            
-            if (researchData != null && researchState != null)
-            {
-                return (researchData, researchState, factionEntry);
-            }
-        }
-        
-        return null;
+        return m_factionResearchEntryDic.TryGetValue(researchCode, out var entry) ? entry : null;
+    }
+
+    /// <summary>
+    /// 특정 유닛 키의 데이터와 상태 찾기
+    /// </summary>
+    /// <param name="unitKey">유닛 키</param>
+    /// <returns>유닛 엔트리 (없으면 null)</returns>
+    public FactionUnitEntry GetUnitEntry(string unitKey)
+    {
+        if (string.IsNullOrEmpty(unitKey)) return null;
+        return m_factionUnitEntryDic.TryGetValue(unitKey, out var entry) ? entry : null;
     }
 
     public BuildingEntry GetBuildingEntry(string argKey)

@@ -39,7 +39,7 @@ public class FactionDetailPanel : MonoBehaviour
 
         m_friendlinessText.text = argFactionEntry.m_state.m_like.ToString();
 
-        foreach (ResearchData item in argFactionEntry.m_data.m_research)
+        foreach (FactionResearchData item in argFactionEntry.m_data.m_research)
         {
             Instantiate(m_factionResearchBtnPrefeb, m_uniqeResearchContentTrans).GetComponent<FactionResearchBtn>().
                 Initialize(argFactionPanel, item.m_factionType, item.m_icon, item.m_name, item.m_description);
