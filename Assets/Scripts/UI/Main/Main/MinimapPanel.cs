@@ -24,6 +24,9 @@ public class MinimapPanel : MonoBehaviour
 	private GameDataManager m_gameDataManager = null;
 	private IUIManager m_mainUIManager = null;
 
+	public GameDataManager GameDataManager => m_gameDataManager;
+	public IUIManager MainUIManager => m_mainUIManager;
+
 	void Start()
 	{
 		if (scrollRect == null)
