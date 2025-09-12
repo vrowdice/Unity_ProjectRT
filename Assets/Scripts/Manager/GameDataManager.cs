@@ -6,7 +6,7 @@ using UnityEngine;
 /// <summary>
 /// 게임의 모든 데이터를 관리하는 매니저 클래스
 /// 팩션, 연구, 건물, 요청 등의 데이터를 중앙에서 관리
-/// 이벤트, 이펙트, 타일맵은 별도 매니저에서 관리
+/// 이벤트, 이펙트, 타일맵, 자원 관리도 포함
 /// 싱글톤 패턴으로 구현되어 전역에서 접근 가능
 /// </summary>
 public class GameDataManager : MonoBehaviour
@@ -17,6 +17,7 @@ public class GameDataManager : MonoBehaviour
     private EventManager m_eventManager;
     private EffectManager m_effectManager;
     private TileMapManager m_tileMapManager;
+    private ResourceManager m_resourceManager;
     
     [Header("Data Paths")]
     [SerializeField] private string m_factionDataPath = "Assets/Datas/Faction";
@@ -75,6 +76,7 @@ public class GameDataManager : MonoBehaviour
     public EventManager EventManager => m_eventManager;
     public EffectManager EffectManager => m_effectManager;
     public TileMapManager TileMapManager => m_tileMapManager;
+    public ResourceManager ResourceManager => m_resourceManager;
 
 
     #region Unity Lifecycle
@@ -171,6 +173,7 @@ public class GameDataManager : MonoBehaviour
         m_eventManager = gameObject.AddComponent<EventManager>();
         m_effectManager = gameObject.AddComponent<EffectManager>();
         m_tileMapManager = gameObject.AddComponent<TileMapManager>();
+        m_resourceManager = gameObject.AddComponent<ResourceManager>();
 
         // 각 매니저에게 필요한 데이터 할당
         AssignDataToManagers();
@@ -178,6 +181,7 @@ public class GameDataManager : MonoBehaviour
         m_eventManager.Initialize(this);
         m_effectManager.Initialize(this);
         m_tileMapManager.Initialize(this);
+        m_resourceManager.Initialize(this);
     }
 
     private void AssignDataToManagers()
