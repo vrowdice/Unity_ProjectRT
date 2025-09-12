@@ -428,7 +428,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 409064708453540896, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 20
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 409064708453540896, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -440,11 +440,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1808617235280951597, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1808617235280951597, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1808617235280951597, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_AnchorMin.y
@@ -452,8 +452,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2992718612323430068, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3165601517061859468, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
+      value: 
+      objectReference: {fileID: 8358853971929376543}
     - target: {fileID: 3561094090514468333, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_Name
       value: TitleUIManager
@@ -552,15 +556,15 @@ PrefabInstance:
       objectReference: {fileID: 1785155367}
     - target: {fileID: 8572638551653748988, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8572638551653748988, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8572638551653748988, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_SizeDelta.x
-      value: -17
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
