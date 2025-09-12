@@ -8,6 +8,10 @@ public class MinimapBtn : MonoBehaviour
 {
     [SerializeField]
     TextMeshProUGUI m_text = null;
+    [SerializeField]
+    Transform m_simpleIconContent = null;
+    [SerializeField]
+    Transform m_detailIconContent = null;
 
     private TileMapData m_tileMapData = null;
     private TileMapState m_tileMapState = null;
@@ -15,16 +19,15 @@ public class MinimapBtn : MonoBehaviour
 
     public void Init(TileMapData argTileMapData, TileMapState argTileMapState, MinimapPanel argMinimapPanel)
     {
+
+
         m_tileMapData = argTileMapData;
         m_tileMapState = argTileMapState;
         m_minimapPanel = argMinimapPanel;
 
         gameObject.GetComponent<Image>().color = m_tileMapData.m_color;
-        if (argTileMapState.m_isRoad == true)
-        {
-            m_text.gameObject.SetActive(true);
-            m_text.text = "Road";
-        }
+
+        
     }
 
     public void Click()

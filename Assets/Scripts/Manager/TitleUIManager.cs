@@ -22,6 +22,7 @@ public class TitleUIManager : MonoBehaviour, IUIManager
     // IUIManager 인터페이스 구현
     public GameObject ResourceIconTextPrefeb => m_resourceIconTextPrefeb;
     public GameObject ConditionPanelTextPrefeb => m_conditionPanelTextPrefeb;
+    public GameObject ResourceIconImagePrefeb => m_conditionPanelTextPrefeb;
 
     void Start()
     {

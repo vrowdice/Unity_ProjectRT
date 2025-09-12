@@ -180,27 +180,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 25aed3be19d4a624487db56ba5a1b692, type: 3}
---- !u!1 &1769761219 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2159853719631581160, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
-  m_PrefabInstance: {fileID: 8358853971929376538}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1769761223
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1769761219}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 506d10b4d4f9f01428fdbc37a05bc479, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_showInfoPanelText: {fileID: 0}
-  m_panelName: 
-  m_buildingCodeForLevel: 
-  m_levelPrefix: 'LV. '
 --- !u!1 &1785155365
 GameObject:
   m_ObjectHideFlags: 0
@@ -426,6 +405,7 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+<<<<<<< HEAD
     - target: {fileID: 409064708453540896, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
@@ -458,18 +438,12 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
       value: 
       objectReference: {fileID: 8358853971929376543}
+=======
+>>>>>>> refs/remotes/origin/main
     - target: {fileID: 3561094090514468333, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_Name
       value: TitleUIManager
       objectReference: {fileID: 0}
-    - target: {fileID: 4135544271490151028, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
-      propertyPath: m_selectFacitonPanel
-      value: 
-      objectReference: {fileID: 8358853971929376544}
-    - target: {fileID: 4135544271490151028, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
-      propertyPath: m_factionSelectionPanel
-      value: 
-      objectReference: {fileID: 8358853971929376543}
     - target: {fileID: 4954185801992088648, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -554,6 +528,7 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 1785155367}
+<<<<<<< HEAD
     - target: {fileID: 8572638551653748988, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -566,30 +541,13 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+=======
+>>>>>>> refs/remotes/origin/main
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 2159853719631581160, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1769761223}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
---- !u!1 &8358853971929376543 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919419059045505042, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
-  m_PrefabInstance: {fileID: 8358853971929376538}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &8358853971929376544 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8600769847475093261, guid: a5e8922315fbc1e40acaf461c040c925, type: 3}
-  m_PrefabInstance: {fileID: 8358853971929376538}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8358853971929376543}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5573b23bdca9a5b49903315c9e10ad42, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
