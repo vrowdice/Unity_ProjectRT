@@ -61,6 +61,7 @@ public class MapDataGenerator
 
     private void InitializeRandomSeed()
     {
+        //
         if (string.IsNullOrEmpty(seed))
         {
             seed = DateTime.Now.ToBinary().ToString();
@@ -426,10 +427,21 @@ public class MapDataGenerator
 
     private TerrainType.TYPE GetTerrainTypeWithNeighborInfluence(TileMapState[,] mapData, int x, int y)
     {
+        // 도로가 있는 타일은 통과 불가능한 지형을 제외하고 선택
         var weightedList = terrainTemplates
-            .Where(t => t.m_terrainType != friendlySettlementTerrain && t.m_terrainType != enemySettleTerrain && t.m_terrainType != TerrainType.TYPE.None)
+            .Where(t => t.m_terrainType != friendlySettlementTerrain && 
+                       t.m_terrainType != enemySettleTerrain && 
+                       t.m_terrainType != TerrainType.TYPE.None)
             .Select(t => new { t.m_terrainType, t.m_weight })
             .ToList();
+
+        // 도로가 있는 타일인 경우 통과 불가능한 지형 제외
+        if (mapData[x, y].m_isRoad)
+        {
+            weightedList = weightedList
+                .Where(t => !IsImpassableTerrain(t.m_terrainType))
+                .ToList();
+        }
 
         Vector2Int[] neighbors = { new Vector2Int(x + 1, y), new Vector2Int(x - 1, y), new Vector2Int(x, y + 1), new Vector2Int(x, y - 1) };
         foreach (var neighbor in neighbors)

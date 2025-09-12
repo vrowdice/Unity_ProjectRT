@@ -20,13 +20,14 @@ public class FactionDataEditor : Editor
 
     private void ApplyFactionResearch(FactionData factionData)
     {
-        string[] guids = AssetDatabase.FindAssets("t:ResearchData");
+        // FactionResearchData íƒ€ì…ì˜ ëª¨ë“  ì—ì…‹ ê²€ìƒ‰
+        string[] guids = AssetDatabase.FindAssets("t:FactionResearchData");
         List<FactionResearchData> allResearch = guids
             .Select(guid => AssetDatabase.LoadAssetAtPath<FactionResearchData>(AssetDatabase.GUIDToAssetPath(guid)))
             .Where(r => r != null)
             .ToList();
 
-        // ÇöÀç ÆÑ¼Ç Å¸ÀÔ°ú ÀÏÄ¡ÇÏ°Å³ª °øÅë ¿¬±¸(None)ÀÎ °Í¸¸ ÇÊÅÍ¸µ
+        // í˜„ì¬ íŒ©ì…˜ íƒ€ì…ê³¼ ì •í™•íˆ ì¼ì¹˜í•˜ëŠ” ì—°êµ¬ë§Œ í•„í„°ë§ (None íŒ©ì…˜ì€ ê³µí†µ ì—°êµ¬ ì „ë‹´)
         var filtered = allResearch
             .Where(r => r.m_factionType == factionData.m_factionType)
             .ToList();

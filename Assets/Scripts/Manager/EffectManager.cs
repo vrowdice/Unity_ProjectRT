@@ -159,15 +159,18 @@ public class EffectManager : MonoBehaviour
         List<EffectBase> allEffects = new List<EffectBase>();
         
         // 모든 팩션의 연구에서 활성화된 이펙트 수집
-        foreach (var factionKvp in m_gameDataManager.FactionEntryDict)
+        foreach (var factionKvp in m_gameDataManager.FactionResearchEntryDict)
         {
-            var factionEntry = factionKvp.Value;
-            if (factionEntry?.m_data?.m_research != null)
+            var researchEntry = factionKvp.Value;
+            if (researchEntry != null)
             {
-                foreach (var researchData in factionEntry.m_data.m_research)
+                // 팩션의 모든 연구를 확인
+                foreach (var researchKvp in researchEntry.ResearchByKey)
                 {
-                    var researchEntry = GameDataManager.Instance.GetResearchEntry(researchData.m_code);
-                    if (researchEntry != null && researchEntry.m_state.m_isResearched)
+                    var researchData = researchKvp.Value;
+                    var researchState = researchEntry.GetResearchStateByKey(researchKvp.Key);
+                    
+                    if (researchState != null && researchState.m_isResearched)
                     {
                         // 연구가 완료된 경우 해당 연구의 이펙트들을 추가
                         if (researchData.m_effects != null)
@@ -189,10 +192,12 @@ public class EffectManager : MonoBehaviour
     /// <returns>해당 연구의 활성 이펙트 리스트</returns>
     public List<EffectBase> GetResearchEffects(string researchCode)
     {
-        var researchEntry = m_gameDataManager.GetResearchEntry(researchCode);
-        if (researchEntry != null && researchEntry.m_state.m_isResearched)
+        var researchData = m_gameDataManager.GetResearchByKey(researchCode);
+        var researchState = m_gameDataManager.GetResearchStateByKey(researchCode);
+        
+        if (researchData != null && researchState != null && researchState.m_isResearched)
         {
-            return researchEntry.m_data.m_effects ?? new List<EffectBase>();
+            return researchData.m_effects ?? new List<EffectBase>();
         }
         
         return new List<EffectBase>();
@@ -207,17 +212,19 @@ public class EffectManager : MonoBehaviour
         List<string> researchInfos = new List<string>();
         
         // 모든 팩션의 완료된 연구 정보 수집
-        foreach (var factionKvp in m_gameDataManager.FactionEntryDict)
+        foreach (var factionKvp in m_gameDataManager.FactionResearchEntryDict)
         {
-            var factionEntry = factionKvp.Value;
-            if (factionEntry?.m_data?.m_research != null)
+            var researchEntry = factionKvp.Value;
+            if (researchEntry != null)
             {
-                foreach (var researchData in factionEntry.m_data.m_research)
+                foreach (var researchKvp in researchEntry.ResearchByKey)
                 {
-                    var researchEntry = GameDataManager.Instance.GetResearchEntry(researchData.m_code);
-                    if (researchEntry != null && researchEntry.m_state.m_isResearched)
+                    var researchData = researchKvp.Value;
+                    var researchState = researchEntry.GetResearchStateByKey(researchKvp.Key);
+                    
+                    if (researchState != null && researchState.m_isResearched)
                     {
-                        string effectInfo = GetResearchEffectInfo(researchData, researchEntry.m_state);
+                        string effectInfo = GetResearchEffectInfo(researchData, researchState);
                         if (!string.IsNullOrEmpty(effectInfo))
                         {
                             researchInfos.Add(effectInfo);
@@ -242,10 +249,12 @@ public class EffectManager : MonoBehaviour
     /// <returns>연구 이펙트 정보 문자열</returns>
     public string GetResearchEffectInfo(string researchCode)
     {
-        var researchEntry = m_gameDataManager.GetResearchEntry(researchCode);
-        if (researchEntry != null)
+        var researchData = m_gameDataManager.GetResearchByKey(researchCode);
+        var researchState = m_gameDataManager.GetResearchStateByKey(researchCode);
+        
+        if (researchData != null && researchState != null)
         {
-            return GetResearchEffectInfo(researchEntry.m_data, researchEntry.m_state);
+            return GetResearchEffectInfo(researchData, researchState);
         }
         
         return $"연구 코드 '{researchCode}'를 찾을 수 없습니다.";
@@ -282,15 +291,17 @@ public class EffectManager : MonoBehaviour
         int deactivatedCount = 0;
         
         // 모든 팩션의 완료된 연구에서 이펙트 비활성화
-        foreach (var factionKvp in m_gameDataManager.FactionEntryDict)
+        foreach (var factionKvp in m_gameDataManager.FactionResearchEntryDict)
         {
-            var factionEntry = factionKvp.Value;
-            if (factionEntry?.m_data?.m_research != null)
+            var researchEntry = factionKvp.Value;
+            if (researchEntry != null)
             {
-                foreach (var researchData in factionEntry.m_data.m_research)
+                foreach (var researchKvp in researchEntry.ResearchByKey)
                 {
-                    var researchEntry = GameDataManager.Instance.GetResearchEntry(researchData.m_code);
-                    if (researchEntry != null && researchEntry.m_state.m_isResearched)
+                    var researchData = researchKvp.Value;
+                    var researchState = researchEntry.GetResearchStateByKey(researchKvp.Key);
+                    
+                    if (researchState != null && researchState.m_isResearched)
                     {
                         // 연구의 모든 이펙트 비활성화
                         if (researchData.m_effects != null)
@@ -387,13 +398,14 @@ public class EffectManager : MonoBehaviour
         ClearActiveEventEffects();
         
         // 연구 이펙트 강제 초기화
-        foreach (var factionKvp in m_gameDataManager.FactionEntryDict)
+        foreach (var factionKvp in m_gameDataManager.FactionResearchEntryDict)
         {
-            var factionEntry = factionKvp.Value;
-            if (factionEntry?.m_data?.m_research != null)
+            var researchEntry = factionKvp.Value;
+            if (researchEntry != null)
             {
-                foreach (var researchData in factionEntry.m_data.m_research)
+                foreach (var researchKvp in researchEntry.ResearchByKey)
                 {
+                    var researchData = researchKvp.Value;
                     if (researchData.m_effects != null)
                     {
                         foreach (var effect in researchData.m_effects)

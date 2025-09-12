@@ -19,6 +19,7 @@ public class ResearchInprogressBtn : MonoBehaviour
     private FactionResearchData m_researchData = null;
     private FactionResearchState m_researchState = null;
     private FactionEntry m_factionEntry = null;
+    private string m_researchCode = null;
     private float m_researchTime = 0f;
     private float m_totalResearchTime = 0f;
 
@@ -41,12 +42,14 @@ public class ResearchInprogressBtn : MonoBehaviour
     /// <param name="researchData">연구 데이터</param>
     /// <param name="researchState">연구 상태</param>
     /// <param name="factionEntry">팩션 엔트리</param>
-    public void Initialize(ResearchPanel researchPanel, FactionResearchData researchData, FactionResearchState researchState, FactionEntry factionEntry)
+    /// <param name="researchCode">연구 코드</param>
+    public void Initialize(ResearchPanel researchPanel, FactionResearchData researchData, FactionResearchState researchState, FactionEntry factionEntry, string researchCode)
     {
         m_researchPanel = researchPanel;
         m_researchData = researchData;
         m_researchState = researchState;
         m_factionEntry = factionEntry;
+        m_researchCode = researchCode;
 
         if (m_researchData != null)
         {
@@ -72,18 +75,12 @@ public class ResearchInprogressBtn : MonoBehaviour
     }
 
     /// <summary>
-    /// 연구 항목 데이터 반환 (호환성을 위해 임시 ResearchEntry 생성)
+    /// 연구 코드 반환
     /// </summary>
-    /// <returns>연구 항목 데이터</returns>
-    public FactionResearchEntry GetResearchEntry()
+    /// <returns>연구 코드</returns>
+    public string GetResearchCode()
     {
-        if (m_researchData != null && m_researchState != null)
-        {
-            var tempEntry = new FactionResearchEntry(m_researchData);
-            tempEntry.m_state = m_researchState;
-            return tempEntry;
-        }
-        return null;
+        return m_researchCode;
     }
 
     /// <summary>
@@ -153,12 +150,18 @@ public class ResearchInprogressBtn : MonoBehaviour
     /// </summary>
     public void OnButtonClick()
     {
-        if (m_researchPanel != null && m_researchData != null && m_researchState != null)
+        if (m_researchPanel != null && m_researchData != null && m_researchState != null && !string.IsNullOrEmpty(m_researchCode))
         {
-            // 임시로 ResearchEntry를 생성해서 전달 (OpenResearchDetailPanel이 수정되기 전까지)
-            var tempEntry = new FactionResearchEntry(m_researchData);
-            tempEntry.m_state = m_researchState;
-            m_researchPanel.OpenResearchDetailPanel(tempEntry);
+            // GameDataManager에서 해당 팩션의 연구 엔트리를 가져와서 전달
+            var factionResearchEntry = GameDataManager.Instance.GetFactionResearchEntry(m_factionEntry.m_data.m_factionType);
+            if (factionResearchEntry != null)
+            {
+                m_researchPanel.OpenResearchDetailPanel(factionResearchEntry, m_researchCode);
+            }
+            else
+            {
+                Debug.LogError($"FactionResearchEntry not found for faction: {m_factionEntry.m_data.m_factionType}");
+            }
         }
     }
 }

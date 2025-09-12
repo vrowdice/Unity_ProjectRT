@@ -24,5 +24,6 @@ MonoBehaviour:
   m_effects:
   - {fileID: 11400000, guid: 1b5d52f6f7fe68e41b9f9c34e6e1a34c, type: 2}
   m_icon: {fileID: 0}
-  m_isFirstLocked: 0
+  m_isFirstLocked: 1
   m_factionType: 0
+  m_requiredFactionLike: 0

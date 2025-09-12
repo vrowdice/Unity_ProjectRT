@@ -52,7 +52,7 @@ public class FactionResearchData : ScriptableObject
             if (effect.ActivateEffect(dataManager, m_name))
             {
                 // 활성화 성공 시 ResearchEntry에 추가
-                researchEntry.AddActiveEffect(effect);
+                researchEntry.AddActiveEffect(m_code, effect);
             }
         }
     }
@@ -68,7 +68,7 @@ public class FactionResearchData : ScriptableObject
         {
             if (effect.DeactivateEffect(dataManager))
             {
-                researchEntry.RemoveActiveEffect(effect);
+                researchEntry.RemoveActiveEffect(m_code, effect);
             }
         }
     }

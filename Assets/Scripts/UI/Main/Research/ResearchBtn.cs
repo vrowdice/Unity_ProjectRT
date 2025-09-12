@@ -19,13 +19,13 @@ public class ResearchBtn : MonoBehaviour
     private FactionResearchState m_researchState = null;
     private FactionEntry m_factionEntry = null;
 
-    public void Initialize(ResearchPanel argResearchPanel, FactionResearchData argResearchData, FactionResearchState argResearchState, FactionEntry argFactionEntry)
+    public void Initialize(ResearchPanel argResearchPanel, FactionResearchData argResearchData, FactionResearchState argResearchState, FactionEntry argFactionEntry, string researchCode)
     {
         m_researchPanel = argResearchPanel;
         m_researchData = argResearchData;
         m_researchState = argResearchState;
         m_factionEntry = argFactionEntry;
-        m_researchCode = argResearchData.m_code;
+        m_researchCode = researchCode;
         m_iconImage.sprite = argResearchData.m_icon;
         m_nameText.text = argResearchData.m_name;
         m_expText.text = argResearchData.m_description;
@@ -38,10 +38,16 @@ public class ResearchBtn : MonoBehaviour
     {
         if (m_researchPanel != null && m_researchData != null && m_researchState != null && m_factionEntry != null)
         {
-            // 임시로 ResearchEntry를 생성해서 전달 (OpenResearchDetailPanel이 수정되기 전까지)
-            var tempEntry = new FactionResearchEntry(m_researchData);
-            tempEntry.m_state = m_researchState;
-            m_researchPanel.OpenResearchDetailPanel(tempEntry);
+            // GameDataManager에서 해당 팩션의 연구 엔트리를 가져와서 전달
+            var factionResearchEntry = GameDataManager.Instance.GetFactionResearchEntry(m_factionEntry.m_data.m_factionType);
+            if (factionResearchEntry != null)
+            {
+                m_researchPanel.OpenResearchDetailPanel(factionResearchEntry, m_researchCode);
+            }
+            else
+            {
+                Debug.LogError($"FactionResearchEntry not found for faction: {m_factionEntry.m_data.m_factionType}");
+            }
         }
     }
 }

@@ -23,9 +23,16 @@ public class MinimapPanel : MonoBehaviour
 	private RectTransform contentRect;
 	private GameDataManager m_gameDataManager = null;
 	private IUIManager m_mainUIManager = null;
+	
+	// MinimapBtn 리스트 추가
+	private List<MinimapBtn> m_minimapBtns = new List<MinimapBtn>();
+	
+	// 리소스 표시 모드 (true: detail, false: simple)
+	private bool m_showDetailResources = false;
 
 	public GameDataManager GameDataManager => m_gameDataManager;
 	public IUIManager MainUIManager => m_mainUIManager;
+	public List<MinimapBtn> MinimapBtns => m_minimapBtns;
 
 	void Start()
 	{
@@ -63,6 +70,7 @@ public class MinimapPanel : MonoBehaviour
 
 		this.gameObject.SetActive(true);
 		GameObjectUtils.ClearChildren(m_minimapScrollViewContentTrans);
+		m_minimapBtns.Clear(); // 버튼 리스트 초기화
 		GenerateMinimapTiles();
 	}
 
@@ -70,12 +78,62 @@ public class MinimapPanel : MonoBehaviour
 	{
 		this.gameObject.SetActive(false);
 		GameObjectUtils.ClearChildren(m_minimapScrollViewContentTrans);
+		m_minimapBtns.Clear(); // 버튼 리스트 초기화
 	}
 
 	public void OpenMinimapDetailPanel(TileMapData argTileMapData, TileMapState argTileMapState)
     {
 		m_minimapDetailPanel.Open(argTileMapData, argTileMapState, m_mainUIManager);
     }
+
+	/// <summary>
+	/// 리소스 표시 모드를 설정하고 모든 버튼에 적용
+	/// </summary>
+	/// <param name="showDetail">true: 상세 모드, false: 간단 모드</param>
+	public void SetResourceDisplayMode(bool showDetail)
+	{
+		m_showDetailResources = showDetail;
+		
+		foreach (MinimapBtn btn in m_minimapBtns)
+		{
+			if (btn != null)
+			{
+				btn.SetResourceDisplayMode(showDetail);
+			}
+		}
+	}
+
+	/// <summary>
+	/// 현재 리소스 표시 모드 반환
+	/// </summary>
+	public bool GetResourceDisplayMode()
+	{
+		return m_showDetailResources;
+	}
+
+	/// <summary>
+	/// 리소스 표시 모드를 토글 (간단 ↔ 상세)
+	/// </summary>
+	public void ToggleResourceDisplayMode()
+	{
+		SetResourceDisplayMode(!m_showDetailResources);
+	}
+
+	/// <summary>
+	/// 간단 모드로 설정 (아이콘만 표시)
+	/// </summary>
+	public void SetSimpleResourceDisplay()
+	{
+		SetResourceDisplayMode(false);
+	}
+
+	/// <summary>
+	/// 상세 모드로 설정 (아이콘 + 텍스트 표시)
+	/// </summary>
+	public void SetDetailResourceDisplay()
+	{
+		SetResourceDisplayMode(true);
+	}
 
 	private void GenerateMinimapTiles()
 	{
@@ -113,6 +171,10 @@ public class MinimapPanel : MonoBehaviour
 						if (minimapBtn != null)
 						{
 							minimapBtn.Init(tileData, tileState, this);
+							m_minimapBtns.Add(minimapBtn); // 버튼을 리스트에 추가
+							
+							// 현재 설정된 표시 모드 적용
+							minimapBtn.SetResourceDisplayMode(m_showDetailResources);
 						}
 					}
 					else
